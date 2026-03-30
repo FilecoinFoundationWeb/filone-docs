@@ -1,0 +1,120 @@
+---
+title: S3 Compatibility
+description: Supported S3 operations, authentication, and endpoint configuration.
+---
+
+Fil One provides an S3-compatible API. If your application works with AWS S3, it works with Fil One — point your SDK or CLI at our endpoint and authenticate with your API keys.
+
+## Endpoint
+
+```
+https://s3.fil.one
+```
+
+<!-- PLACEHOLDER: Confirm final endpoint URL before launch -->
+
+All requests use HTTPS. HTTP connections are rejected.
+
+## Authentication
+
+Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 client or SDK that supports SigV4 will work without modification.
+
+| Parameter | Value |
+|-----------|-------|
+| Endpoint | `https://s3.fil.one` |
+| Region | `eu-west-1` |
+| Signature version | SigV4 |
+| Path style | Supported |
+| Virtual-hosted style | Supported |
+
+## Supported operations
+
+### Bucket operations
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| `CreateBucket` | ✅ Supported | |
+| `DeleteBucket` | ✅ Supported | Cascade-deletes all objects in the bucket. |
+| `ListBuckets` | ✅ Supported | |
+| `HeadBucket` | ✅ Supported | |
+| `PutBucketVersioning` | ✅ Supported | Always enabled. Cannot be suspended. |
+| `GetBucketVersioning` | ✅ Supported | |
+
+### Object operations
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| `PutObject` | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
+| `GetObject` | ✅ Supported | |
+| `DeleteObject` | ✅ Supported | Places a delete marker on versioned buckets. Blocked by active Compliance retention. |
+| `HeadObject` | ✅ Supported | |
+| `ListObjectsV2` | ✅ Supported | |
+| `CopyObject` | ✅ Supported | |
+| `ListObjectVersions` | ✅ Supported | |
+
+### Multipart upload
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| `CreateMultipartUpload` | ✅ Supported | |
+| `UploadPart` | ✅ Supported | |
+| `CompleteMultipartUpload` | ✅ Supported | |
+| `AbortMultipartUpload` | ✅ Supported | |
+
+### Object Lock
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| `PutObjectLockConfiguration` | ✅ Supported | Set default retention on a bucket. |
+| `GetObjectLockConfiguration` | ✅ Supported | |
+| `PutObjectRetention` | ✅ Supported | Set or extend retention on individual objects. |
+| `GetObjectRetention` | ✅ Supported | |
+
+### Presigned URLs
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| Presigned `GetObject` | ✅ Supported | |
+| Presigned `PutObject` | ✅ Supported | |
+
+### Not yet supported
+
+The following operations are planned for future releases:
+
+| Operation | Timeline | Notes |
+|-----------|----------|-------|
+| `PutObjectLegalHold` / `GetObjectLegalHold` | Phase 2 | Legal hold (indefinite lock per object). |
+| Governance mode bypass (`x-amz-bypass-governance-retention`) | Phase 2 | |
+| Bucket policies / ACLs | Phase 2 | |
+| Lifecycle rules | Phase 2 | |
+| S3 Select | Not planned | |
+| S3 Inventory | Not planned | |
+| S3 Batch Operations | Not planned | |
+
+## Error responses
+
+Fil One returns standard S3 error XML for all error conditions. If you're handling S3 errors in your application today, no changes are needed.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>NoSuchBucket</Code>
+  <Message>The specified bucket does not exist.</Message>
+  <BucketName>my-bucket</BucketName>
+  <RequestId>abc123</RequestId>
+</Error>
+```
+
+See the [Error Reference](/reference/errors) for a full list of error codes.
+
+## Differences from AWS S3
+
+Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
+
+| Behavior | AWS S3 | Fil One |
+|----------|--------|----------------|
+| Bucket deletion | Requires bucket to be empty first. | Cascade-deletes all objects (with confirmation). Blocked if any object has active Compliance retention. |
+| Object Lock enablement | Can be enabled at bucket creation. | Always enabled on every bucket. |
+| IAM policies | Full IAM support. | Single-user accounts in the current release. IAM planned for a future release. |
+| Storage classes | Multiple (Standard, IA, Glacier, etc.) | Single storage class. |
+| Regions | 30+ regions globally. | `eu-west-1` (additional regions planned). |

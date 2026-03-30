@@ -1,0 +1,50 @@
+---
+title: Quickstart - AWS CLI
+description: Upload your first object using the AWS CLI.
+---
+
+If you have the AWS CLI installed, you can start using Fil One in under 2 minutes.
+
+## 1. Install the AWS CLI
+
+```bash
+pip install awscli
+# or
+brew install awscli
+```
+
+## 2. Configure credentials
+
+```bash
+aws configure
+```
+
+Enter your Fil One access key and secret key when prompted. Set the region to `eu-west-1`.
+
+## 3. Create a bucket
+
+```bash
+aws s3 mb s3://my-first-bucket --endpoint-url https://s3.fil.one
+```
+
+## 4. Upload a file
+
+```bash
+aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://s3.fil.one
+```
+
+## 5. List objects
+
+```bash
+aws s3 ls s3://my-first-bucket/ --endpoint-url https://s3.fil.one
+```
+
+## 6. Download the file
+
+```bash
+aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://s3.fil.one
+```
+
+:::tip
+Tired of typing `--endpoint-url` every time? Set up a named profile in `~/.aws/config`. See [Authentication](/security/authentication) for details.
+:::

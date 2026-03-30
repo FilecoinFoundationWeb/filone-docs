@@ -1,0 +1,68 @@
+---
+title: Trial & Billing
+description: What is included in your free trial, and how billing works when you upgrade.
+---
+
+## Free trial
+
+Every new account starts with a 30-day free trial. No credit card is required.
+
+| Included | Amount |
+|----------|--------|
+| Storage | 1 TB (1,024 GB) |
+| Egress bandwidth | 2 TB |
+| API operations | Unlimited |
+| Object Lock | Fully available (30-day max retention during trial) |
+| Duration | 30 days from account creation |
+
+The trial gives you enough capacity to test real workloads, not just sample uploads. All features are available during the trial, including Object Lock with Compliance mode.
+
+## What happens when the trial ends
+
+| Phase | Days | What you can do |
+|-------|------|-----------------|
+| **Active trial** | 0-30 | Full access. Upload, download, manage data. |
+| **Grace period** | 31-37 | **Read-only.** Download your data and upgrade to a paid plan. No new uploads. |
+| **Expired** | 38+ | Account closed. All data permanently deleted. API keys disabled. |
+
+You will receive email reminders at:
+- **Day 15** -- Halfway through your trial, with an upgrade link.
+- **Day 25** -- 5 days left, with an upgrade link.
+- **Day 31** -- Trial ended, grace period started.
+- **Day 36** -- Data deletion in 48 hours.
+- **Day 38** -- Deletion confirmed.
+
+:::note
+You can upgrade to a paid plan at any time during the trial or grace period. Upgrading restores full access immediately.
+:::
+
+## Paid plan pricing
+
+<!-- PLACEHOLDER: Update with final pricing before launch -->
+
+| Component | Price | Notes |
+|-----------|-------|-------|
+| Storage | $6.00 / TiB / month | Billed based on average daily usage. |
+| Egress bandwidth | No charge | No egress fees. |
+| API operations | Included | No per-request charges. |
+| Object Lock | No additional charge | |
+
+Pricing is usage-based. You pay for what you store, measured as the average storage consumed across the billing period. There are no minimum commitments.
+
+## Payment
+
+Payments are processed through Stripe. You can add a credit card from **Settings > Billing** in the dashboard.
+
+- Invoices are generated monthly.
+- Usage details are visible in the dashboard under **Billing > Usage**.
+- Payment is due on receipt of invoice.
+
+## Cancellation
+
+You can cancel your paid plan at any time from the dashboard. After cancellation:
+
+1. Your account remains active through the end of the current billing period.
+2. At the end of the billing period, the account transitions to read-only.
+3. After a grace period, data is permanently deleted.
+
+If you have objects with active Object Lock retention, those objects cannot be deleted until retention expires, even after cancellation.

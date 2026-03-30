@@ -1,0 +1,76 @@
+---
+title: FAQ
+description: Frequently asked questions about Fil One.
+---
+
+
+  <details>
+<summary>Is Fil One S3-compatible?</summary>
+
+    Yes. Fil One provides an S3-compatible API. Any application, SDK, or tool that works with AWS S3 works with Fil One by changing the endpoint URL to `https://s3.fil.one`. See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.
+  </details>
+
+
+  <details>
+<summary>Do I need to know anything about blockchain or cryptocurrency?</summary>
+
+    No. Fil One is a standard cloud storage service. You sign up with an email, store data using familiar S3 tools, and pay with a credit card. The underlying storage infrastructure handles everything else transparently.
+  </details>
+
+
+  <details>
+<summary>Where is my data stored?</summary>
+
+    Your data is stored on a distributed network of storage providers. All data is encrypted at rest. Geographic data residency options are available -- contact support for details on region-specific storage.
+  </details>
+
+
+  <details>
+<summary>What happens when I delete an object?</summary>
+
+    The object disappears from your account immediately. There is no recycle bin or undo. If the object has an active Object Lock retention period, the delete request will be rejected until the retention expires.
+  </details>
+
+
+  <details>
+<summary>Can I migrate from AWS S3?</summary>
+
+    Yes. Because Fil One is S3-compatible, you can use standard migration tools like `aws s3 sync`, `rclone`, or any S3-compatible transfer utility. Point the tool at your Fil One endpoint and credentials. Detailed migration guides are coming soon.
+  </details>
+
+
+  <details>
+<summary>What is Object Lock?</summary>
+
+    Object Lock provides Write-Once-Read-Many (WORM) protection and is enabled on every bucket automatically. Once you set a retention policy, locked objects cannot be deleted or overwritten until the retention period expires. This is used for regulatory compliance, backup protection, and data governance. See the [Object Lock guide](/storage/object-lock) for details.
+  </details>
+
+
+  <details>
+<summary>Do you charge for egress?</summary>
+
+    No. There are no egress or data transfer fees.
+  </details>
+
+
+  <details>
+<summary>What is included in the free trial?</summary>
+
+    The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimited API operations. No credit card is required. See [Trial and Billing](/billing/trial) for details.
+  </details>
+
+
+  <details>
+<summary>Can I use Fil One for backups?</summary>
+
+    Yes. Fil One works with any backup tool that supports S3-compatible storage, including Veeam, Commvault, Restic, and Duplicati. Combined with Object Lock, you can create immutable backups that are protected from ransomware and accidental deletion.
+  </details>
+
+
+  <details>
+<summary>What durability guarantees do you offer?</summary>
+
+    Fil One is designed for high durability through distributed storage across multiple providers. Data is replicated and verifiably stored. Specific durability SLA details are available on request.
+  </details>
+
+

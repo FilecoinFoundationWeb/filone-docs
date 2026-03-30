@@ -1,0 +1,140 @@
+---
+title: Quickstart - SDK
+description: Upload your first object using Python, JavaScript, or Go.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
+Choose your language and follow along. Each example creates a bucket, uploads a file, and verifies the upload.
+
+<Tabs>
+  <TabItem value="python" label="Python">
+    ```bash
+    pip install boto3
+    ```
+
+    ```python
+    import boto3
+
+    s3 = boto3.client(
+        "s3",
+        endpoint_url="https://s3.fil.one",
+        aws_access_key_id="YOUR_ACCESS_KEY",
+        aws_secret_access_key="YOUR_SECRET_KEY",
+    )
+
+    # Create a bucket
+    s3.create_bucket(Bucket="my-sdk-bucket")
+
+    # Upload a file
+    s3.upload_file("my-file.txt", "my-sdk-bucket", "my-file.txt")
+
+    # Verify
+    response = s3.list_objects_v2(Bucket="my-sdk-bucket")
+    for obj in response.get("Contents", []):
+        print(f"{obj['Key']}  ({obj['Size']} bytes)")
+    ```
+  </TabItem>
+
+  <TabItem value="javascript" label="JavaScript">
+    ```bash
+    npm install @aws-sdk/client-s3
+    ```
+
+    ```javascript
+    import { S3Client, CreateBucketCommand, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+    import { readFileSync } from "fs";
+
+    const client = new S3Client({
+      endpoint: "https://s3.fil.one",
+      region: "eu-west-1",
+      credentials: {
+        accessKeyId: "YOUR_ACCESS_KEY",
+        secretAccessKey: "YOUR_SECRET_KEY",
+      },
+    });
+
+    // Create a bucket
+    await client.send(new CreateBucketCommand({ Bucket: "my-sdk-bucket" }));
+
+    // Upload a file
+    await client.send(new PutObjectCommand({
+      Bucket: "my-sdk-bucket",
+      Key: "my-file.txt",
+      Body: readFileSync("my-file.txt"),
+    }));
+
+    // Verify
+    const { Contents } = await client.send(
+      new ListObjectsV2Command({ Bucket: "my-sdk-bucket" })
+    );
+    Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
+    ```
+  </TabItem>
+
+  <TabItem value="go" label="Go">
+    ```bash
+    go get github.com/aws/aws-sdk-go-v2/service/s3
+    go get github.com/aws/aws-sdk-go-v2/credentials
+    ```
+
+    ```go
+    package main
+
+    import (
+        "context"
+        "fmt"
+        "os"
+        "strings"
+
+        "github.com/aws/aws-sdk-go-v2/aws"
+        "github.com/aws/aws-sdk-go-v2/credentials"
+        "github.com/aws/aws-sdk-go-v2/service/s3"
+    )
+
+    func main() {
+        client := s3.New(s3.Options{
+            BaseEndpoint: aws.String("https://s3.fil.one"),
+            Region:       "eu-west-1",
+            Credentials: credentials.NewStaticCredentialsProvider(
+                os.Getenv("FIL_ACCESS_KEY"),
+                os.Getenv("FIL_SECRET_KEY"),
+                "",
+            ),
+        })
+
+        ctx := context.Background()
+
+        // Create bucket
+        client.CreateBucket(ctx, &s3.CreateBucketInput{
+            Bucket: aws.String("my-sdk-bucket"),
+        })
+
+        // Upload
+        client.PutObject(ctx, &s3.PutObjectInput{
+            Bucket: aws.String("my-sdk-bucket"),
+            Key:    aws.String("hello.txt"),
+            Body:   strings.NewReader("Hello from Go!"),
+        })
+
+        // List
+        out, _ := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+            Bucket: aws.String("my-sdk-bucket"),
+        })
+        for _, obj := range out.Contents {
+            fmt.Printf("%s (%d bytes)\n", *obj.Key, *obj.Size)
+        }
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+For more detailed examples including Object Lock, multipart uploads, and presigned URLs, see the dedicated SDK pages:
+
+<div class="card-grid">
+  <a href="/sdk/python"><strong>Python</strong></a>
+  <a href="/sdk/javascript"><strong>JavaScript</strong></a>
+  <a href="/sdk/go"><strong>Go</strong></a>
+</div>

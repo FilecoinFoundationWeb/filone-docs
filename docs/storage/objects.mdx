@@ -1,0 +1,121 @@
+---
+title: Objects
+description: Uploading, downloading, and managing objects in your buckets.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
+Objects are the files you store in Fil One. Each object consists of the file data, a key (the file path/name), and metadata.
+
+## Uploading objects
+
+<Tabs>
+  <TabItem value="app" label="App">
+    1. Open a bucket from the dashboard.
+    2. Click **Upload**.
+    3. Select one or more files.
+    4. Objects appear in the file list immediately after upload completes.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    # Upload a single file
+    aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
+      --endpoint-url https://s3.fil.one
+
+    # Upload a directory
+    aws s3 sync ./local-folder s3://my-bucket/folder/ \
+      --endpoint-url https://s3.fil.one
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    # Upload a file
+    s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
+
+    # Upload with metadata
+    s3.put_object(
+        Bucket="my-bucket",
+        Key="report.pdf",
+        Body=open("report.pdf", "rb"),
+        ContentType="application/pdf",
+    )
+    ```
+  </TabItem>
+</Tabs>
+
+For files larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
+
+## Downloading objects
+
+<Tabs>
+  <TabItem value="app" label="App">
+    Click on any object in the file list and select **Download**.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3 cp s3://my-bucket/my-file.txt ./my-file.txt \
+      --endpoint-url https://s3.fil.one
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    s3.download_file("my-bucket", "my-file.txt", "my-file.txt")
+    ```
+  </TabItem>
+</Tabs>
+
+## Listing objects
+
+```bash
+aws s3 ls s3://my-bucket/ --endpoint-url https://s3.fil.one
+```
+
+For programmatic listing with pagination:
+
+```python
+paginator = s3.get_paginator("list_objects_v2")
+for page in paginator.paginate(Bucket="my-bucket"):
+    for obj in page.get("Contents", []):
+        print(obj["Key"], obj["Size"])
+```
+
+## Deleting objects
+
+<Tabs>
+  <TabItem value="app" label="App">
+    Select one or more objects and click **Delete**. Confirm by typing `delete`.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3 rm s3://my-bucket/my-file.txt \
+      --endpoint-url https://s3.fil.one
+    ```
+  </TabItem>
+</Tabs>
+
+Deletion is immediate and permanent. There is no recycle bin or soft-delete.
+
+**Objects with active Compliance retention cannot be deleted.** The request will return a `403 AccessDenied` error with the retention expiry date. See [Object Lock](/storage/object-lock) for details.
+
+## Presigned URLs
+
+Generate a temporary URL that grants time-limited access to a specific object without requiring API credentials.
+
+```python
+# Generate a download URL valid for 1 hour
+url = s3.generate_presigned_url(
+    "get_object",
+    Params={"Bucket": "my-bucket", "Key": "shared-report.pdf"},
+    ExpiresIn=3600,
+)
+print(url)
+```
+
+Presigned URLs work for both `GetObject` (downloads) and `PutObject` (uploads).

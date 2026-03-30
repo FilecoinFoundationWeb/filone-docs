@@ -1,0 +1,128 @@
+---
+title: Quickstart
+description: Go from zero to your first upload in under 5 minutes.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
+This guide walks you through creating an account, setting up credentials, and uploading your first object. Choose the path that fits your workflow.
+
+## 1. Create your account
+
+1. Go to [app.fil.one](https://app.fil.one) and sign up with your email or SSO.
+2. Verify your email address.
+3. You're in. No credit card needed — your 30-day free trial starts automatically.
+
+## 2. Create a bucket
+
+From the dashboard, click **Create Bucket**. Give it a name (lowercase, no spaces — same rules as S3) and choose your settings:
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| Region | `eu-west-1` | |
+| Object Lock | Always on | Every bucket has WORM compliance built in. |
+| Versioning | Always on | Required by Object Lock. |
+
+## 3. Upload your first object
+
+Choose your preferred method. The App requires no API key. For CLI and SDK access, go to **API & Keys** in the left menu and click **Create Key**. You'll get two values:
+
+- **Access Key ID** — identifies your account (safe to store in config)
+- **Secret Access Key** — authenticates your requests (treat like a password)
+
+:::note
+Your secret key is shown once. Copy it and store it securely. If you lose it, you'll need to generate a new key pair.
+:::
+
+<Tabs>
+  <TabItem value="app-ui" label="App">
+    1. Open your bucket from the dashboard.
+    2. Click **Upload** and select a file.
+    3. Your object appears in the file list immediately.
+    4. To download, click the file name and then click **Download**.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    Configure the CLI to point at Fil One:
+
+    ```bash
+    aws configure set aws_access_key_id YOUR_ACCESS_KEY
+    aws configure set aws_secret_access_key YOUR_SECRET_KEY
+    aws configure set default.region eu-west-1
+    ```
+
+    Upload a file:
+
+    ```bash
+    aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
+      --endpoint-url https://s3.fil.one
+    ```
+
+    Verify it's there:
+
+    ```bash
+    aws s3 ls s3://my-bucket/ --endpoint-url https://s3.fil.one
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    import boto3
+
+    s3 = boto3.client(
+        "s3",
+        endpoint_url="https://s3.fil.one",
+        aws_access_key_id="YOUR_ACCESS_KEY",
+        aws_secret_access_key="YOUR_SECRET_KEY",
+    )
+
+    # Upload a file
+    s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
+
+    # List objects to confirm
+    response = s3.list_objects_v2(Bucket="my-bucket")
+    for obj in response.get("Contents", []):
+        print(obj["Key"], obj["Size"])
+    ```
+  </TabItem>
+
+  <TabItem value="javascript-aws-sdk-v3" label="JavaScript (AWS SDK v3)">
+    ```javascript
+    import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+    import { readFileSync } from "fs";
+
+    const client = new S3Client({
+      endpoint: "https://s3.fil.one",
+      region: "eu-west-1",
+      credentials: {
+        accessKeyId: "YOUR_ACCESS_KEY",
+        secretAccessKey: "YOUR_SECRET_KEY",
+      },
+    });
+
+    // Upload a file
+    await client.send(new PutObjectCommand({
+      Bucket: "my-bucket",
+      Key: "my-file.txt",
+      Body: readFileSync("my-file.txt"),
+    }));
+
+    // List objects to confirm
+    const { Contents } = await client.send(
+      new ListObjectsV2Command({ Bucket: "my-bucket" })
+    );
+    Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
+    ```
+  </TabItem>
+</Tabs>
+
+## What's next
+
+<div class="card-grid">
+  <a href="/storage/object-lock"><strong>Object Lock</strong><span>Configure retention policies — enabled on every bucket by default.</span></a>
+  <a href="/reference/s3-compatibility"><strong>S3 Compatibility</strong><span>Full list of supported operations and headers.</span></a>
+  <a href="/sdk/overview"><strong>SDK Examples</strong><span>Detailed examples for Python, JavaScript, Go, and CLI.</span></a>
+  <a href="/billing/trial"><strong>Billing & Trial</strong><span>What's included in your trial and how to upgrade.</span></a>
+</div>

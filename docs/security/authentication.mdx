@@ -1,0 +1,148 @@
+---
+title: Authentication
+description: How to authenticate with the Fil One API using API keys and SigV4.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
+All API requests to Fil One must be authenticated using AWS Signature Version 4 (SigV4). This is the same authentication method used by AWS S3, so any S3-compatible SDK or tool handles it automatically.
+
+## API keys
+
+Each API key consists of two parts:
+
+| Component | Description | Example format |
+|-----------|-------------|----------------|
+| **Access Key ID** | Identifies your account. Included in request headers. | `FHXXXXXXXXXXXXXXXX` |
+| **Secret Access Key** | Signs your requests. Never sent over the wire. | `wJalrXUtnFEMI/K7MDENG/...` |
+
+Your secret key is displayed **once** at creation time. Store it securely. If you lose it, you will need to create a new key pair.
+
+## Creating an API key
+
+<Tabs>
+  <TabItem value="app" label="App">
+    1. Go to **API & Keys** in the left menu.
+    2. Click **Create Key**.
+    3. Give the key a descriptive name (e.g., `production-backend`, `local-dev`).
+    4. Copy both the Access Key ID and Secret Access Key immediately.
+  </TabItem>
+</Tabs>
+
+You can create multiple API keys per account. Each key has equal permissions -- scoped keys with per-bucket permissions are planned for a future release.
+
+## Revoking an API key
+
+Go to **API & Keys** in the left menu, find the key, and click **Delete**. The key is revoked immediately. Any in-flight requests signed with that key will fail.
+
+## Configuring your client
+
+### AWS CLI
+
+```bash
+aws configure
+```
+
+When prompted:
+
+```
+AWS Access Key ID: YOUR_ACCESS_KEY
+AWS Secret Access Key: YOUR_SECRET_KEY
+Default region name: eu-west-1
+Default output format: json
+```
+
+Then pass `--endpoint-url https://s3.fil.one` on every command, or set it as a profile default:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://s3.fil.one
+region = eu-west-1
+
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+Then use `--profile filone` on your commands.
+
+### Python (boto3)
+
+```python
+import boto3
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://s3.fil.one",
+    aws_access_key_id="YOUR_ACCESS_KEY",
+    aws_secret_access_key="YOUR_SECRET_KEY",
+    region_name="eu-west-1",
+)
+```
+
+For production use, load credentials from environment variables or AWS credential files rather than hardcoding them:
+
+```python
+import boto3
+import os
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://s3.fil.one",
+    aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
+)
+```
+
+### JavaScript (AWS SDK v3)
+
+```javascript
+import { S3Client } from "@aws-sdk/client-s3";
+
+const client = new S3Client({
+  endpoint: "https://s3.fil.one",
+  region: "eu-west-1",
+  credentials: {
+    accessKeyId: process.env.FIL_ACCESS_KEY,
+    secretAccessKey: process.env.FIL_SECRET_KEY,
+  },
+});
+```
+
+### Go
+
+```go
+package main
+
+import (
+    "context"
+    "os"
+
+    "github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/credentials"
+    "github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+func newClient() *s3.Client {
+    return s3.New(s3.Options{
+        BaseEndpoint: aws.String("https://s3.fil.one"),
+        Region:       "eu-west-1",
+        Credentials: credentials.NewStaticCredentialsProvider(
+            os.Getenv("FIL_ACCESS_KEY"),
+            os.Getenv("FIL_SECRET_KEY"),
+            "",
+        ),
+    })
+}
+```
+
+## Security best practices
+
+- **Do not hardcode credentials** in source code. Use environment variables, a secrets manager, or credential files.
+- **Create separate keys** for different environments (development, staging, production).
+- **Rotate keys periodically.** Delete old keys after deploying new ones.
+- **Revoke keys immediately** if you suspect they have been compromised.

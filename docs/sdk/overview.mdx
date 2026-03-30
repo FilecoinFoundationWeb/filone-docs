@@ -1,0 +1,47 @@
+---
+title: SDKs & Tools
+description: Use any S3-compatible SDK or tool with Fil One.
+---
+
+Fil One works with any tool or library that supports the S3 API. You do not need a custom SDK -- configure your existing S3 tools to point at `https://s3.fil.one` and authenticate with your API keys.
+
+## Recommended tools
+
+| Tool | Language / Platform | Install |
+|------|-------------------|---------|
+| AWS CLI | Command line | `pip install awscli` or `brew install awscli` |
+| boto3 | Python | `pip install boto3` |
+| AWS SDK v3 | JavaScript / TypeScript | `npm install @aws-sdk/client-s3` |
+| aws-sdk-go-v2 | Go | `go get github.com/aws/aws-sdk-go-v2/service/s3` |
+| rclone | Command line (multi-platform) | [rclone.org/install](https://rclone.org/install/) |
+| Cyberduck | macOS / Windows GUI | [cyberduck.io](https://cyberduck.io) |
+
+## Connection details
+
+Every SDK and tool needs the same three things:
+
+| Parameter | Value |
+|-----------|-------|
+| Endpoint | `https://s3.fil.one` |
+| Region | `eu-west-1` |
+| Credentials | Your Access Key ID and Secret Access Key from the dashboard |
+
+## Quick setup guides
+
+<div class="card-grid">
+  <a href="/sdk/python"><strong>Python (boto3)</strong><span>Full examples for upload, download, Object Lock, and multipart.</span></a>
+  <a href="/sdk/javascript"><strong>JavaScript</strong><span>AWS SDK v3 examples for Node.js and browser.</span></a>
+  <a href="/sdk/go"><strong>Go</strong><span>aws-sdk-go-v2 examples for server-side applications.</span></a>
+  <a href="/sdk/cli"><strong>AWS CLI</strong><span>Command-line reference for common operations.</span></a>
+</div>
+
+## Third-party tools
+
+Any S3-compatible tool works with Fil One. Community-tested tools include:
+
+- **rclone** -- Sync files between local storage and Fil One. Configure with `rclone config` using the S3 provider type.
+- **Cyberduck** -- GUI file browser for macOS and Windows. Add a new S3 connection with the Fil One endpoint.
+- **s3cmd** -- Command-line tool. Configure with `s3cmd --configure` and set the host to `s3.fil.one`.
+- **MinIO Client (mc)** -- `mc alias set filone https://s3.fil.one YOUR_KEY YOUR_SECRET`
+
+If you use a tool not listed here and run into compatibility issues, contact support.

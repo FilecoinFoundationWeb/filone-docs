@@ -1,0 +1,53 @@
+---
+title: Limits & Quotas
+description: Service limits, quotas, and constraints.
+---
+
+## Account limits
+
+| Limit | Trial | Paid |
+|-------|-------|------|
+| Storage | 1 TB | No limit |
+| Egress bandwidth | 2 TB / month | No limit |
+| API operations | Unlimited | Unlimited |
+| Buckets per account | 100 | 1,000 |
+| Object Lock max retention | 30 days | 10 years |
+
+<!-- PLACEHOLDER: Confirm bucket limits with engineering -->
+
+## Object limits
+
+| Limit | Value |
+|-------|-------|
+| Maximum object size | 5 TB |
+| Maximum object size (single PUT) | 5 GB |
+| Maximum parts per multipart upload | 10,000 |
+| Minimum part size (multipart) | 5 MB |
+| Maximum part size (multipart) | 5 GB |
+| Maximum object key length | 1,024 bytes |
+| Maximum metadata size per object | 2 KB |
+
+For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
+
+## API rate limits
+
+<!-- PLACEHOLDER: Confirm rate limits with engineering before launch -->
+
+| Operation type | Limit |
+|---------------|-------|
+| PUT / POST / DELETE | 3,500 requests per second per prefix |
+| GET / HEAD | 5,500 requests per second per prefix |
+
+If you are consistently hitting rate limits, contact support to discuss higher thresholds.
+
+## Naming constraints
+
+**Bucket names:**
+- 3-63 characters
+- Lowercase letters, numbers, hyphens
+- Must start and end with a letter or number
+- Globally unique
+
+**Object keys:**
+- Up to 1,024 bytes (UTF-8)
+- Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility

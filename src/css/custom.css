@@ -1,0 +1,62 @@
+:root {
+  --ifm-color-primary: #0d6efd;
+  --ifm-color-primary-dark: #0050c8;
+  --ifm-color-primary-darker: #004ab8;
+  --ifm-color-primary-darkest: #003d97;
+  --ifm-color-primary-light: #4d9aff;
+  --ifm-color-primary-lighter: #6daeff;
+  --ifm-color-primary-lightest: #99c7ff;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-font-family-base: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #4d9aff;
+  --ifm-color-primary-dark: #0d6efd;
+  --ifm-color-primary-darker: #0050c8;
+  --ifm-color-primary-darkest: #003d97;
+  --ifm-color-primary-light: #6daeff;
+  --ifm-color-primary-lighter: #99c7ff;
+  --ifm-color-primary-lightest: #c2dfff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Clean up table styling */
+table {
+  display: table;
+  width: 100%;
+}
+
+/* Card grid for link groups */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.card-grid a {
+  display: block;
+  padding: 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.card-grid a:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-grid a strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--ifm-color-primary);
+}
+
+.card-grid a span {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+}

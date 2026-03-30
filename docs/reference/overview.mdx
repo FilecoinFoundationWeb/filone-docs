@@ -1,0 +1,36 @@
+---
+title: API Reference
+description: Endpoint, authentication, and request format for the Fil One S3 API.
+---
+
+## Base endpoint
+
+```
+https://s3.fil.one
+```
+
+All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4).
+
+## Request format
+
+Fil One accepts standard S3 API requests. Use path-style or virtual-hosted-style addressing:
+
+```
+# Path style
+https://s3.fil.one/my-bucket/my-key
+
+# Virtual-hosted style
+https://my-bucket.s3.fil.one/my-key
+```
+
+## Authentication
+
+Include SigV4 authentication headers in every request. All S3-compatible SDKs handle this automatically when you provide your access key and secret key. See [Authentication](/security/authentication) for setup instructions.
+
+## Response format
+
+Responses follow standard S3 conventions -- XML for list and error responses, raw bytes for object data. All responses include standard S3 headers (`x-amz-request-id`, `ETag`, `Content-Length`, etc.).
+
+## Supported operations
+
+See the [S3 Compatibility](/reference/s3-compatibility) page for the full list of supported operations.

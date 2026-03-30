@@ -1,0 +1,94 @@
+---
+title: Buckets
+description: Creating, configuring, and managing storage buckets.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+
+Buckets are containers for your objects. Every object in Fil One lives inside a bucket.
+
+## Bucket naming rules
+
+Bucket names must be:
+- Between 3 and 63 characters
+- Lowercase letters, numbers, and hyphens only
+- Must start and end with a letter or number
+- Globally unique across all Fil One accounts
+
+These are the same naming rules as AWS S3.
+
+## Creating a bucket
+
+<Tabs>
+  <TabItem value="app" label="App">
+    1. From the dashboard, click **Create Bucket**.
+    2. Enter a bucket name.
+    3. Choose your region.
+    4. Click **Create**.
+
+    Every bucket is created with Object Lock and versioning enabled automatically.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3api create-bucket \
+      --bucket my-bucket \
+      --endpoint-url https://s3.fil.one
+    ```
+
+    Object Lock and versioning are enabled automatically on every bucket.
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    s3.create_bucket(Bucket="my-bucket")
+    ```
+
+    Object Lock and versioning are enabled automatically on every bucket.
+  </TabItem>
+</Tabs>
+
+## Listing buckets
+
+<Tabs>
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3 ls --endpoint-url https://s3.fil.one
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    response = s3.list_buckets()
+    for bucket in response["Buckets"]:
+        print(bucket["Name"], bucket["CreationDate"])
+    ```
+  </TabItem>
+</Tabs>
+
+## Deleting a bucket
+
+Fil One supports cascade deletion -- you do not need to empty a bucket before deleting it. All objects in the bucket are permanently removed as part of the delete operation.
+
+:::warning
+Bucket deletion is permanent and cannot be undone. You will be asked to type the bucket name to confirm.
+:::
+
+**If any object has active Compliance retention**, the bucket cannot be deleted until all retention periods have expired.
+
+<Tabs>
+  <TabItem value="app" label="App">
+    1. Select the bucket from the dashboard.
+    2. Click **Delete Bucket**.
+    3. Type the bucket name to confirm.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    # Delete the bucket and all its contents
+    aws s3 rb s3://my-bucket --force --endpoint-url https://s3.fil.one
+    ```
+  </TabItem>
+</Tabs>
