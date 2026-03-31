@@ -1,8 +1,226 @@
 ---
-title: "Go"
-description: "Coming soon."
+title: Go (aws-sdk-go-v2)
+description: Using the AWS SDK for Go v2 with Fil One.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+Fil One is fully compatible with [aws-sdk-go-v2](https://github.com/aws/aws-sdk-go-v2). Configure the client to point at the Fil One endpoint and use the standard S3 API.
+
+## Installation
+
+```bash
+go get github.com/aws/aws-sdk-go-v2/aws
+go get github.com/aws/aws-sdk-go-v2/credentials
+go get github.com/aws/aws-sdk-go-v2/service/s3
+go get github.com/aws/aws-sdk-go-v2/service/s3/types
+```
+
+## Client configuration
+
+```go
+package main
+
+import (
+    "os"
+
+    "github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/credentials"
+    "github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+func newClient() *s3.Client {
+    return s3.New(s3.Options{
+        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        Region:       "eu-west-1",
+        Credentials: credentials.NewStaticCredentialsProvider(
+            os.Getenv("FIL_ACCESS_KEY"),
+            os.Getenv("FIL_SECRET_KEY"),
+            "",
+        ),
+        UsePathStyle: true,
+    })
+}
+```
+
+Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
+
+## Core operations
+
+### Create a bucket
+
+```go
+_, err := client.CreateBucket(ctx, &s3.CreateBucketInput{
+    Bucket: aws.String("my-bucket"),
+})
+```
+
+Object Lock and versioning are enabled automatically on every bucket.
+
+### Upload an object
+
+```go
+import (
+    "bytes"
+    "os"
+)
+
+// Upload bytes
+_, err := client.PutObject(ctx, &s3.PutObjectInput{
+    Bucket:      aws.String("my-bucket"),
+    Key:         aws.String("data/file.json"),
+    Body:        bytes.NewReader([]byte(`{"key":"value"}`)),
+    ContentType: aws.String("application/json"),
+})
+
+// Upload a file
+f, _ := os.Open("report.pdf")
+defer f.Close()
+
+_, err = client.PutObject(ctx, &s3.PutObjectInput{
+    Bucket:      aws.String("my-bucket"),
+    Key:         aws.String("reports/report.pdf"),
+    Body:        f,
+    ContentType: aws.String("application/pdf"),
+})
+```
+
+### Download an object
+
+```go
+import (
+    "io"
+    "os"
+)
+
+result, err := client.GetObject(ctx, &s3.GetObjectInput{
+    Bucket: aws.String("my-bucket"),
+    Key:    aws.String("reports/report.pdf"),
+})
+if err != nil {
+    // handle error
+}
+defer result.Body.Close()
+
+out, _ := os.Create("local-report.pdf")
+defer out.Close()
+io.Copy(out, result.Body)
+```
+
+### List objects
+
+```go
+paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
+    Bucket: aws.String("my-bucket"),
+})
+
+for paginator.HasMorePages() {
+    page, err := paginator.NextPage(ctx)
+    if err != nil {
+        // handle error
+    }
+    for _, obj := range page.Contents {
+        fmt.Println(*obj.Key, obj.Size)
+    }
+}
+```
+
+### Delete an object
+
+```go
+_, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
+    Bucket: aws.String("my-bucket"),
+    Key:    aws.String("reports/report.pdf"),
+})
+```
+
+## Presigned URLs
+
+```go
+import "github.com/aws/aws-sdk-go-v2/service/s3"
+
+presigner := s3.NewPresignClient(client)
+
+// Download URL valid for 1 hour
+downloadReq, err := presigner.PresignGetObject(ctx, &s3.GetObjectInput{
+    Bucket: aws.String("my-bucket"),
+    Key:    aws.String("reports/report.pdf"),
+}, s3.WithPresignExpires(time.Hour))
+
+// Upload URL valid for 15 minutes
+uploadReq, err := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
+    Bucket: aws.String("my-bucket"),
+    Key:    aws.String("uploads/new-file.txt"),
+}, s3.WithPresignExpires(15*time.Minute))
+```
+
+## Object Lock
+
+```go
+import (
+    "time"
+    "github.com/aws/aws-sdk-go-v2/service/s3/types"
+)
+
+retainUntil := time.Now().UTC().Add(365 * 24 * time.Hour)
+
+// Set retention when uploading
+_, err := client.PutObject(ctx, &s3.PutObjectInput{
+    Bucket:                    aws.String("my-bucket"),
+    Key:                       aws.String("archive/record.pdf"),
+    Body:                      fileReader,
+    ObjectLockMode:            types.ObjectLockModeCompliance,
+    ObjectLockRetainUntilDate: &retainUntil,
+})
+
+// Check retention
+result, err := client.GetObjectRetention(ctx, &s3.GetObjectRetentionInput{
+    Bucket: aws.String("my-bucket"),
+    Key:    aws.String("archive/record.pdf"),
+})
+fmt.Println(result.Retention.RetainUntilDate)
+```
+
+## Object versions
+
+```go
+// List all versions
+paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
+    Bucket: aws.String("my-bucket"),
+    Prefix: aws.String("reports/report.pdf"),
+})
+
+for paginator.HasMorePages() {
+    page, _ := paginator.NextPage(ctx)
+    for _, v := range page.Versions {
+        fmt.Println(*v.VersionId, v.LastModified)
+    }
+}
+
+// Download a specific version
+result, err := client.GetObject(ctx, &s3.GetObjectInput{
+    Bucket:    aws.String("my-bucket"),
+    Key:       aws.String("reports/report.pdf"),
+    VersionId: aws.String("YOUR_VERSION_ID"),
+})
+```
+
+## Error handling
+
+```go
+import (
+    "errors"
+    "github.com/aws/smithy-go"
+)
+
+_, err := client.GetObject(ctx, &s3.GetObjectInput{
+    Bucket: aws.String("my-bucket"),
+    Key:    aws.String("missing.txt"),
+})
+if err != nil {
+    var apiErr smithy.APIError
+    if errors.As(err, &apiErr) {
+        fmt.Println(apiErr.ErrorCode(), apiErr.ErrorMessage())
+    }
+}
+```
+
+See the [Error Reference](/reference/errors) for a full list of error codes.

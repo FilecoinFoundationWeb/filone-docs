@@ -3,74 +3,132 @@ title: FAQ
 description: Frequently asked questions about Fil One.
 ---
 
+<div className="faq">
 
-  <details>
+<details>
 <summary>Is Fil One S3-compatible?</summary>
+<div>
 
-    Yes. Fil One provides an S3-compatible API. Any application, SDK, or tool that works with AWS S3 works with Fil One by changing the endpoint URL to `https://s3.fil.one`. See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.
-  </details>
+Yes. Fil One provides an S3-compatible API. Any application, SDK, or tool that works with AWS S3 works with Fil One by changing the endpoint URL to `https://eu-west-1.s3.fil.one`. See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>Do I need to know anything about blockchain or cryptocurrency?</summary>
+<div>
 
-    No. Fil One is a standard cloud storage service. You sign up with an email, store data using familiar S3 tools, and pay with a credit card. The underlying storage infrastructure handles everything else transparently.
-  </details>
+No. Fil One is a standard cloud storage service. You sign up with an email, store data using familiar S3 tools, and pay with a credit card. The underlying storage infrastructure handles everything else transparently.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>Where is my data stored?</summary>
+<div>
 
-    Your data is stored on a distributed network of storage providers. All data is encrypted at rest. Geographic data residency options are available -- contact support for details on region-specific storage.
-  </details>
+Your data is stored on a distributed network of storage providers. All data is encrypted at rest. Geographic data residency options are available — contact support for details on region-specific storage.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>What happens when I delete an object?</summary>
+<div>
 
-    The object disappears from your account immediately. There is no recycle bin or undo. If the object has an active Object Lock retention period, the delete request will be rejected until the retention expires.
-  </details>
+The object disappears from your account immediately. There is no recycle bin or undo. If the object has an active Object Lock retention period, the delete request will be rejected until the retention expires.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>Can I migrate from AWS S3?</summary>
+<div>
 
-    Yes. Because Fil One is S3-compatible, you can use standard migration tools like `aws s3 sync`, `rclone`, or any S3-compatible transfer utility. Point the tool at your Fil One endpoint and credentials. Detailed migration guides are coming soon.
-  </details>
+Yes. Because Fil One is S3-compatible, you can use standard migration tools like `aws s3 sync`, `rclone`, or any S3-compatible transfer utility. Point the tool at your Fil One endpoint and credentials. Detailed migration guides are coming soon.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>What is Object Lock?</summary>
+<div>
 
-    Object Lock provides Write-Once-Read-Many (WORM) protection and is enabled on every bucket automatically. Once you set a retention policy, locked objects cannot be deleted or overwritten until the retention period expires. This is used for regulatory compliance, backup protection, and data governance. See the [Object Lock guide](/storage/object-lock) for details.
-  </details>
+Object Lock provides Write-Once-Read-Many (WORM) protection and is enabled on every bucket automatically. Once you set a retention policy, locked objects cannot be deleted or overwritten until the retention period expires. This is used for regulatory compliance, backup protection, and data governance. See the [Object Lock guide](/storage/object-lock) for details.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>Do you charge for egress?</summary>
+<div>
 
-    No. There are no egress or data transfer fees.
-  </details>
+No. There are no egress or data transfer fees.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>What is included in the free trial?</summary>
+<div>
 
-    The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimited API operations. No credit card is required. See [Trial and Billing](/billing/trial) for details.
-  </details>
+The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimited API operations. No credit card is required. See [Trial and Billing](/billing/trial) for details.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>Can I use Fil One for backups?</summary>
+<div>
 
-    Yes. Fil One works with any backup tool that supports S3-compatible storage, including Veeam, Commvault, Restic, and Duplicati. Combined with Object Lock, you can create immutable backups that are protected from ransomware and accidental deletion.
-  </details>
+Yes. Fil One works with any backup tool that supports S3-compatible storage, including Veeam, Commvault, Restic, and Duplicati. Combined with Object Lock, you can create immutable backups that are protected from ransomware and accidental deletion.
 
+</div>
+</details>
 
-  <details>
+<details>
 <summary>What durability guarantees do you offer?</summary>
+<div>
 
-    Fil One is designed for high durability through distributed storage across multiple providers. Data is replicated and verifiably stored. Specific durability SLA details are available on request.
-  </details>
+Fil One is designed for high durability through distributed storage across multiple providers. Data is replicated and verifiably stored. Specific durability SLA details are available on request.
 
+</div>
+</details>
 
+<details>
+<summary>Can I set a retention period at the bucket level?</summary>
+<div>
+
+Yes. You can configure a default retention policy on a bucket so that every object uploaded to it automatically inherits that retention period. See the [Object Lock](/storage/object-lock) guide for instructions on setting bucket-level defaults.
+
+</div>
+</details>
+
+<details>
+<summary>Can multiple users access the same account?</summary>
+<div>
+
+Currently, Fil One accounts are single-user. Each account has one login and one set of API keys. Multi-user organization accounts with role-based access are planned for a future release. In the meantime, you can create multiple API keys scoped to specific buckets and permissions to share limited access with other services or team members.
+
+</div>
+</details>
+
+<details>
+<summary>How does Fil One verify that my data hasn't been tampered with?</summary>
+<div>
+
+Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs — called Proof of Replication (PoRep) and Proof of Spacetime (PoSt) — to prove they are holding your data correctly over time. Each stored object is identified by a content identifier (CID), a cryptographic fingerprint of the data. If the data changes, the CID changes. This makes data integrity independently verifiable, not just claimed by a central authority.
+
+</div>
+</details>
+
+<details>
+<summary>What happens to my data if I delete it?</summary>
+<div>
+
+When you delete an object or bucket, it is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model. The data is inaccessible through Fil One from the moment of deletion — the Filecoin deal expiration is an infrastructure detail, not a user-facing state.
+
+</div>
+</details>
+
+</div>

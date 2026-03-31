@@ -49,7 +49,7 @@ You can set a default retention period on the bucket. Any object uploaded to the
           }
         }
       }' \
-      --endpoint-url https://s3.fil.one
+      --endpoint-url https://eu-west-1.s3.fil.one
     ```
   </TabItem>
 
@@ -80,7 +80,7 @@ aws s3api put-object-retention \
   --bucket my-compliance-bucket \
   --key important-record.pdf \
   --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-  --endpoint-url https://s3.fil.one
+  --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 **Retention can be extended but never shortened.** You can move the `RetainUntilDate` further into the future, but you cannot bring it closer. Attempting to shorten a Compliance mode retention period returns a `403 AccessDenied` error.
@@ -91,7 +91,7 @@ aws s3api put-object-retention \
 aws s3api get-object-retention \
   --bucket my-compliance-bucket \
   --key important-record.pdf \
-  --endpoint-url https://s3.fil.one
+  --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 Returns:

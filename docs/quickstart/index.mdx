@@ -23,11 +23,13 @@ From the dashboard, click **Create Bucket**. Give it a name (lowercase, no space
 |---------|-------|-------|
 | Region | `eu-west-1` | |
 | Object Lock | Always on | Every bucket has WORM compliance built in. |
-| Versioning | Always on | Required by Object Lock. |
+| Encryption | Always on | All data is encrypted at rest by default. |
+
+You will also see an **API key** section during bucket creation. You can create a new API key here or configure permissions for an existing one. If you plan to use the CLI or SDK, set up your key at this step — otherwise skip it and go to **API Keys** in the left menu later.
 
 ## 3. Upload your first object
 
-Choose your preferred method. The App requires no API key. For CLI and SDK access, go to **API & Keys** in the left menu and click **Create Key**. You'll get two values:
+Choose your preferred method. The App requires no API key. For CLI and SDK access, go to **API Keys** in the left menu and click **Create Key**. You'll get two values:
 
 - **Access Key ID** — identifies your account (safe to store in config)
 - **Secret Access Key** — authenticates your requests (treat like a password)
@@ -41,7 +43,7 @@ Your secret key is shown once. Copy it and store it securely. If you lose it, yo
     1. Open your bucket from the dashboard.
     2. Click **Upload** and select a file.
     3. Your object appears in the file list immediately.
-    4. To download, click the file name and then click **Download**.
+    4. To download: click the file name to open its detail page, then select **Download** from the **"..."** menu. You can also click the download icon directly in the file list row.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -57,13 +59,13 @@ Your secret key is shown once. Copy it and store it securely. If you lose it, yo
 
     ```bash
     aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-      --endpoint-url https://s3.fil.one
+      --endpoint-url https://eu-west-1.s3.fil.one
     ```
 
     Verify it's there:
 
     ```bash
-    aws s3 ls s3://my-bucket/ --endpoint-url https://s3.fil.one
+    aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
     ```
   </TabItem>
 
@@ -73,7 +75,7 @@ Your secret key is shown once. Copy it and store it securely. If you lose it, yo
 
     s3 = boto3.client(
         "s3",
-        endpoint_url="https://s3.fil.one",
+        endpoint_url="https://eu-west-1.s3.fil.one",
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
     )
@@ -94,7 +96,7 @@ Your secret key is shown once. Copy it and store it securely. If you lose it, yo
     import { readFileSync } from "fs";
 
     const client = new S3Client({
-      endpoint: "https://s3.fil.one",
+      endpoint: "https://eu-west-1.s3.fil.one",
       region: "eu-west-1",
       credentials: {
         accessKeyId: "YOUR_ACCESS_KEY",

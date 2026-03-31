@@ -1,0 +1,150 @@
+---
+title: Versioning
+description: How versioning works in Fil One and how to work with object versions.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Versioning is **always enabled** on every Fil One bucket. It cannot be suspended or disabled. Every time you upload an object with the same key, Fil One creates a new version rather than overwriting the previous one.
+
+This means your data is always recoverable — you can retrieve any previous state of an object using its version ID.
+
+## How versions work
+
+When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object, Fil One places a **delete marker** at the current version — the object appears deleted, but all previous versions are still retrievable.
+
+Because versioning is always on and cannot be suspended, this behavior applies to all objects in all buckets.
+
+## Billing implications
+
+Every version is a full copy of the object and is billed as stored storage. If you upload and then overwrite 100 files, you have 200 billable object versions consuming storage. Consider cleaning up old versions if storage cost is a concern. See [Pricing](/billing/pricing).
+
+## Listing versions
+
+<Tabs>
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    # List all versions in a bucket
+    aws s3api list-object-versions \
+      --bucket my-bucket \
+      --profile filone
+
+    # List versions for a specific object
+    aws s3api list-object-versions \
+      --bucket my-bucket \
+      --prefix reports/q1.pdf \
+      --profile filone
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    paginator = s3.get_paginator("list_object_versions")
+    for page in paginator.paginate(Bucket="my-bucket", Prefix="reports/q1.pdf"):
+        for version in page.get("Versions", []):
+            print(version["VersionId"], version["LastModified"], version["Size"])
+        for marker in page.get("DeleteMarkers", []):
+            print("DELETE MARKER", marker["VersionId"], marker["LastModified"])
+    ```
+  </TabItem>
+</Tabs>
+
+## Retrieving a specific version
+
+<Tabs>
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3api get-object \
+      --bucket my-bucket \
+      --key reports/q1.pdf \
+      --version-id YOUR_VERSION_ID \
+      q1-old.pdf \
+      --profile filone
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    s3.download_file(
+        "my-bucket",
+        "reports/q1.pdf",
+        "q1-old.pdf",
+        ExtraArgs={"VersionId": "YOUR_VERSION_ID"},
+    )
+    ```
+  </TabItem>
+</Tabs>
+
+## Restoring a previous version
+
+To "restore" a previous version, copy it back to the same key. This creates a new version that is identical to the old one, making it the current version.
+
+<Tabs>
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3api copy-object \
+      --bucket my-bucket \
+      --copy-source "my-bucket/reports/q1.pdf?versionId=OLD_VERSION_ID" \
+      --key reports/q1.pdf \
+      --profile filone
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    s3.copy_object(
+        Bucket="my-bucket",
+        CopySource={"Bucket": "my-bucket", "Key": "reports/q1.pdf", "VersionId": "OLD_VERSION_ID"},
+        Key="reports/q1.pdf",
+    )
+    ```
+  </TabItem>
+</Tabs>
+
+## Delete markers
+
+When you delete an object without specifying a version ID, Fil One places a **delete marker** at the top of the version stack. The object appears deleted in standard listings and `GetObject` returns `NoSuchKey`. The previous versions remain intact and can be retrieved by version ID.
+
+To permanently delete a specific version (including a delete marker), specify the version ID in the delete request:
+
+<Tabs>
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    # Delete a specific version permanently
+    aws s3api delete-object \
+      --bucket my-bucket \
+      --key reports/q1.pdf \
+      --version-id YOUR_VERSION_ID \
+      --profile filone
+
+    # Remove a delete marker (restores the object to visible)
+    aws s3api delete-object \
+      --bucket my-bucket \
+      --key reports/q1.pdf \
+      --version-id DELETE_MARKER_VERSION_ID \
+      --profile filone
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    # Delete a specific version permanently
+    s3.delete_object(
+        Bucket="my-bucket",
+        Key="reports/q1.pdf",
+        VersionId="YOUR_VERSION_ID",
+    )
+    ```
+  </TabItem>
+</Tabs>
+
+:::warning
+Permanently deleting a version cannot be undone. If the version has an active Object Lock Compliance retention, the delete request will be rejected.
+:::
+
+## Versioning and Object Lock
+
+Object Lock retention applies to individual versions. When you set a retention period on an object, it applies to that specific version. Older versions retain their own retention settings independently. You cannot delete a version that is under active Compliance retention, regardless of whether a delete marker exists above it.
+
+See [Object Lock](/storage/object-lock) for details.

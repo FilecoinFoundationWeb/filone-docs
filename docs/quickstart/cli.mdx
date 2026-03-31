@@ -24,27 +24,47 @@ Enter your Fil One access key and secret key when prompted. Set the region to `e
 ## 3. Create a bucket
 
 ```bash
-aws s3 mb s3://my-first-bucket --endpoint-url https://s3.fil.one
+aws s3 mb s3://my-first-bucket --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 ## 4. Upload a file
 
 ```bash
-aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://s3.fil.one
+aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 ## 5. List objects
 
 ```bash
-aws s3 ls s3://my-first-bucket/ --endpoint-url https://s3.fil.one
+aws s3 ls s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 ## 6. Download the file
 
 ```bash
-aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://s3.fil.one
+aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 :::tip
-Tired of typing `--endpoint-url` every time? Set up a named profile in `~/.aws/config`. See [Authentication](/security/authentication) for details.
+Tired of typing `--endpoint-url` every time? Set up a named profile so you never have to:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://eu-west-1.s3.fil.one
+region = eu-west-1
+```
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+Then use `--profile filone` instead of `--endpoint-url` on every command:
+
+```bash
+aws s3 ls --profile filone
+```
 :::

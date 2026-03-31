@@ -20,7 +20,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
 
     s3 = boto3.client(
         "s3",
-        endpoint_url="https://s3.fil.one",
+        endpoint_url="https://eu-west-1.s3.fil.one",
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
     )
@@ -48,7 +48,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
     import { readFileSync } from "fs";
 
     const client = new S3Client({
-      endpoint: "https://s3.fil.one",
+      endpoint: "https://eu-west-1.s3.fil.one",
       region: "eu-west-1",
       credentials: {
         accessKeyId: "YOUR_ACCESS_KEY",
@@ -96,7 +96,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
 
     func main() {
         client := s3.New(s3.Options{
-            BaseEndpoint: aws.String("https://s3.fil.one"),
+            BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
             Region:       "eu-west-1",
             Credentials: credentials.NewStaticCredentialsProvider(
                 os.Getenv("FIL_ACCESS_KEY"),

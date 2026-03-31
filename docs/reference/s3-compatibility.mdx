@@ -8,7 +8,7 @@ Fil One provides an S3-compatible API. If your application works with AWS S3, it
 ## Endpoint
 
 ```
-https://s3.fil.one
+https://eu-west-1.s3.fil.one
 ```
 
 <!-- PLACEHOLDER: Confirm final endpoint URL before launch -->
@@ -21,7 +21,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | `https://s3.fil.one` |
+| Endpoint | `https://eu-west-1.s3.fil.one` |
 | Region | `eu-west-1` |
 | Signature version | SigV4 |
 | Path style | Supported |
@@ -34,7 +34,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | `CreateBucket` | ✅ Supported | |
-| `DeleteBucket` | ✅ Supported | Cascade-deletes all objects in the bucket. |
+| `DeleteBucket` | ✅ Supported | Bucket must be empty first. Returns `BucketNotEmpty` if objects remain. |
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
 | `PutBucketVersioning` | ✅ Supported | Always enabled. Cannot be suspended. |
@@ -113,8 +113,11 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|----------------|
-| Bucket deletion | Requires bucket to be empty first. | Cascade-deletes all objects (with confirmation). Blocked if any object has active Compliance retention. |
-| Object Lock enablement | Can be enabled at bucket creation. | Always enabled on every bucket. |
+| Bucket deletion | Requires bucket to be empty first. | Same — bucket must be empty. Returns `BucketNotEmpty` if objects remain. Blocked if any object has active Compliance retention. |
+| Object Lock enablement | Can be enabled at bucket creation. | Always enabled on every bucket. Cannot be disabled. |
+| Versioning | Opt-in. Can be enabled, suspended, or disabled. | Always enabled on every bucket. Cannot be suspended or disabled. |
 | IAM policies | Full IAM support. | Single-user accounts in the current release. IAM planned for a future release. |
+| Public access | Configurable public bucket policies and ACLs. | No public bucket ACLs or public access settings. All access requires authentication. |
+| Lifecycle rules | Supported (expiration, transitions, etc.). | Not supported in the current release. Planned for a future release. Affects common archival and cleanup workflows. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.) | Single storage class. |
 | Regions | 30+ regions globally. | `eu-west-1` (additional regions planned). |

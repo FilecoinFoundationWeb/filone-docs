@@ -1,8 +1,175 @@
 ---
-title: "Cli"
-description: "Coming soon."
+title: AWS CLI
+description: Using the AWS CLI with Fil One for object storage operations.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+The [AWS CLI](https://aws.amazon.com/cli/) works with Fil One out of the box. Install it, configure your credentials, and use `--endpoint-url https://eu-west-1.s3.fil.one` on every command — or set it as a profile default so you never have to type it.
+
+## Installation
+
+```bash
+pip install awscli
+# or
+brew install awscli
+```
+
+## Configuration
+
+### Option 1: Named profile (recommended)
+
+Add a `filone` profile to your AWS config files so you don't have to pass `--endpoint-url` on every command:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://eu-west-1.s3.fil.one
+region = eu-west-1
+```
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+Then use `--profile filone` (or `AWS_PROFILE=filone`) on every command:
+
+```bash
+aws s3 ls --profile filone
+```
+
+Or set it for your shell session:
+
+```bash
+export AWS_PROFILE=filone
+aws s3 ls
+```
+
+### Option 2: Default profile with env vars
+
+```bash
+export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+export AWS_DEFAULT_REGION=eu-west-1
+```
+
+Then pass `--endpoint-url` on each command:
+
+```bash
+aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+## Core operations
+
+### Create a bucket
+
+```bash
+aws s3 mb s3://my-bucket --profile filone
+```
+
+### Upload a file
+
+```bash
+aws s3 cp report.pdf s3://my-bucket/reports/report.pdf --profile filone
+```
+
+### Upload a directory
+
+```bash
+aws s3 sync ./local-folder s3://my-bucket/folder/ --profile filone
+```
+
+### List objects
+
+```bash
+aws s3 ls s3://my-bucket/ --profile filone
+# Recursive listing with sizes
+aws s3 ls s3://my-bucket/ --recursive --human-readable --profile filone
+```
+
+### Download a file
+
+```bash
+aws s3 cp s3://my-bucket/reports/report.pdf ./report.pdf --profile filone
+```
+
+### Download a directory
+
+```bash
+aws s3 sync s3://my-bucket/folder/ ./local-folder --profile filone
+```
+
+### Delete an object
+
+```bash
+aws s3 rm s3://my-bucket/reports/report.pdf --profile filone
+```
+
+### Delete a bucket
+
+A bucket must be empty before it can be deleted. The `--force` flag has the AWS CLI empty the bucket client-side first — this is a CLI convenience, not an API feature.
+
+```bash
+aws s3 rb s3://my-bucket --force --profile filone
+```
+
+## Object versions
+
+```bash
+# List all versions of objects in a bucket
+aws s3api list-object-versions --bucket my-bucket --profile filone
+
+# Download a specific version
+aws s3api get-object \
+  --bucket my-bucket \
+  --key reports/report.pdf \
+  --version-id YOUR_VERSION_ID \
+  output.pdf \
+  --profile filone
+```
+
+## Object Lock
+
+```bash
+# Upload with a Compliance retention (retain for 1 year)
+aws s3api put-object \
+  --bucket my-bucket \
+  --key archive/record.pdf \
+  --body record.pdf \
+  --object-lock-mode COMPLIANCE \
+  --object-lock-retain-until-date "2027-01-01T00:00:00Z" \
+  --profile filone
+
+# Check retention status
+aws s3api get-object-retention \
+  --bucket my-bucket \
+  --key archive/record.pdf \
+  --profile filone
+```
+
+## Multipart uploads
+
+The AWS CLI handles multipart uploads automatically. You can configure the threshold:
+
+```bash
+# Set multipart threshold to 100 MB (default is 8 MB)
+aws configure set default.s3.multipart_threshold 100MB --profile filone
+aws configure set default.s3.multipart_chunksize 50MB --profile filone
+```
+
+## Cleanup incomplete multipart uploads
+
+```bash
+# List incomplete uploads
+aws s3api list-multipart-uploads --bucket my-bucket --profile filone
+
+# Abort a specific incomplete upload
+aws s3api abort-multipart-upload \
+  --bucket my-bucket \
+  --key large-file.zip \
+  --upload-id YOUR_UPLOAD_ID \
+  --profile filone
+```
+
+See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.

@@ -1,8 +1,28 @@
 ---
-title: "Encryption"
-description: "Coming soon."
+title: Encryption
+description: How Fil One protects your data at rest and in transit.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+Fil One encrypts all data by default. There is nothing to configure — encryption is always on.
+
+## Encryption at rest
+
+All objects stored in Fil One are encrypted at rest using **AES-256** encryption via SSE-KMS (Server-Side Encryption with Key Management Service). Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options.
+
+This applies to all objects in all buckets, with no exceptions.
+
+## Encryption in transit
+
+All connections to `https://s3.fil.one` use **TLS**. HTTP connections are rejected. Your data is always encrypted during transmission between your application and the Fil One endpoint.
+
+This applies to all API operations, including uploads, downloads, presigned URLs, and metadata requests.
+
+## Key management
+
+Encryption keys are managed by the Fil One infrastructure. You do not need to supply or manage encryption keys for standard use.
+
+## Client-side encryption
+
+If your security requirements call for client-side encryption (encrypting data before it reaches the network), you can use the encryption utilities in the AWS SDKs. Fil One stores whatever bytes you send — if you encrypt client-side, the stored object is the encrypted blob.
+
+Client-side encryption is optional and is in addition to the server-side encryption that Fil One applies automatically.

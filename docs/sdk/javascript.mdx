@@ -1,8 +1,198 @@
 ---
-title: "Javascript"
-description: "Coming soon."
+title: JavaScript (AWS SDK v3)
+description: Using the AWS SDK v3 for JavaScript with Fil One.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+Fil One is fully compatible with the [AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/). Point the client at the Fil One endpoint and use the standard API.
+
+## Installation
+
+```bash
+npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
+
+## Client configuration
+
+```javascript
+import { S3Client } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+  endpoint: "https://eu-west-1.s3.fil.one",
+  region: "eu-west-1",
+  credentials: {
+    accessKeyId: process.env.FIL_ACCESS_KEY,
+    secretAccessKey: process.env.FIL_SECRET_KEY,
+  },
+  forcePathStyle: true,
+});
+```
+
+Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
+
+## Core operations
+
+### Create a bucket
+
+```javascript
+import { CreateBucketCommand } from "@aws-sdk/client-s3";
+
+await s3.send(new CreateBucketCommand({ Bucket: "my-bucket" }));
+```
+
+Object Lock and versioning are enabled automatically on every bucket.
+
+### Upload an object
+
+```javascript
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { readFileSync } from "fs";
+
+// Upload a buffer
+await s3.send(new PutObjectCommand({
+  Bucket: "my-bucket",
+  Key: "data/file.json",
+  Body: JSON.stringify({ key: "value" }),
+  ContentType: "application/json",
+}));
+
+// Upload a file
+await s3.send(new PutObjectCommand({
+  Bucket: "my-bucket",
+  Key: "reports/report.pdf",
+  Body: readFileSync("report.pdf"),
+  ContentType: "application/pdf",
+}));
+```
+
+### Download an object
+
+```javascript
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { writeFileSync } from "fs";
+
+const response = await s3.send(new GetObjectCommand({
+  Bucket: "my-bucket",
+  Key: "reports/report.pdf",
+}));
+
+// Convert stream to buffer
+const chunks = [];
+for await (const chunk of response.Body) {
+  chunks.push(chunk);
+}
+writeFileSync("local-report.pdf", Buffer.concat(chunks));
+```
+
+### List objects
+
+```javascript
+import { ListObjectsV2Command } from "@aws-sdk/client-s3";
+
+let continuationToken;
+do {
+  const response = await s3.send(new ListObjectsV2Command({
+    Bucket: "my-bucket",
+    ContinuationToken: continuationToken,
+  }));
+  for (const obj of response.Contents ?? []) {
+    console.log(obj.Key, obj.Size);
+  }
+  continuationToken = response.NextContinuationToken;
+} while (continuationToken);
+```
+
+### Delete an object
+
+```javascript
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+
+await s3.send(new DeleteObjectCommand({
+  Bucket: "my-bucket",
+  Key: "reports/report.pdf",
+}));
+```
+
+## Presigned URLs
+
+```javascript
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+
+// Download URL valid for 1 hour
+const downloadUrl = await getSignedUrl(
+  s3,
+  new GetObjectCommand({ Bucket: "my-bucket", Key: "reports/report.pdf" }),
+  { expiresIn: 3600 }
+);
+
+// Upload URL valid for 15 minutes
+const uploadUrl = await getSignedUrl(
+  s3,
+  new PutObjectCommand({ Bucket: "my-bucket", Key: "uploads/new-file.txt" }),
+  { expiresIn: 900 }
+);
+```
+
+## Object Lock
+
+```javascript
+import { PutObjectCommand, PutObjectRetentionCommand, GetObjectRetentionCommand } from "@aws-sdk/client-s3";
+
+// Set retention when uploading
+const retainUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
+
+await s3.send(new PutObjectCommand({
+  Bucket: "my-bucket",
+  Key: "archive/record.pdf",
+  Body: fileBuffer,
+  ObjectLockMode: "COMPLIANCE",
+  ObjectLockRetainUntilDate: retainUntil,
+}));
+
+// Check retention status
+const retention = await s3.send(new GetObjectRetentionCommand({
+  Bucket: "my-bucket",
+  Key: "archive/record.pdf",
+}));
+console.log(retention.Retention.RetainUntilDate);
+```
+
+## Object versions
+
+```javascript
+import { ListObjectVersionsCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+
+// List all versions
+const versions = await s3.send(new ListObjectVersionsCommand({
+  Bucket: "my-bucket",
+  Prefix: "reports/report.pdf",
+}));
+for (const v of versions.Versions ?? []) {
+  console.log(v.VersionId, v.LastModified);
+}
+
+// Download a specific version
+const response = await s3.send(new GetObjectCommand({
+  Bucket: "my-bucket",
+  Key: "reports/report.pdf",
+  VersionId: "YOUR_VERSION_ID",
+}));
+```
+
+## Error handling
+
+```javascript
+import { S3ServiceException } from "@aws-sdk/client-s3";
+
+try {
+  await s3.send(new GetObjectCommand({ Bucket: "my-bucket", Key: "missing.txt" }));
+} catch (err) {
+  if (err instanceof S3ServiceException) {
+    console.error(err.name, err.message); // e.g. "NoSuchKey"
+  } else {
+    throw err;
+  }
+}
+```
+
+See the [Error Reference](/reference/errors) for a full list of error codes.

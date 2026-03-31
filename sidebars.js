@@ -18,6 +18,7 @@ const sidebars = {
       items: [
         "storage/buckets",
         "storage/objects",
+        "storage/versioning",
         "storage/object-lock",
         "storage/multipart-uploads",
       ],
@@ -45,8 +46,6 @@ const sidebars = {
       label: "App",
       items: [
         "app/overview",
-        "app/managing-buckets",
-        "app/uploading-files",
       ],
     },
     {

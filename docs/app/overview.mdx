@@ -1,8 +1,66 @@
 ---
-title: "Overview"
-description: "Coming soon."
+title: Using the Dashboard
+description: A walkthrough of the Fil One web dashboard.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+The Fil One dashboard at [app.fil.one](https://app.fil.one) is the primary interface for managing your storage without writing code. You can create buckets, upload files, manage API keys, and monitor usage — all from the browser.
+
+## Signing in
+
+Go to [app.fil.one](https://app.fil.one) and sign in with your email address or SSO provider. If you don't have an account yet, click **Sign Up** — no credit card is required to start your 30-day free trial.
+
+## Creating a bucket
+
+1. From the dashboard home, click **Create Bucket**.
+2. Enter a bucket name. Names must be globally unique and follow standard S3 naming rules (3–63 characters, lowercase letters, numbers, and hyphens only).
+3. Click **Create**.
+
+Object Lock and encryption are enabled automatically on every bucket and cannot be disabled. Versioning is also always on (it is required by Object Lock) but is not shown as a separate option in the create bucket form.
+
+## Uploading files
+
+1. Click on a bucket to open it.
+2. Click **Upload**.
+3. Select one or more files from your local machine.
+4. The files appear in the object list as soon as the upload completes.
+
+For files larger than 5 GB, use the AWS CLI or an SDK with multipart upload support. See [Multipart Uploads](/storage/multipart-uploads).
+
+## Downloading files
+
+Click the file name to open its detail page, then select **Download** from the **"..."** menu. You can also click the download icon directly in the file list row without opening the detail page.
+
+## Deleting objects
+
+1. Select one or more objects using the checkboxes.
+2. Click **Delete**.
+3. Confirm by typing `delete` in the confirmation dialog.
+
+Objects with active Object Lock Compliance retention cannot be deleted — the delete action will be blocked until the retention period expires.
+
+## Setting a retention policy
+
+You can set a default retention policy on a bucket from the bucket settings page. Any object uploaded to the bucket will automatically inherit the retention period.
+
+To set per-object retention on an individual file, use the AWS CLI or SDK after upload. See [Object Lock](/storage/object-lock).
+
+## Managing API keys
+
+1. Go to **API Keys** in the left sidebar.
+2. Click **Create Key** to generate a new key pair.
+3. Configure the key name, permissions (Read / Write / List / Delete), bucket scope, and optional expiration.
+4. Copy the Secret Access Key immediately — it is shown only once.
+
+To revoke a key, click **Delete** next to the key. Revocation is immediate.
+
+See [API Keys](/security/api-keys) for full details on key permissions and security best practices.
+
+## Billing and usage
+
+Go to **Billing** in the left sidebar to:
+- Add or update a payment method
+- View current usage (storage and bandwidth)
+- Download invoices
+- Upgrade from trial to a paid plan
+
+See [Trial & Billing](/billing/trial) for details on the trial lifecycle and pricing.

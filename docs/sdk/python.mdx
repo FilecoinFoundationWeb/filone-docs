@@ -1,8 +1,177 @@
 ---
-title: "Python"
-description: "Coming soon."
+title: Python (boto3)
+description: Using boto3 with Fil One for object storage operations.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+Fil One is fully compatible with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html), the AWS SDK for Python. No custom library is needed — configure the client to point at the Fil One endpoint and use the standard API.
+
+## Installation
+
+```bash
+pip install boto3
+```
+
+## Client configuration
+
+```python
+import boto3
+import os
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://eu-west-1.s3.fil.one",
+    aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
+    region_name="eu-west-1",
+)
+```
+
+Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
+
+## Core operations
+
+### Create a bucket
+
+```python
+s3.create_bucket(Bucket="my-bucket")
+```
+
+Object Lock and versioning are enabled automatically on every bucket.
+
+### Upload an object
+
+```python
+# Upload from file path
+s3.upload_file("report.pdf", "my-bucket", "reports/report.pdf")
+
+# Upload with content type
+s3.put_object(
+    Bucket="my-bucket",
+    Key="data/file.json",
+    Body=b'{"key": "value"}',
+    ContentType="application/json",
+)
+```
+
+### Download an object
+
+```python
+s3.download_file("my-bucket", "reports/report.pdf", "local-report.pdf")
+```
+
+### List objects
+
+```python
+paginator = s3.get_paginator("list_objects_v2")
+for page in paginator.paginate(Bucket="my-bucket"):
+    for obj in page.get("Contents", []):
+        print(obj["Key"], obj["Size"])
+```
+
+### Delete an object
+
+```python
+s3.delete_object(Bucket="my-bucket", Key="reports/report.pdf")
+```
+
+## Multipart uploads
+
+For files larger than 5 GB, boto3 handles multipart uploads automatically via `upload_file` and `upload_fileobj`. You can configure thresholds and concurrency:
+
+```python
+from boto3.s3.transfer import TransferConfig
+
+config = TransferConfig(
+    multipart_threshold=100 * 1024 * 1024,  # 100 MB
+    multipart_chunksize=50 * 1024 * 1024,   # 50 MB
+    max_concurrency=10,
+)
+
+s3.upload_file("large-file.zip", "my-bucket", "large-file.zip", Config=config)
+```
+
+## Presigned URLs
+
+```python
+# Download URL valid for 1 hour
+download_url = s3.generate_presigned_url(
+    "get_object",
+    Params={"Bucket": "my-bucket", "Key": "reports/report.pdf"},
+    ExpiresIn=3600,
+)
+
+# Upload URL valid for 15 minutes
+upload_url = s3.generate_presigned_url(
+    "put_object",
+    Params={"Bucket": "my-bucket", "Key": "uploads/new-file.txt"},
+    ExpiresIn=900,
+)
+```
+
+## Object Lock
+
+```python
+from datetime import datetime, timedelta, timezone
+
+# Set retention when uploading
+retain_until = datetime.now(timezone.utc) + timedelta(days=365)
+
+s3.put_object(
+    Bucket="my-bucket",
+    Key="archive/record.pdf",
+    Body=open("record.pdf", "rb"),
+    ObjectLockMode="COMPLIANCE",
+    ObjectLockRetainUntilDate=retain_until,
+)
+
+# Check retention on an existing object
+response = s3.get_object_retention(Bucket="my-bucket", Key="archive/record.pdf")
+print(response["Retention"]["RetainUntilDate"])
+
+# Extend retention (Compliance mode only allows extension, not shortening)
+new_retain_until = datetime.now(timezone.utc) + timedelta(days=730)
+s3.put_object_retention(
+    Bucket="my-bucket",
+    Key="archive/record.pdf",
+    Retention={
+        "Mode": "COMPLIANCE",
+        "RetainUntilDate": new_retain_until,
+    },
+)
+```
+
+## Object versions
+
+```python
+# List all versions of an object
+response = s3.list_object_versions(Bucket="my-bucket", Prefix="reports/report.pdf")
+for version in response.get("Versions", []):
+    print(version["VersionId"], version["LastModified"])
+
+# Download a specific version
+s3.download_file(
+    "my-bucket",
+    "reports/report.pdf",
+    "old-report.pdf",
+    ExtraArgs={"VersionId": "YOUR_VERSION_ID"},
+)
+```
+
+## Error handling
+
+```python
+from botocore.exceptions import ClientError
+
+try:
+    s3.get_object(Bucket="my-bucket", Key="missing-file.txt")
+except ClientError as e:
+    code = e.response["Error"]["Code"]
+    if code == "NoSuchKey":
+        print("Object not found")
+    elif code == "AccessDenied":
+        print("Access denied — check key permissions or Object Lock status")
+    else:
+        raise
+```
+
+See the [Error Reference](/reference/errors) for a full list of error codes.

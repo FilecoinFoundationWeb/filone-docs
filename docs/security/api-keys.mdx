@@ -1,8 +1,80 @@
 ---
-title: "Api Keys"
-description: "Coming soon."
+title: API Keys
+description: Creating, configuring, and managing API keys in Fil One.
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+API keys authenticate your requests to the Fil One S3 API. Each key consists of an **Access Key ID** (public identifier) and a **Secret Access Key** (used to sign requests).
+
+## Creating an API key
+
+1. Go to **API Keys** in the left menu of the dashboard.
+2. Click **Create Key**.
+3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`).
+4. Set the key's permissions and scope (see below).
+5. Optionally, set an expiration date.
+6. Click **Create**.
+7. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, you must create a new key.
+
+## Key permissions
+
+Each key can be granted a combination of the following permissions:
+
+| Permission | What it allows |
+|------------|----------------|
+| **Read** | `GetObject`, `HeadObject`, `GetObjectRetention`, `GetObjectLockConfiguration` |
+| **Write** | `PutObject`, `CopyObject`, multipart upload operations |
+| **List** | `ListBuckets`, `ListObjectsV2`, `ListObjectVersions` |
+| **Delete** | `DeleteObject` |
+
+You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload but not remove data.
+
+## Bucket scope
+
+By default, a key has access to all buckets in your account. You can restrict a key to one or more specific buckets. A bucket-scoped key cannot list or access any bucket outside its allowed set.
+
+This is useful when:
+- Different services need access to different buckets
+- You want to limit the blast radius of a compromised key
+- External vendors or partners need access to a specific dataset
+
+## Key expiration
+
+You can set an expiration date when creating a key. After the expiration date, the key is automatically revoked and all requests signed with it will fail with `403 AccessDenied`.
+
+Expiring keys are useful for:
+- Temporary access grants
+- CI/CD pipelines where you rotate credentials on a schedule
+- Short-lived integrations
+
+## Viewing and managing keys
+
+Go to **API Keys** in the left menu to see all your active keys. The list shows:
+
+| Column | Description |
+|--------|-------------|
+| Name | The label you gave the key at creation |
+| Buckets | Which buckets the key can access (all, or a specific set) |
+| Permissions | The permission levels granted (Read, Write, List, Delete) |
+| Status | Whether the key is active or revoked |
+| Last Used | When the key last successfully authenticated a request |
+
+You cannot view the Secret Access Key after creation.
+
+## Revoking a key
+
+Find the key in **API Keys** and click **Delete**. The key is revoked immediately. Any in-flight requests signed with that key will fail.
+
+## Security best practices
+
+- **Use separate keys per environment.** Create different keys for development, staging, and production. This limits the impact if a key is leaked.
+- **Use the minimum permissions required.** A key that only needs to read objects should not have Write or Delete permissions.
+- **Scope keys to specific buckets** when possible, especially for external integrations.
+- **Set expiration dates** on keys that are only needed temporarily.
+- **Rotate keys periodically.** Create a new key, update your application, then delete the old key.
+- **Revoke keys immediately** if you suspect compromise. There is no delay — revocation takes effect instantly.
+- **Never hardcode credentials** in source code. Use environment variables or a secrets manager.
+
+See [Authentication](/security/authentication) for how to configure your S3 client with your API keys.

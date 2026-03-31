@@ -22,10 +22,247 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
+/* Navbar link font size */
+.navbar__link {
+  font-size: 14px;
+}
+
+/* Sidebar item padding and font size */
+:root {
+  --ifm-menu-link-padding-vertical: 10px;
+  --ifm-menu-link-padding-horizontal: 12px;
+}
+
+.menu__link {
+  font-size: 14px;
+}
+
+/* Sidebar carets */
+.menu__caret:before,
+.menu__link--sublist-caret:after {
+  background-size: 20px 20px;
+  opacity: 0.6;
+}
+
+.theme-doc-sidebar-menu {
+  padding-right: 8px;
+  padding-bottom: 48px;
+}
+
+/* Navbar logo size */
+.navbar__logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar__logo img {
+  height: 20px;
+}
+
+/* Navbar buttons */
+.navbar__item:has(.navbar-btn-secondary),
+.navbar__item:has(.navbar-btn-primary) {
+  padding: 0 4px;
+}
+
+.navbar-btn-secondary {
+  margin-left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: #F4F4F5;
+  padding: 8px 18px;
+  font-weight: 500;
+  font-size: 14.5px;
+  color: #3F3F46 !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.navbar-btn-secondary:hover {
+  background-color: #E4E4E7;
+}
+
+.navbar-btn-primary {
+  margin-left: 1px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #1EBFFF 0%, #0090FF 100%);
+  padding: 1.5px;
+  text-decoration: none !important;
+  transition: background 200ms ease;
+}
+
+.navbar-btn-primary:hover {
+  background: linear-gradient(90deg, #83EAFF 0%, #1EBFFF 100%);
+}
+
+.navbar-btn-primary-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #ffffff;
+  padding: 7px 17px;
+  font-weight: 500;
+  font-size: 14.5px;
+  color: #09090B !important;
+  white-space: nowrap;
+}
+
+/* Navbar buttons - dark mode */
+[data-theme="dark"] .navbar-btn-secondary {
+  background-color: #27272A;
+  color: #D4D4D8 !important;
+}
+
+[data-theme="dark"] .navbar-btn-secondary:hover {
+  background-color: #3F3F46;
+}
+
+[data-theme="dark"] .navbar-btn-primary-inner {
+  background: #18181B;
+  color: #F4F4F5 !important;
+}
+
+/* Hide navbar color mode toggle (moved to sidebar) */
+.navbar__items--right .react-toggle,
+.navbar__items--right [class*="colorModeToggle"],
+.navbar__items--right [class*="toggle_"] {
+  display: none;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: var(--doc-sidebar-width, 300px);
+  padding: 10px 16px;
+  border-top: 1px solid var(--ifm-toc-border-color);
+  border-right: 1px solid var(--ifm-toc-border-color);
+  background: var(--ifm-background-surface-color);
+  z-index: 1;
+  display: flex;
+  gap: 6px;
+}
+
+
+.sidebar-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1px solid var(--ifm-toc-border-color);
+  background: transparent;
+  color: var(--ifm-color-emphasis-600);
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: background 150ms ease, color 150ms ease;
+  padding: 0;
+}
+
+.sidebar-icon-btn:hover {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-900);
+}
+
 /* Clean up table styling */
 table {
   display: table;
   width: 100%;
+}
+
+/* FAQ accordion — reset Docusaurus default details styles */
+.faq details {
+  --ifm-alert-background-color: transparent !important;
+  --ifm-alert-border-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--ifm-toc-border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: inherit !important;
+}
+
+.faq details:first-child {
+  border-top: 1px solid var(--ifm-toc-border-color) !important;
+}
+
+/* Hide Docusaurus's built-in triangle marker */
+.faq details summary::before,
+.faq details > summary > span:first-child {
+  display: none !important;
+}
+
+.faq details summary {
+  list-style: none !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 1.5rem !important;
+  padding: 1.125rem 0 !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  font-size: 0.9375rem !important;
+  color: var(--ifm-font-color-base) !important;
+  user-select: none !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.faq details summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq details summary::after {
+  content: '+' !important;
+  font-size: 1.125rem !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  color: var(--ifm-color-emphasis-500) !important;
+  flex-shrink: 0 !important;
+}
+
+.faq details[open] > summary::after {
+  content: '×' !important;
+}
+
+.faq details[open] > summary {
+  padding-bottom: 0.25rem !important;
+}
+
+.faq details summary:hover {
+  color: var(--ifm-color-primary) !important;
+}
+
+.faq details summary:hover::after {
+  color: var(--ifm-color-primary) !important;
+}
+
+.faq details > div {
+  padding-bottom: 1.25rem;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.faq details > div > :first-child {
+  margin-top: 0;
+}
+
+[data-theme="dark"] .faq details > div {
+  color: var(--ifm-color-emphasis-600);
 }
 
 /* Card grid for link groups */

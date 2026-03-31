@@ -20,7 +20,7 @@ The AWS CLI handles multipart uploads automatically for large files:
 ```bash
 # Files over 8 MB are automatically multipart-uploaded
 aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
-  --endpoint-url https://s3.fil.one
+  --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
 To control thresholds:
@@ -67,11 +67,11 @@ Incomplete multipart uploads consume storage. List and abort any stale uploads:
 ```bash
 aws s3api list-multipart-uploads \
   --bucket my-bucket \
-  --endpoint-url https://s3.fil.one
+  --endpoint-url https://eu-west-1.s3.fil.one
 
 aws s3api abort-multipart-upload \
   --bucket my-bucket \
   --key large-file.zip \
   --upload-id YOUR_UPLOAD_ID \
-  --endpoint-url https://s3.fil.one
+  --endpoint-url https://eu-west-1.s3.fil.one
 ```

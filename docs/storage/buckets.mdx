@@ -25,20 +25,20 @@ These are the same naming rules as AWS S3.
   <TabItem value="app" label="App">
     1. From the dashboard, click **Create Bucket**.
     2. Enter a bucket name.
-    3. Choose your region.
+    3. Optionally create or configure an API key in the API key section.
     4. Click **Create**.
 
-    Every bucket is created with Object Lock and versioning enabled automatically.
+    Every bucket is created with Object Lock and encryption enabled automatically. Versioning is also always on (required by Object Lock) but is not shown as a separate option in the UI.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
     aws s3api create-bucket \
       --bucket my-bucket \
-      --endpoint-url https://s3.fil.one
+      --endpoint-url https://eu-west-1.s3.fil.one
     ```
 
-    Object Lock and versioning are enabled automatically on every bucket.
+    Object Lock, versioning, and encryption are enabled automatically on every bucket.
   </TabItem>
 
   <TabItem value="python-boto3" label="Python (boto3)">
@@ -46,7 +46,7 @@ These are the same naming rules as AWS S3.
     s3.create_bucket(Bucket="my-bucket")
     ```
 
-    Object Lock and versioning are enabled automatically on every bucket.
+    Object Lock, versioning, and encryption are enabled automatically on every bucket.
   </TabItem>
 </Tabs>
 
@@ -55,7 +55,7 @@ These are the same naming rules as AWS S3.
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    aws s3 ls --endpoint-url https://s3.fil.one
+    aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
     ```
   </TabItem>
 
@@ -70,25 +70,37 @@ These are the same naming rules as AWS S3.
 
 ## Deleting a bucket
 
-Fil One supports cascade deletion -- you do not need to empty a bucket before deleting it. All objects in the bucket are permanently removed as part of the delete operation.
-
-:::warning
-Bucket deletion is permanent and cannot be undone. You will be asked to type the bucket name to confirm.
-:::
-
-**If any object has active Compliance retention**, the bucket cannot be deleted until all retention periods have expired.
+A bucket must be empty before you can delete it. This means deleting all objects (including all versions and delete markers on versioned buckets) before issuing the `DeleteBucket` request. Attempting to delete a non-empty bucket returns a `BucketNotEmpty` error.
 
 <Tabs>
-  <TabItem value="app" label="App">
-    1. Select the bucket from the dashboard.
-    2. Click **Delete Bucket**.
-    3. Type the bucket name to confirm.
-  </TabItem>
-
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    # Delete the bucket and all its contents
-    aws s3 rb s3://my-bucket --force --endpoint-url https://s3.fil.one
+    # The --force flag has the AWS CLI empty the bucket client-side before deleting it.
+    # This is CLI behavior — the storage API itself requires an empty bucket.
+    aws s3 rb s3://my-bucket --force --endpoint-url https://eu-west-1.s3.fil.one
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    # Delete all object versions first
+    paginator = s3.get_paginator("list_object_versions")
+    for page in paginator.paginate(Bucket="my-bucket"):
+        versions = page.get("Versions", []) + page.get("DeleteMarkers", [])
+        for obj in versions:
+            s3.delete_object(Bucket="my-bucket", Key=obj["Key"], VersionId=obj["VersionId"])
+
+    # Now delete the empty bucket
+    s3.delete_bucket(Bucket="my-bucket")
     ```
   </TabItem>
 </Tabs>
+
+:::note
+Buckets that contain objects with active Object Lock Compliance retention cannot be deleted until all retention periods have expired.
+:::
+
+:::info Logical deletion and Filecoin storage
+When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model and does not affect your ability to manage your data in Fil One.
+:::
+

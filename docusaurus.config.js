@@ -8,8 +8,8 @@ const config = {
   favicon: "img/favicon.svg",
   url: "https://fil.one",
   baseUrl: "/",
-  organizationName: "filecoin-one",
-  projectName: "docs",
+  organizationName: "FilecoinFoundationWeb",
+  projectName: "filone-docs",
 
   onBrokenLinks: "throw",
 
@@ -32,7 +32,7 @@ const config = {
         docs: {
           routeBasePath: "/",
           sidebarPath: "./sidebars.js",
-          editUrl: "https://github.com/filecoin-one/docs/tree/main/",
+          editUrl: "https://github.com/FilecoinFoundationWeb/filone-docs/tree/main/",
         },
         blog: false,
         theme: {
@@ -51,20 +51,21 @@ const config = {
         respectPrefersColorScheme: true,
       },
       navbar: {
-        title: "Fil One",
+        title: "",
         logo: {
           alt: "Fil One",
           src: "img/logo.svg",
+          srcDark: "img/logo-white.svg",
         },
         items: [
           {
-            type: "docSidebar",
-            sidebarId: "docs",
+            to: "/",
+            label: "Documentation",
             position: "left",
-            label: "Docs",
+            activeBaseRegex: "^/(?!(reference|sdk))",
           },
           {
-            to: "/reference/s3-compatibility",
+            to: "/reference/overview",
             label: "API Reference",
             position: "left",
           },
@@ -74,46 +75,18 @@ const config = {
             position: "left",
           },
           {
-            href: "https://app.fil.one",
-            label: "Dashboard",
+            type: "html",
             position: "right",
+            value: '<a href="https://app.fil.one/login" class="navbar-btn-secondary">Login</a>',
           },
           {
-            href: "https://status.fil.one",
-            label: "Status",
+            type: "html",
             position: "right",
+            value: '<a href="https://app.fil.one/login?screen_hint=signup" class="navbar-btn-primary"><span class="navbar-btn-primary-inner">Sign up</span></a>',
           },
         ],
       },
-      footer: {
-        style: "dark",
-        links: [
-          {
-            title: "Docs",
-            items: [
-              { label: "Quickstart", to: "/quickstart" },
-              { label: "S3 Compatibility", to: "/reference/s3-compatibility" },
-              { label: "Object Lock", to: "/storage/object-lock" },
-            ],
-          },
-          {
-            title: "Resources",
-            items: [
-              { label: "FAQ", to: "/faq" },
-              { label: "Status", href: "https://status.fil.one" },
-              { label: "Support", href: "mailto:support@fil.one" },
-            ],
-          },
-          {
-            title: "More",
-            items: [
-              { label: "GitHub", href: "https://github.com/filecoin-one" },
-              { label: "X / Twitter", href: "https://x.com/filaboratory" },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} Filecoin One.`,
-      },
+
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
