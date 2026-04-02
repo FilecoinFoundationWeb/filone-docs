@@ -28,7 +28,7 @@ These are the same naming rules as AWS S3.
     3. Optionally create or configure an API key in the API key section.
     4. Click **Create**.
 
-    Every bucket is created with Object Lock and encryption enabled automatically. Versioning is also always on (required by Object Lock) but is not shown as a separate option in the UI.
+    Every bucket is created with encryption enabled automatically.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -38,7 +38,7 @@ These are the same naming rules as AWS S3.
       --endpoint-url https://eu-west-1.s3.fil.one
     ```
 
-    Object Lock, versioning, and encryption are enabled automatically on every bucket.
+    Encryption is enabled automatically on every bucket.
   </TabItem>
 
   <TabItem value="python-boto3" label="Python (boto3)">
@@ -46,7 +46,7 @@ These are the same naming rules as AWS S3.
     s3.create_bucket(Bucket="my-bucket")
     ```
 
-    Object Lock, versioning, and encryption are enabled automatically on every bucket.
+    Encryption is enabled automatically on every bucket.
   </TabItem>
 </Tabs>
 
@@ -70,7 +70,7 @@ These are the same naming rules as AWS S3.
 
 ## Deleting a bucket
 
-A bucket must be empty before you can delete it. This means deleting all objects (including all versions and delete markers on versioned buckets) before issuing the `DeleteBucket` request. Attempting to delete a non-empty bucket returns a `BucketNotEmpty` error.
+A bucket must be empty before you can delete it. This means deleting all objects before issuing the `DeleteBucket` request. Attempting to delete a non-empty bucket returns a `BucketNotEmpty` error.
 
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">
@@ -83,22 +83,17 @@ A bucket must be empty before you can delete it. This means deleting all objects
 
   <TabItem value="python-boto3" label="Python (boto3)">
     ```python
-    # Delete all object versions first
-    paginator = s3.get_paginator("list_object_versions")
+    # Delete all objects first
+    paginator = s3.get_paginator("list_objects_v2")
     for page in paginator.paginate(Bucket="my-bucket"):
-        versions = page.get("Versions", []) + page.get("DeleteMarkers", [])
-        for obj in versions:
-            s3.delete_object(Bucket="my-bucket", Key=obj["Key"], VersionId=obj["VersionId"])
+        for obj in page.get("Contents", []):
+            s3.delete_object(Bucket="my-bucket", Key=obj["Key"])
 
     # Now delete the empty bucket
     s3.delete_bucket(Bucket="my-bucket")
     ```
   </TabItem>
 </Tabs>
-
-:::note
-Buckets that contain objects with active Object Lock Compliance retention cannot be deleted until all retention periods have expired.
-:::
 
 :::info Logical deletion and Filecoin storage
 When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model and does not affect your ability to manage your data in Fil One.

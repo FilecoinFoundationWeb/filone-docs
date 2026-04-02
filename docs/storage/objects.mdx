@@ -102,8 +102,6 @@ for page in paginator.paginate(Bucket="my-bucket"):
 
 Deletion is immediate from your Fil One account — the object disappears from the dashboard and API instantly. There is no recycle bin or soft-delete.
 
-**Objects with active Compliance retention cannot be deleted.** The request will return a `403 AccessDenied` error with the retention expiry date. See [Object Lock](/storage/object-lock) for details.
-
 :::info Logical deletion and Filecoin storage
 When you delete an object, it is immediately removed from your Fil One account and is no longer accessible. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model and does not affect your ability to manage your data in Fil One.
 :::

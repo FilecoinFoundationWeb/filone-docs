@@ -36,7 +36,7 @@ Your data is stored on a distributed network of storage providers. All data is e
 <summary>What happens when I delete an object?</summary>
 <div>
 
-The object disappears from your account immediately. There is no recycle bin or undo. If the object has an active Object Lock retention period, the delete request will be rejected until the retention expires.
+The object disappears from your account immediately. There is no recycle bin or undo.
 
 </div>
 </details>
@@ -46,15 +46,6 @@ The object disappears from your account immediately. There is no recycle bin or 
 <div>
 
 Yes. Because Fil One is S3-compatible, you can use standard migration tools like `aws s3 sync`, `rclone`, or any S3-compatible transfer utility. Point the tool at your Fil One endpoint and credentials. Detailed migration guides are coming soon.
-
-</div>
-</details>
-
-<details>
-<summary>What is Object Lock?</summary>
-<div>
-
-Object Lock provides Write-Once-Read-Many (WORM) protection and is enabled on every bucket automatically. Once you set a retention policy, locked objects cannot be deleted or overwritten until the retention period expires. This is used for regulatory compliance, backup protection, and data governance. See the [Object Lock guide](/storage/object-lock) for details.
 
 </div>
 </details>
@@ -81,7 +72,7 @@ The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimit
 <summary>Can I use Fil One for backups?</summary>
 <div>
 
-Yes. Fil One works with any backup tool that supports S3-compatible storage, including Veeam, Commvault, Restic, and Duplicati. Combined with Object Lock, you can create immutable backups that are protected from ransomware and accidental deletion.
+Yes. Fil One works with any backup tool that supports S3-compatible storage, including Veeam, Commvault, Restic, and Duplicati.
 
 </div>
 </details>
@@ -91,15 +82,6 @@ Yes. Fil One works with any backup tool that supports S3-compatible storage, inc
 <div>
 
 Fil One is designed for high durability through distributed storage across multiple providers. Data is replicated and verifiably stored. Specific durability SLA details are available on request.
-
-</div>
-</details>
-
-<details>
-<summary>Can I set a retention period at the bucket level?</summary>
-<div>
-
-Yes. You can configure a default retention policy on a bucket so that every object uploaded to it automatically inherits that retention period. See the [Object Lock](/storage/object-lock) guide for instructions on setting bucket-level defaults.
 
 </div>
 </details>

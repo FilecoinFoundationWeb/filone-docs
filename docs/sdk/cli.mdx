@@ -114,40 +114,6 @@ A bucket must be empty before it can be deleted. The `--force` flag has the AWS 
 aws s3 rb s3://my-bucket --force --profile filone
 ```
 
-## Object versions
-
-```bash
-# List all versions of objects in a bucket
-aws s3api list-object-versions --bucket my-bucket --profile filone
-
-# Download a specific version
-aws s3api get-object \
-  --bucket my-bucket \
-  --key reports/report.pdf \
-  --version-id YOUR_VERSION_ID \
-  output.pdf \
-  --profile filone
-```
-
-## Object Lock
-
-```bash
-# Upload with a Compliance retention (retain for 1 year)
-aws s3api put-object \
-  --bucket my-bucket \
-  --key archive/record.pdf \
-  --body record.pdf \
-  --object-lock-mode COMPLIANCE \
-  --object-lock-retain-until-date "2027-01-01T00:00:00Z" \
-  --profile filone
-
-# Check retention status
-aws s3api get-object-retention \
-  --bucket my-bucket \
-  --key archive/record.pdf \
-  --profile filone
-```
-
 ## Multipart uploads
 
 The AWS CLI handles multipart uploads automatically. You can configure the threshold:

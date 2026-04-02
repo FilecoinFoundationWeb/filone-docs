@@ -15,7 +15,7 @@ Go to [app.fil.one](https://app.fil.one) and sign in with your email address or 
 2. Enter a bucket name. Names must be globally unique and follow standard S3 naming rules (3–63 characters, lowercase letters, numbers, and hyphens only).
 3. Click **Create**.
 
-Object Lock and encryption are enabled automatically on every bucket and cannot be disabled. Versioning is also always on (it is required by Object Lock) but is not shown as a separate option in the create bucket form.
+Encryption is enabled automatically on every bucket and cannot be disabled.
 
 ## Uploading files
 
@@ -35,14 +35,6 @@ Click the file name to open its detail page, then select **Download** from the *
 1. Select one or more objects using the checkboxes.
 2. Click **Delete**.
 3. Confirm by typing `delete` in the confirmation dialog.
-
-Objects with active Object Lock Compliance retention cannot be deleted — the delete action will be blocked until the retention period expires.
-
-## Setting a retention policy
-
-You can set a default retention policy on a bucket from the bucket settings page. Any object uploaded to the bucket will automatically inherit the retention period.
-
-To set per-object retention on an individual file, use the AWS CLI or SDK after upload. See [Object Lock](/storage/object-lock).
 
 ## Managing API keys
 

@@ -22,7 +22,6 @@ From the dashboard, click **Create Bucket**. Give it a name (lowercase, no space
 | Setting | Value | Notes |
 |---------|-------|-------|
 | Region | `eu-west-1` | |
-| Object Lock | Always on | Every bucket has WORM compliance built in. |
 | Encryption | Always on | All data is encrypted at rest by default. |
 
 You will also see an **API key** section during bucket creation. You can create a new API key here or configure permissions for an existing one. If you plan to use the CLI or SDK, set up your key at this step — otherwise skip it and go to **API Keys** in the left menu later.
@@ -123,7 +122,6 @@ Your secret key is shown once. Copy it and store it securely. If you lose it, yo
 ## What's next
 
 <div class="card-grid">
-  <a href="/storage/object-lock"><strong>Object Lock</strong><span>Configure retention policies — enabled on every bucket by default.</span></a>
   <a href="/reference/s3-compatibility"><strong>S3 Compatibility</strong><span>Full list of supported operations and headers.</span></a>
   <a href="/sdk/overview"><strong>SDK Examples</strong><span>Detailed examples for Python, JavaScript, Go, and CLI.</span></a>
   <a href="/billing/trial"><strong>Billing & Trial</strong><span>What's included in your trial and how to upgrade.</span></a>

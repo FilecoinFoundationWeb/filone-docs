@@ -36,7 +36,6 @@ Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardco
 s3.create_bucket(Bucket="my-bucket")
 ```
 
-Object Lock and versioning are enabled automatically on every bucket.
 
 ### Upload an object
 
@@ -108,55 +107,6 @@ upload_url = s3.generate_presigned_url(
 )
 ```
 
-## Object Lock
-
-```python
-from datetime import datetime, timedelta, timezone
-
-# Set retention when uploading
-retain_until = datetime.now(timezone.utc) + timedelta(days=365)
-
-s3.put_object(
-    Bucket="my-bucket",
-    Key="archive/record.pdf",
-    Body=open("record.pdf", "rb"),
-    ObjectLockMode="COMPLIANCE",
-    ObjectLockRetainUntilDate=retain_until,
-)
-
-# Check retention on an existing object
-response = s3.get_object_retention(Bucket="my-bucket", Key="archive/record.pdf")
-print(response["Retention"]["RetainUntilDate"])
-
-# Extend retention (Compliance mode only allows extension, not shortening)
-new_retain_until = datetime.now(timezone.utc) + timedelta(days=730)
-s3.put_object_retention(
-    Bucket="my-bucket",
-    Key="archive/record.pdf",
-    Retention={
-        "Mode": "COMPLIANCE",
-        "RetainUntilDate": new_retain_until,
-    },
-)
-```
-
-## Object versions
-
-```python
-# List all versions of an object
-response = s3.list_object_versions(Bucket="my-bucket", Prefix="reports/report.pdf")
-for version in response.get("Versions", []):
-    print(version["VersionId"], version["LastModified"])
-
-# Download a specific version
-s3.download_file(
-    "my-bucket",
-    "reports/report.pdf",
-    "old-report.pdf",
-    ExtraArgs={"VersionId": "YOUR_VERSION_ID"},
-)
-```
-
 ## Error handling
 
 ```python
@@ -169,7 +119,7 @@ except ClientError as e:
     if code == "NoSuchKey":
         print("Object not found")
     elif code == "AccessDenied":
-        print("Access denied — check key permissions or Object Lock status")
+        print("Access denied — check key permissions")
     else:
         raise
 ```

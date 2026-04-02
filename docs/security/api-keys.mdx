@@ -24,9 +24,9 @@ Each key can be granted a combination of the following permissions:
 
 | Permission | What it allows |
 |------------|----------------|
-| **Read** | `GetObject`, `HeadObject`, `GetObjectRetention`, `GetObjectLockConfiguration` |
+| **Read** | `GetObject`, `HeadObject` |
 | **Write** | `PutObject`, `CopyObject`, multipart upload operations |
-| **List** | `ListBuckets`, `ListObjectsV2`, `ListObjectVersions` |
+| **List** | `ListBuckets`, `ListObjectsV2` |
 | **Delete** | `DeleteObject` |
 
 You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload but not remove data.

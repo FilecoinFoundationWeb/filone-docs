@@ -46,10 +46,10 @@ Every push to `main` triggers a production deploy. Pull requests get preview dep
 ```
 docs/                    # All documentation pages (MDX)
   quickstart/            # Getting started guides
-  storage/               # Buckets, objects, Object Lock, multipart
+  storage/               # Buckets, objects, multipart
   security/              # Auth, API keys, encryption
   billing/               # Trial, pricing, usage
-  console/               # Web console guides
+  app/                   # Dashboard guides
   reference/             # API reference, S3 compat, errors
   sdk/                   # SDK examples per language
   faq.mdx

@@ -53,7 +53,6 @@ _, err := client.CreateBucket(ctx, &s3.CreateBucketInput{
 })
 ```
 
-Object Lock and versioning are enabled automatically on every bucket.
 
 ### Upload an object
 
@@ -150,57 +149,6 @@ uploadReq, err := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
     Bucket: aws.String("my-bucket"),
     Key:    aws.String("uploads/new-file.txt"),
 }, s3.WithPresignExpires(15*time.Minute))
-```
-
-## Object Lock
-
-```go
-import (
-    "time"
-    "github.com/aws/aws-sdk-go-v2/service/s3/types"
-)
-
-retainUntil := time.Now().UTC().Add(365 * 24 * time.Hour)
-
-// Set retention when uploading
-_, err := client.PutObject(ctx, &s3.PutObjectInput{
-    Bucket:                    aws.String("my-bucket"),
-    Key:                       aws.String("archive/record.pdf"),
-    Body:                      fileReader,
-    ObjectLockMode:            types.ObjectLockModeCompliance,
-    ObjectLockRetainUntilDate: &retainUntil,
-})
-
-// Check retention
-result, err := client.GetObjectRetention(ctx, &s3.GetObjectRetentionInput{
-    Bucket: aws.String("my-bucket"),
-    Key:    aws.String("archive/record.pdf"),
-})
-fmt.Println(result.Retention.RetainUntilDate)
-```
-
-## Object versions
-
-```go
-// List all versions
-paginator := s3.NewListObjectVersionsPaginator(client, &s3.ListObjectVersionsInput{
-    Bucket: aws.String("my-bucket"),
-    Prefix: aws.String("reports/report.pdf"),
-})
-
-for paginator.HasMorePages() {
-    page, _ := paginator.NextPage(ctx)
-    for _, v := range page.Versions {
-        fmt.Println(*v.VersionId, v.LastModified)
-    }
-}
-
-// Download a specific version
-result, err := client.GetObject(ctx, &s3.GetObjectInput{
-    Bucket:    aws.String("my-bucket"),
-    Key:       aws.String("reports/report.pdf"),
-    VersionId: aws.String("YOUR_VERSION_ID"),
-})
 ```
 
 ## Error handling

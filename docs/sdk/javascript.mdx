@@ -39,7 +39,6 @@ import { CreateBucketCommand } from "@aws-sdk/client-s3";
 await s3.send(new CreateBucketCommand({ Bucket: "my-bucket" }));
 ```
 
-Object Lock and versioning are enabled automatically on every bucket.
 
 ### Upload an object
 
@@ -131,52 +130,6 @@ const uploadUrl = await getSignedUrl(
   new PutObjectCommand({ Bucket: "my-bucket", Key: "uploads/new-file.txt" }),
   { expiresIn: 900 }
 );
-```
-
-## Object Lock
-
-```javascript
-import { PutObjectCommand, PutObjectRetentionCommand, GetObjectRetentionCommand } from "@aws-sdk/client-s3";
-
-// Set retention when uploading
-const retainUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
-
-await s3.send(new PutObjectCommand({
-  Bucket: "my-bucket",
-  Key: "archive/record.pdf",
-  Body: fileBuffer,
-  ObjectLockMode: "COMPLIANCE",
-  ObjectLockRetainUntilDate: retainUntil,
-}));
-
-// Check retention status
-const retention = await s3.send(new GetObjectRetentionCommand({
-  Bucket: "my-bucket",
-  Key: "archive/record.pdf",
-}));
-console.log(retention.Retention.RetainUntilDate);
-```
-
-## Object versions
-
-```javascript
-import { ListObjectVersionsCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-
-// List all versions
-const versions = await s3.send(new ListObjectVersionsCommand({
-  Bucket: "my-bucket",
-  Prefix: "reports/report.pdf",
-}));
-for (const v of versions.Versions ?? []) {
-  console.log(v.VersionId, v.LastModified);
-}
-
-// Download a specific version
-const response = await s3.send(new GetObjectCommand({
-  Bucket: "my-bucket",
-  Key: "reports/report.pdf",
-  VersionId: "YOUR_VERSION_ID",
-}));
 ```
 
 ## Error handling

@@ -23,13 +23,12 @@ Fil One returns standard S3 error responses in XML format. If your application a
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| `AccessDenied` | 403 | You do not have permission, or the object is protected by Object Lock. |
+| `AccessDenied` | 403 | You do not have permission. |
 | `BucketAlreadyExists` | 409 | The bucket name is already taken. |
-| `BucketNotEmpty` | 409 | The bucket contains objects with active Compliance retention and cannot be deleted. |
+| `BucketNotEmpty` | 409 | The bucket is not empty and cannot be deleted. |
 | `InvalidAccessKeyId` | 403 | The access key does not exist or has been revoked. |
 | `InvalidBucketName` | 400 | The bucket name does not meet naming requirements. |
 | `InvalidArgument` | 400 | A request parameter is invalid. |
-| `InvalidObjectState` | 403 | The operation is not valid for the object's current state (e.g., locked). |
 | `NoSuchBucket` | 404 | The specified bucket does not exist. |
 | `NoSuchKey` | 404 | The specified object does not exist. |
 | `SignatureDoesNotMatch` | 403 | The request signature does not match. Check your secret key and signing method. |
@@ -43,23 +42,11 @@ Fil One returns standard S3 error responses in XML format. If your application a
 | `ServiceUnavailable` | 503 | The service is temporarily unavailable. Check the `Retry-After` header. |
 | `SlowDown` | 503 | You are sending requests too quickly. Implement exponential backoff. |
 
-## Object Lock specific errors
-
-| Scenario | Error code | HTTP Status | Meaning |
-|----------|-----------|-------------|---------|
-| Delete locked object | `AccessDenied` | 403 | Object has active Compliance retention. Error message includes the expiry date. |
-| Shorten retention | `AccessDenied` | 403 | Compliance mode retention cannot be shortened. You can only extend it. |
-| Delete bucket with locked objects | `BucketNotEmpty` | 409 | Bucket contains objects with active retention. Error includes count and earliest expiry. |
-| Disable Object Lock | `InvalidBucketState` | 409 | Object Lock is always enabled and cannot be disabled. |
-| Suspend versioning | `InvalidBucketState` | 409 | Versioning is always enabled and cannot be suspended. |
-
 ## Troubleshooting
 
 **`SignatureDoesNotMatch`** -- The most common auth error. Check that:
 1. Your secret key is correct (re-copy from the dashboard if unsure).
 2. Your system clock is accurate (SigV4 requires clocks within 15 minutes of server time).
 3. You are using the correct region (`eu-west-1`).
-
-**`AccessDenied` on delete** -- If you are trying to delete an object and getting 403, check whether the object has active Object Lock retention with `GetObjectRetention`.
 
 **`ServiceUnavailable` (503)** -- Transient. Retry with exponential backoff. If persistent, check [status.fil.one](https://status.fil.one).

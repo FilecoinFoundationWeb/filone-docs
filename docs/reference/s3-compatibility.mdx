@@ -37,8 +37,6 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `DeleteBucket` | ✅ Supported | Bucket must be empty first. Returns `BucketNotEmpty` if objects remain. |
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
-| `PutBucketVersioning` | ✅ Supported | Always enabled. Cannot be suspended. |
-| `GetBucketVersioning` | ✅ Supported | |
 
 ### Object operations
 
@@ -46,11 +44,10 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 |-----------|--------|-------|
 | `PutObject` | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
 | `GetObject` | ✅ Supported | |
-| `DeleteObject` | ✅ Supported | Places a delete marker on versioned buckets. Blocked by active Compliance retention. |
+| `DeleteObject` | ✅ Supported | |
 | `HeadObject` | ✅ Supported | |
 | `ListObjectsV2` | ✅ Supported | |
 | `CopyObject` | ✅ Supported | |
-| `ListObjectVersions` | ✅ Supported | |
 
 ### Multipart upload
 
@@ -60,15 +57,6 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `UploadPart` | ✅ Supported | |
 | `CompleteMultipartUpload` | ✅ Supported | |
 | `AbortMultipartUpload` | ✅ Supported | |
-
-### Object Lock
-
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `PutObjectLockConfiguration` | ✅ Supported | Set default retention on a bucket. |
-| `GetObjectLockConfiguration` | ✅ Supported | |
-| `PutObjectRetention` | ✅ Supported | Set or extend retention on individual objects. |
-| `GetObjectRetention` | ✅ Supported | |
 
 ### Presigned URLs
 
@@ -83,8 +71,6 @@ The following operations are planned for future releases:
 
 | Operation | Timeline | Notes |
 |-----------|----------|-------|
-| `PutObjectLegalHold` / `GetObjectLegalHold` | Phase 2 | Legal hold (indefinite lock per object). |
-| Governance mode bypass (`x-amz-bypass-governance-retention`) | Phase 2 | |
 | Bucket policies / ACLs | Phase 2 | |
 | Lifecycle rules | Phase 2 | |
 | S3 Select | Not planned | |
@@ -113,9 +99,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|----------------|
-| Bucket deletion | Requires bucket to be empty first. | Same — bucket must be empty. Returns `BucketNotEmpty` if objects remain. Blocked if any object has active Compliance retention. |
-| Object Lock enablement | Can be enabled at bucket creation. | Always enabled on every bucket. Cannot be disabled. |
-| Versioning | Opt-in. Can be enabled, suspended, or disabled. | Always enabled on every bucket. Cannot be suspended or disabled. |
+| Bucket deletion | Requires bucket to be empty first. | Same — bucket must be empty. Returns `BucketNotEmpty` if objects remain. |
 | IAM policies | Full IAM support. | Single-user accounts in the current release. IAM planned for a future release. |
 | Public access | Configurable public bucket policies and ACLs. | No public bucket ACLs or public access settings. All access requires authentication. |
 | Lifecycle rules | Supported (expiration, transitions, etc.). | Not supported in the current release. Planned for a future release. Affects common archival and cleanup workflows. |
