@@ -32,14 +32,7 @@ For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads)
 
 ## API rate limits
 
-<!-- PLACEHOLDER: Confirm rate limits with engineering before launch -->
-
-| Operation type | Limit |
-|---------------|-------|
-| PUT / POST / DELETE | 3,500 requests per second per prefix |
-| GET / HEAD | 5,500 requests per second per prefix |
-
-If you are consistently hitting rate limits, contact support to discuss higher thresholds.
+Rate limits are enforced by the underlying storage gateway. Fil One does not impose additional rate limits on top of these. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. Contact support if you are consistently hitting limits at scale.
 
 ## Naming constraints
 

@@ -24,8 +24,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | Endpoint | `https://eu-west-1.s3.fil.one` |
 | Region | `eu-west-1` |
 | Signature version | SigV4 |
-| Path style | Supported |
-| Virtual-hosted style | Supported |
+| Path style | Required |
+| Virtual-hosted style | Not supported |
 
 ## Supported operations
 
@@ -33,8 +33,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
-| `CreateBucket` | ✅ Supported | |
-| `DeleteBucket` | ✅ Supported | Bucket must be empty first. Returns `BucketNotEmpty` if objects remain. |
+| `CreateBucket` | ❌ Not supported | Buckets must be created via the dashboard. |
+| `DeleteBucket` | ❌ Not supported | Bucket deletion is not yet available. |
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
 
@@ -99,7 +99,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|----------------|
-| Bucket deletion | Requires bucket to be empty first. | Same — bucket must be empty. Returns `BucketNotEmpty` if objects remain. |
+| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. | Not supported via API. Buckets are managed through the dashboard only. Deletion is not yet available. |
 | IAM policies | Full IAM support. | Single-user accounts in the current release. IAM planned for a future release. |
 | Public access | Configurable public bucket policies and ACLs. | No public bucket ACLs or public access settings. All access requires authentication. |
 | Lifecycle rules | Supported (expiration, transitions, etc.). | Not supported in the current release. Planned for a future release. Affects common archival and cleanup workflows. |
