@@ -21,34 +21,16 @@ These are the same naming rules as AWS S3.
 
 ## Creating a bucket
 
-<Tabs>
-  <TabItem value="app" label="App">
-    1. From the dashboard, click **Create Bucket**.
-    2. Enter a bucket name.
-    3. Optionally create or configure an API key in the API key section.
-    4. Click **Create**.
+:::note
+Bucket creation and deletion must be done through the Fil One dashboard. The S3 API does not support `CreateBucket` or `DeleteBucket` — those operations return `AccessDenied`. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API.
+:::
 
-    Every bucket is created with encryption enabled automatically.
-  </TabItem>
+1. From the dashboard, click **Create Bucket**.
+2. Enter a bucket name.
+3. Optionally create or configure an API key in the API key section.
+4. Click **Create**.
 
-  <TabItem value="aws-cli" label="AWS CLI">
-    ```bash
-    aws s3api create-bucket \
-      --bucket my-bucket \
-      --endpoint-url https://eu-west-1.s3.fil.one
-    ```
-
-    Encryption is enabled automatically on every bucket.
-  </TabItem>
-
-  <TabItem value="python-boto3" label="Python (boto3)">
-    ```python
-    s3.create_bucket(Bucket="my-bucket")
-    ```
-
-    Encryption is enabled automatically on every bucket.
-  </TabItem>
-</Tabs>
+Every bucket is created with encryption enabled automatically.
 
 ## Listing buckets
 
@@ -70,15 +52,18 @@ These are the same naming rules as AWS S3.
 
 ## Deleting a bucket
 
-A bucket must be empty before you can delete it. This means deleting all objects before issuing the `DeleteBucket` request. Attempting to delete a non-empty bucket returns a `BucketNotEmpty` error.
+Buckets can only be deleted from the Fil One dashboard (see the note under [Creating a bucket](#creating-a-bucket)).
+
+Before deleting, you must remove all objects from the bucket. You can do this via the dashboard or the S3 API:
 
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    # The --force flag has the AWS CLI empty the bucket client-side before deleting it.
-    # This is CLI behavior — the storage API itself requires an empty bucket.
-    aws s3 rb s3://my-bucket --force --endpoint-url https://eu-west-1.s3.fil.one
+    # Delete all objects first
+    aws s3 rm s3://my-bucket --recursive --endpoint-url https://eu-west-1.s3.fil.one
     ```
+
+    Then delete the empty bucket from the dashboard.
   </TabItem>
 
   <TabItem value="python-boto3" label="Python (boto3)">
@@ -88,10 +73,9 @@ A bucket must be empty before you can delete it. This means deleting all objects
     for page in paginator.paginate(Bucket="my-bucket"):
         for obj in page.get("Contents", []):
             s3.delete_object(Bucket="my-bucket", Key=obj["Key"])
-
-    # Now delete the empty bucket
-    s3.delete_bucket(Bucket="my-bucket")
     ```
+
+    Then delete the empty bucket from the dashboard.
   </TabItem>
 </Tabs>
 
