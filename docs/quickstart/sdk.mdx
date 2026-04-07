@@ -50,6 +50,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
     const client = new S3Client({
       endpoint: "https://eu-west-1.s3.fil.one",
       region: "eu-west-1",
+      forcePathStyle: true,
       credentials: {
         accessKeyId: "YOUR_ACCESS_KEY",
         secretAccessKey: "YOUR_SECRET_KEY",
@@ -96,8 +97,9 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
 
     func main() {
         client := s3.New(s3.Options{
-            BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
-            Region:       "eu-west-1",
+            BaseEndpoint:  aws.String("https://eu-west-1.s3.fil.one"),
+            Region:        "eu-west-1",
+            UsePathStyle:  true,
             Credentials: credentials.NewStaticCredentialsProvider(
                 os.Getenv("FIL_ACCESS_KEY"),
                 os.Getenv("FIL_SECRET_KEY"),
