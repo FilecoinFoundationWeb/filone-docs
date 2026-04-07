@@ -52,32 +52,9 @@ Every bucket is created with encryption enabled automatically.
 
 ## Deleting a bucket
 
-Buckets can only be deleted from the Fil One dashboard (see the note under [Creating a bucket](#creating-a-bucket)).
-
-Before deleting, you must remove all objects from the bucket. You can do this via the dashboard or the S3 API:
-
-<Tabs>
-  <TabItem value="aws-cli" label="AWS CLI">
-    ```bash
-    # Delete all objects first
-    aws s3 rm s3://my-bucket --recursive --endpoint-url https://eu-west-1.s3.fil.one
-    ```
-
-    Then delete the empty bucket from the dashboard.
-  </TabItem>
-
-  <TabItem value="python-boto3" label="Python (boto3)">
-    ```python
-    # Delete all objects first
-    paginator = s3.get_paginator("list_objects_v2")
-    for page in paginator.paginate(Bucket="my-bucket"):
-        for obj in page.get("Contents", []):
-            s3.delete_object(Bucket="my-bucket", Key=obj["Key"])
-    ```
-
-    Then delete the empty bucket from the dashboard.
-  </TabItem>
-</Tabs>
+:::note
+Bucket deletion is not yet supported. The dashboard has a delete button, but it is currently inactive. The S3 API also returns `AccessDenied` for `DeleteBucket`. This will be enabled in a future release.
+:::
 
 :::info Logical deletion and Filecoin storage
 When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model and does not affect your ability to manage your data in Fil One.
