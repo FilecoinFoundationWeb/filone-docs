@@ -4,7 +4,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Fil One",
-  tagline: "S3-compatible object storage with built-in compliance and immutability.",
+  tagline: "S3 object storage built for the AI era.",
   favicon: "img/favicon.svg",
   url: "https://fil.one",
   baseUrl: "/",
@@ -12,6 +12,42 @@ const config = {
   projectName: "filone-docs",
 
   onBrokenLinks: "throw",
+
+  headTags: [
+    {
+      tagName: "script",
+      attributes: { type: "application/ld+json" },
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Fil One",
+        "description": "S3 object storage built for the AI era. S3-compatible, backed by Filecoin for cryptographically verifiable data integrity. No egress fees, $4.99/TB/month flat rate.",
+        "url": "https://fil.one",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "UnitPriceSpecification",
+          "price": "4.99",
+          "priceCurrency": "USD",
+          "unitText": "TB/month"
+        },
+        "featureList": [
+          "S3-compatible API",
+          "No egress fees",
+          "AES-256 encryption at rest",
+          "Filecoin-backed verifiable data integrity",
+          "Path-style addressing",
+          "AWS SigV4 authentication",
+          "30-day free trial"
+        ],
+        "provider": {
+          "@type": "Organization",
+          "name": "Filecoin Foundation",
+          "url": "https://fil.org"
+        }
+      }),
+    },
+  ],
 
   markdown: {
     hooks: {

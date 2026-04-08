@@ -1,0 +1,1238 @@
+# Fil One Documentation
+
+> Fil One is S3-compatible object storage built for AI agents and data-intensive
+> workloads. Backed by the Filecoin network for cryptographically verifiable data
+> integrity. No egress fees, no per-request charges, $4.99/TB/month flat rate.
+> Use any S3-compatible SDK or tool — point it at `https://eu-west-1.s3.fil.one`
+> with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
+
+Critical integration notes for developers:
+- Buckets must be created via the dashboard (app.fil.one) — CreateBucket and
+  DeleteBucket via S3 API are not supported and return AccessDenied
+- Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
+  (virtual-hosted-style URLs are not supported)
+- Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
+  handle this automatically
+- All buckets are private by default; all data is encrypted at rest (AES-256
+  SSE-KMS) and in transit (TLS); encryption cannot be disabled
+- Single region currently: eu-west-1 (additional regions planned)
+- Deletion is permanent and immediate — no recycle bin or soft-delete
+
+
+---
+
+# Welcome to Fil One
+
+Fil One is an S3-compatible object storage platform designed for teams that need
+reliable, cost-effective storage with built-in compliance features. If you've used
+AWS S3, you already know how to use Fil One.
+
+## Why Fil One
+
+**S3-compatible from day one.** Use the tools you already know — AWS CLI, boto3,
+any S3-compatible SDK. Point your existing code at our endpoint and it works.
+
+**Verifiable data integrity.** Data stored on Fil One is backed by Filecoin, a
+distributed storage network where storage providers must continuously prove they
+are holding your data through cryptographic proofs. Your data's integrity is
+independently verifiable, not just claimed.
+
+**No egress fees.** Download your data as often as you need. There are no data
+transfer charges.
+
+**Simple, flat pricing.** $4.99 / TB / month. No per-request charges, no hidden
+fees, no tiered pricing.
+
+**30-day free trial.** 1 TB of storage and 2 TB of bandwidth, no credit card
+required.
+
+
+---
+
+# Quickstart
+
+Source: https://docs.fil.one/quickstart
+
+This guide walks you through creating an account, setting up credentials, and
+uploading your first object.
+
+## 1. Create your account
+
+1. Go to app.fil.one and sign up with your email or SSO.
+2. Verify your email address.
+3. No credit card needed — your 30-day free trial starts automatically.
+
+## 2. Create a bucket
+
+From the dashboard, click **Create Bucket**. Give it a name (lowercase, no spaces
+— same rules as S3) and choose your settings:
+
+- Region: eu-west-1
+- Encryption: Always on (all data is encrypted at rest by default)
+
+You will also see an API key section during bucket creation. You can create a new
+API key here or configure permissions for an existing one.
+
+## 3. Upload your first object
+
+Go to **API Keys** in the left menu and click **Create Key**. You'll get two values:
+
+- **Access Key ID** — identifies your account (safe to store in config)
+- **Secret Access Key** — authenticates your requests (treat like a password)
+
+Your secret key is shown once. Copy it and store it securely. If you lose it,
+you'll need to generate a new key pair.
+
+### AWS CLI
+
+```bash
+aws configure set aws_access_key_id YOUR_ACCESS_KEY
+aws configure set aws_secret_access_key YOUR_SECRET_KEY
+aws configure set default.region eu-west-1
+
+aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
+  --endpoint-url https://eu-west-1.s3.fil.one
+
+aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+### Python (boto3)
+
+```python
+import boto3
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://eu-west-1.s3.fil.one",
+    aws_access_key_id="YOUR_ACCESS_KEY",
+    aws_secret_access_key="YOUR_SECRET_KEY",
+)
+
+s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
+
+response = s3.list_objects_v2(Bucket="my-bucket")
+for obj in response.get("Contents", []):
+    print(obj["Key"], obj["Size"])
+```
+
+### JavaScript (AWS SDK v3)
+
+```javascript
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { readFileSync } from "fs";
+
+const client = new S3Client({
+  endpoint: "https://eu-west-1.s3.fil.one",
+  region: "eu-west-1",
+  forcePathStyle: true,
+  credentials: {
+    accessKeyId: "YOUR_ACCESS_KEY",
+    secretAccessKey: "YOUR_SECRET_KEY",
+  },
+});
+
+await client.send(new PutObjectCommand({
+  Bucket: "my-bucket",
+  Key: "my-file.txt",
+  Body: readFileSync("my-file.txt"),
+}));
+
+const { Contents } = await client.send(
+  new ListObjectsV2Command({ Bucket: "my-bucket" })
+);
+Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
+```
+
+### Go (aws-sdk-go-v2)
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    "strings"
+
+    "github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/credentials"
+    "github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+func main() {
+    client := s3.New(s3.Options{
+        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        Region:       "eu-west-1",
+        UsePathStyle: true,
+        Credentials: credentials.NewStaticCredentialsProvider(
+            os.Getenv("FIL_ACCESS_KEY"),
+            os.Getenv("FIL_SECRET_KEY"),
+            "",
+        ),
+    })
+
+    ctx := context.Background()
+
+    client.PutObject(ctx, &s3.PutObjectInput{
+        Bucket: aws.String("my-bucket"),
+        Key:    aws.String("hello.txt"),
+        Body:   strings.NewReader("Hello from Go!"),
+    })
+
+    out, _ := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+        Bucket: aws.String("my-bucket"),
+    })
+    for _, obj := range out.Contents {
+        fmt.Printf("%s (%d bytes)\n", *obj.Key, *obj.Size)
+    }
+}
+```
+
+
+---
+
+# Quickstart - AWS CLI
+
+Source: https://docs.fil.one/quickstart/cli
+
+If you have the AWS CLI installed, you can start using Fil One in under 2 minutes.
+
+```bash
+# Install
+pip install awscli
+# or
+brew install awscli
+
+# Configure
+aws configure
+# Enter your Fil One access key and secret key. Set region to eu-west-1.
+
+# Upload
+aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+
+# List
+aws s3 ls s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+
+# Download
+aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+Tip: Set up a named profile to avoid repeating --endpoint-url:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://eu-west-1.s3.fil.one
+region = eu-west-1
+```
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+Then use `--profile filone` on every command:
+
+```bash
+aws s3 ls --profile filone
+```
+
+
+---
+
+# Buckets
+
+Source: https://docs.fil.one/storage/buckets
+
+Buckets are containers for your objects. Every object in Fil One lives inside a bucket.
+
+## Bucket naming rules
+
+- Between 3 and 63 characters
+- Lowercase letters, numbers, and hyphens only
+- Must start and end with a letter or number
+- Globally unique across all Fil One accounts
+
+These are the same naming rules as AWS S3.
+
+## Creating a bucket
+
+Bucket creation and deletion must be done through the Fil One dashboard. The S3
+API does not support CreateBucket or DeleteBucket — those operations return
+AccessDenied. All other S3 operations work normally via the API.
+
+1. From the dashboard, click **Create Bucket**.
+2. Enter a bucket name.
+3. Optionally create or configure an API key.
+4. Click **Create**.
+
+Every bucket is created with encryption enabled automatically.
+
+## Listing buckets
+
+```bash
+aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+```python
+response = s3.list_buckets()
+for bucket in response["Buckets"]:
+    print(bucket["Name"], bucket["CreationDate"])
+```
+
+## Deleting a bucket
+
+Bucket deletion is not yet supported. This will be enabled in a future release.
+
+Note: When you delete a bucket and its objects, the data is immediately removed
+from your Fil One account. However, the underlying Filecoin storage deals persist
+until their natural expiration (up to 180 days). This does not affect your ability
+to manage your data in Fil One.
+
+
+---
+
+# Objects
+
+Source: https://docs.fil.one/storage/objects
+
+Objects are the files you store in Fil One. Each object consists of the file data,
+a key (the file path/name), and metadata.
+
+## Uploading objects
+
+```bash
+# Upload a single file
+aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
+  --endpoint-url https://eu-west-1.s3.fil.one
+
+# Upload a directory
+aws s3 sync ./local-folder s3://my-bucket/folder/ \
+  --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+```python
+# Upload a file
+s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
+
+# Upload with metadata
+s3.put_object(
+    Bucket="my-bucket",
+    Key="report.pdf",
+    Body=open("report.pdf", "rb"),
+    ContentType="application/pdf",
+)
+```
+
+For files larger than 5 GB, use multipart upload.
+
+## Downloading objects
+
+```bash
+aws s3 cp s3://my-bucket/my-file.txt ./my-file.txt \
+  --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+```python
+s3.download_file("my-bucket", "my-file.txt", "my-file.txt")
+```
+
+## Listing objects
+
+```bash
+aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+Programmatic listing with pagination:
+
+```python
+paginator = s3.get_paginator("list_objects_v2")
+for page in paginator.paginate(Bucket="my-bucket"):
+    for obj in page.get("Contents", []):
+        print(obj["Key"], obj["Size"])
+```
+
+## Deleting objects
+
+```bash
+aws s3 rm s3://my-bucket/my-file.txt \
+  --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+Deletion is immediate — the object disappears from the dashboard and API
+instantly. There is no recycle bin or soft-delete.
+
+## Presigned URLs
+
+Generate a temporary URL that grants time-limited access to a specific object
+without requiring API credentials.
+
+```python
+# Generate a download URL valid for 1 hour
+url = s3.generate_presigned_url(
+    "get_object",
+    Params={"Bucket": "my-bucket", "Key": "shared-report.pdf"},
+    ExpiresIn=3600,
+)
+```
+
+Presigned URLs work for both GetObject (downloads) and PutObject (uploads).
+
+
+---
+
+# Multipart Uploads
+
+Source: https://docs.fil.one/storage/multipart-uploads
+
+For objects larger than 5 GB, you must use multipart upload. Recommended for
+any file over 100 MB for improved reliability.
+
+## How it works
+
+1. **Initiate** the upload and receive an upload ID.
+2. **Upload parts** individually (minimum 5 MB each, except the last part).
+3. **Complete** the upload by listing all parts.
+
+## AWS CLI
+
+The AWS CLI handles multipart uploads automatically for large files:
+
+```bash
+aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
+  --endpoint-url https://eu-west-1.s3.fil.one
+
+# Configure thresholds
+aws configure set s3.multipart_threshold 100MB
+aws configure set s3.multipart_chunksize 50MB
+```
+
+## Python (boto3)
+
+```python
+from boto3.s3.transfer import TransferConfig
+
+config = TransferConfig(
+    multipart_threshold=100 * 1024 * 1024,  # 100 MB
+    multipart_chunksize=50 * 1024 * 1024,   # 50 MB
+    max_concurrency=10,
+)
+
+s3.upload_file("large-file.zip", "my-bucket", "large-file.zip", Config=config)
+```
+
+## Limits
+
+| Parameter | Value |
+|-----------|-------|
+| Maximum object size | 5 TB |
+| Maximum parts | 10,000 |
+| Minimum part size | 5 MB (except last part) |
+| Maximum part size | 5 GB |
+
+## Cleaning up incomplete uploads
+
+```bash
+aws s3api list-multipart-uploads \
+  --bucket my-bucket \
+  --endpoint-url https://eu-west-1.s3.fil.one
+
+aws s3api abort-multipart-upload \
+  --bucket my-bucket \
+  --key large-file.zip \
+  --upload-id YOUR_UPLOAD_ID \
+  --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+
+---
+
+# Authentication
+
+Source: https://docs.fil.one/security/authentication
+
+All API requests to Fil One must be authenticated using AWS Signature Version 4
+(SigV4). Any S3-compatible SDK or tool handles this automatically.
+
+## API keys
+
+| Component | Description |
+|-----------|-------------|
+| Access Key ID | Identifies your account. Included in request headers. Format: FHXXXXXXXXXXXXXXXX |
+| Secret Access Key | Signs your requests. Never sent over the wire. |
+
+Your secret key is displayed once at creation time. If you lose it, you must
+create a new key pair.
+
+## Configuring your client
+
+### AWS CLI
+
+```bash
+aws configure
+# AWS Access Key ID: YOUR_ACCESS_KEY
+# AWS Secret Access Key: YOUR_SECRET_KEY
+# Default region name: eu-west-1
+```
+
+Named profile (recommended):
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://eu-west-1.s3.fil.one
+region = eu-west-1
+
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+### Python (boto3)
+
+```python
+import boto3
+import os
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://eu-west-1.s3.fil.one",
+    aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
+    region_name="eu-west-1",
+)
+```
+
+### JavaScript (AWS SDK v3)
+
+```javascript
+import { S3Client } from "@aws-sdk/client-s3";
+
+const client = new S3Client({
+  endpoint: "https://eu-west-1.s3.fil.one",
+  region: "eu-west-1",
+  forcePathStyle: true,
+  credentials: {
+    accessKeyId: process.env.FIL_ACCESS_KEY,
+    secretAccessKey: process.env.FIL_SECRET_KEY,
+  },
+});
+```
+
+### Go
+
+```go
+func newClient() *s3.Client {
+    return s3.New(s3.Options{
+        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        Region:       "eu-west-1",
+        UsePathStyle: true,
+        Credentials: credentials.NewStaticCredentialsProvider(
+            os.Getenv("FIL_ACCESS_KEY"),
+            os.Getenv("FIL_SECRET_KEY"),
+            "",
+        ),
+    })
+}
+```
+
+## Security best practices
+
+- Do not hardcode credentials in source code. Use environment variables or a
+  secrets manager.
+- Create separate keys for different environments.
+- Rotate keys periodically.
+- Revoke keys immediately if compromised.
+
+
+---
+
+# API Keys
+
+Source: https://docs.fil.one/security/api-keys
+
+API keys authenticate your requests to the Fil One S3 API. Each key consists of
+an Access Key ID (public identifier) and a Secret Access Key (used to sign requests).
+
+## Creating an API key
+
+1. Go to **API Keys** in the left menu of the dashboard.
+2. Click **Create Key**.
+3. Give the key a descriptive name (e.g., production-backend, ci-pipeline).
+4. Set permissions and scope.
+5. Optionally set an expiration date.
+6. Click **Create**.
+7. **Copy the Secret Access Key immediately.** It is shown only once.
+
+## Key permissions
+
+| Permission | What it allows |
+|------------|----------------|
+| Read | GetObject, HeadObject |
+| Write | PutObject, CopyObject, multipart upload operations |
+| List | ListBuckets, ListObjectsV2 |
+| Delete | DeleteObject |
+
+## Bucket scope
+
+By default, a key has access to all buckets in your account. You can restrict a
+key to specific buckets. This limits the blast radius of a compromised key.
+
+## Key expiration
+
+You can set an expiration date when creating a key. After expiration, the key is
+automatically revoked and requests fail with 403 AccessDenied.
+
+## Security best practices
+
+- Use separate keys per environment (development, staging, production).
+- Use the minimum permissions required.
+- Scope keys to specific buckets when possible.
+- Set expiration dates on temporary keys.
+- Rotate keys periodically.
+- Revoke immediately if compromised.
+- Never hardcode credentials in source code.
+
+
+---
+
+# Encryption
+
+Source: https://docs.fil.one/security/encryption
+
+Fil One encrypts all data by default. There is nothing to configure.
+
+## Encryption at rest
+
+All objects are encrypted using AES-256 via SSE-KMS (Server-Side Encryption with
+Key Management Service). Applied automatically on write, decrypted automatically
+on read. Applies to all objects in all buckets with no exceptions.
+
+## Encryption in transit
+
+All connections to https://s3.fil.one use TLS. HTTP connections are rejected.
+Applies to all API operations including uploads, downloads, presigned URLs,
+and metadata requests.
+
+## Client-side encryption
+
+Optional. If your requirements call for client-side encryption, you can use the
+encryption utilities in the AWS SDKs. Fil One stores whatever bytes you send.
+Client-side encryption is in addition to the server-side encryption that Fil One
+applies automatically.
+
+
+---
+
+# Pricing
+
+Source: https://docs.fil.one/billing/pricing
+
+Fil One is priced at **$4.99 / TB / month**.
+
+No egress fees, no per-request charges, no hidden costs.
+
+
+---
+
+# Trial & Billing
+
+Source: https://docs.fil.one/billing/trial
+
+## Free trial
+
+Every new account starts with a 30-day free trial. No credit card required.
+
+| Included | Amount |
+|----------|--------|
+| Storage | 1 TB (1,024 GB) |
+| Egress bandwidth | 2 TB |
+| API operations | Unlimited |
+| Duration | 30 days from account creation |
+
+## What happens when the trial ends
+
+| Phase | Days | What you can do |
+|-------|------|-----------------|
+| Active trial | 0-30 | Full access. |
+| Grace period | 31-37 | Read-only. Download your data and upgrade. |
+| Expired | 38+ | Account closed. All data permanently deleted. |
+
+You can upgrade to a paid plan at any time during the trial or grace period.
+
+## Paid plan pricing
+
+| Component | Price |
+|-----------|-------|
+| Storage | $4.99 / TB / month |
+| Egress bandwidth | No charge |
+| API operations | Included |
+
+No minimum commitments. Billed based on average daily usage.
+
+
+---
+
+# API Reference Overview
+
+Source: https://docs.fil.one/reference/overview
+
+## Base endpoint
+
+```
+https://eu-west-1.s3.fil.one
+```
+
+All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4).
+
+## Request format
+
+Use path-style addressing:
+
+```
+https://eu-west-1.s3.fil.one/my-bucket/my-key
+```
+
+Virtual-hosted-style URLs (https://my-bucket.s3.fil.one/my-key) are not supported.
+Configure your S3 client to use path-style requests:
+- boto3: no special config needed (path-style is default for custom endpoints)
+- AWS SDK JS v3: set `forcePathStyle: true`
+- Go aws-sdk-go-v2: set `UsePathStyle: true`
+
+## Response format
+
+Standard S3 conventions — XML for list and error responses, raw bytes for object
+data. Standard S3 headers included (x-amz-request-id, ETag, Content-Length, etc.).
+
+
+---
+
+# S3 Compatibility
+
+Source: https://docs.fil.one/reference/s3-compatibility
+
+Fil One provides an S3-compatible API. Point your SDK or CLI at the Fil One
+endpoint and authenticate with your API keys.
+
+## Connection parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Endpoint | https://eu-west-1.s3.fil.one |
+| Region | eu-west-1 |
+| Signature version | SigV4 |
+| Path style | Required |
+| Virtual-hosted style | Not supported |
+
+## Supported operations
+
+### Bucket operations
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| CreateBucket | Not supported | Buckets must be created via the dashboard. |
+| DeleteBucket | Not supported | Bucket deletion not yet available. |
+| ListBuckets | Supported | |
+| HeadBucket | Supported | |
+
+### Object operations
+
+| Operation | Status | Notes |
+|-----------|--------|-------|
+| PutObject | Supported | Max 5 TB (use multipart for > 5 GB). |
+| GetObject | Supported | |
+| DeleteObject | Supported | |
+| HeadObject | Supported | |
+| ListObjectsV2 | Supported | |
+| CopyObject | Supported | |
+
+### Multipart upload
+
+| Operation | Status |
+|-----------|--------|
+| CreateMultipartUpload | Supported |
+| UploadPart | Supported |
+| CompleteMultipartUpload | Supported |
+| AbortMultipartUpload | Supported |
+
+### Presigned URLs
+
+| Operation | Status |
+|-----------|--------|
+| Presigned GetObject | Supported |
+| Presigned PutObject | Supported |
+
+### Not yet supported
+
+Bucket policies / ACLs, lifecycle rules, S3 Select, S3 Inventory, S3 Batch
+Operations, IAM policies, public access settings.
+
+## Differences from AWS S3
+
+| Behavior | AWS S3 | Fil One |
+|----------|--------|---------|
+| Bucket management | CreateBucket/DeleteBucket via API | Dashboard only |
+| IAM policies | Full support | Not supported (planned) |
+| Public access | Configurable ACLs | Not supported; all access requires auth |
+| Lifecycle rules | Supported | Not supported (planned) |
+| Storage classes | Multiple | Single class |
+| Regions | 30+ | eu-west-1 (more planned) |
+
+
+---
+
+# Error Reference
+
+Source: https://docs.fil.one/reference/errors
+
+Fil One returns standard S3 error responses in XML format.
+
+## Error response format
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>NoSuchBucket</Code>
+  <Message>The specified bucket does not exist.</Message>
+  <BucketName>my-bucket</BucketName>
+  <RequestId>abc123def456</RequestId>
+</Error>
+```
+
+## Common error codes
+
+### Client errors (4xx)
+
+| Code | HTTP | Description |
+|------|------|-------------|
+| AccessDenied | 403 | No permission. Also returned for CreateBucket/DeleteBucket (not supported). |
+| BucketAlreadyExists | 409 | Bucket name already taken. |
+| InvalidAccessKeyId | 403 | Key does not exist or has been revoked. |
+| InvalidBucketName | 400 | Name does not meet naming requirements. |
+| NoSuchBucket | 404 | Bucket does not exist. |
+| NoSuchKey | 404 | Object does not exist. |
+| SignatureDoesNotMatch | 403 | Request signature mismatch. Check secret key and signing method. |
+| TooManyBuckets | 400 | Account bucket limit reached. |
+
+### Server errors (5xx)
+
+| Code | HTTP | Description |
+|------|------|-------------|
+| InternalError | 500 | Retry the request. |
+| ServiceUnavailable | 503 | Temporarily unavailable. Check Retry-After header. |
+| SlowDown | 503 | Too many requests. Implement exponential backoff. |
+
+## Troubleshooting
+
+**SignatureDoesNotMatch**: Re-copy your secret key from the dashboard. Ensure your
+system clock is accurate (SigV4 requires clocks within 15 minutes of server time).
+Verify region is eu-west-1.
+
+**ServiceUnavailable (503)**: Transient. Retry with exponential backoff.
+
+
+---
+
+# SDKs & Tools Overview
+
+Source: https://docs.fil.one/sdk/overview
+
+Fil One works with any tool or library that supports the S3 API.
+
+## Connection details
+
+| Parameter | Value |
+|-----------|-------|
+| Endpoint | https://eu-west-1.s3.fil.one |
+| Region | eu-west-1 |
+| Credentials | Access Key ID + Secret Access Key from dashboard |
+
+## Recommended tools
+
+| Tool | Platform | Install |
+|------|----------|---------|
+| AWS CLI | Command line | pip install awscli |
+| boto3 | Python | pip install boto3 |
+| AWS SDK v3 | JavaScript/TypeScript | npm install @aws-sdk/client-s3 |
+| aws-sdk-go-v2 | Go | go get github.com/aws/aws-sdk-go-v2/service/s3 |
+| rclone | Multi-platform CLI | rclone.org/install |
+| Cyberduck | macOS/Windows GUI | cyberduck.io |
+
+## Third-party tools
+
+- **rclone**: Sync files with `rclone config` using S3 provider type.
+- **Cyberduck**: Add S3 connection with the Fil One endpoint.
+- **s3cmd**: Configure with `s3cmd --configure`, set host to eu-west-1.s3.fil.one.
+- **MinIO Client**: `mc alias set filone https://eu-west-1.s3.fil.one YOUR_KEY YOUR_SECRET`
+
+
+---
+
+# Python (boto3)
+
+Source: https://docs.fil.one/sdk/python
+
+```bash
+pip install boto3
+```
+
+## Client configuration
+
+```python
+import boto3
+import os
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://eu-west-1.s3.fil.one",
+    aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
+    region_name="eu-west-1",
+)
+```
+
+## Core operations
+
+```python
+# Upload
+s3.upload_file("report.pdf", "my-bucket", "reports/report.pdf")
+s3.put_object(Bucket="my-bucket", Key="data/file.json",
+              Body=b'{"key": "value"}', ContentType="application/json")
+
+# Download
+s3.download_file("my-bucket", "reports/report.pdf", "local-report.pdf")
+
+# List (with pagination)
+paginator = s3.get_paginator("list_objects_v2")
+for page in paginator.paginate(Bucket="my-bucket"):
+    for obj in page.get("Contents", []):
+        print(obj["Key"], obj["Size"])
+
+# Delete
+s3.delete_object(Bucket="my-bucket", Key="reports/report.pdf")
+```
+
+## Multipart uploads
+
+```python
+from boto3.s3.transfer import TransferConfig
+
+config = TransferConfig(
+    multipart_threshold=100 * 1024 * 1024,  # 100 MB
+    multipart_chunksize=50 * 1024 * 1024,   # 50 MB
+    max_concurrency=10,
+)
+s3.upload_file("large-file.zip", "my-bucket", "large-file.zip", Config=config)
+```
+
+## Presigned URLs
+
+```python
+download_url = s3.generate_presigned_url(
+    "get_object",
+    Params={"Bucket": "my-bucket", "Key": "reports/report.pdf"},
+    ExpiresIn=3600,
+)
+
+upload_url = s3.generate_presigned_url(
+    "put_object",
+    Params={"Bucket": "my-bucket", "Key": "uploads/new-file.txt"},
+    ExpiresIn=900,
+)
+```
+
+## Error handling
+
+```python
+from botocore.exceptions import ClientError
+
+try:
+    s3.get_object(Bucket="my-bucket", Key="missing-file.txt")
+except ClientError as e:
+    code = e.response["Error"]["Code"]
+    if code == "NoSuchKey":
+        print("Object not found")
+    elif code == "AccessDenied":
+        print("Access denied — check key permissions")
+    else:
+        raise
+```
+
+
+---
+
+# JavaScript (AWS SDK v3)
+
+Source: https://docs.fil.one/sdk/javascript
+
+```bash
+npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
+
+## Client configuration
+
+```javascript
+import { S3Client } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+  endpoint: "https://eu-west-1.s3.fil.one",
+  region: "eu-west-1",
+  forcePathStyle: true,  // required
+  credentials: {
+    accessKeyId: process.env.FIL_ACCESS_KEY,
+    secretAccessKey: process.env.FIL_SECRET_KEY,
+  },
+});
+```
+
+## Core operations
+
+```javascript
+import {
+  PutObjectCommand, GetObjectCommand, ListObjectsV2Command,
+  DeleteObjectCommand
+} from "@aws-sdk/client-s3";
+import { readFileSync, writeFileSync } from "fs";
+
+// Upload
+await s3.send(new PutObjectCommand({
+  Bucket: "my-bucket", Key: "data/file.json",
+  Body: JSON.stringify({ key: "value" }),
+  ContentType: "application/json",
+}));
+
+// Download (streaming)
+const response = await s3.send(new GetObjectCommand({
+  Bucket: "my-bucket", Key: "reports/report.pdf",
+}));
+const chunks = [];
+for await (const chunk of response.Body) chunks.push(chunk);
+writeFileSync("local-report.pdf", Buffer.concat(chunks));
+
+// List (with pagination)
+let continuationToken;
+do {
+  const response = await s3.send(new ListObjectsV2Command({
+    Bucket: "my-bucket", ContinuationToken: continuationToken,
+  }));
+  for (const obj of response.Contents ?? []) console.log(obj.Key, obj.Size);
+  continuationToken = response.NextContinuationToken;
+} while (continuationToken);
+
+// Delete
+await s3.send(new DeleteObjectCommand({ Bucket: "my-bucket", Key: "file.txt" }));
+```
+
+## Presigned URLs
+
+```javascript
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const downloadUrl = await getSignedUrl(
+  s3, new GetObjectCommand({ Bucket: "my-bucket", Key: "reports/report.pdf" }),
+  { expiresIn: 3600 }
+);
+
+const uploadUrl = await getSignedUrl(
+  s3, new PutObjectCommand({ Bucket: "my-bucket", Key: "uploads/new-file.txt" }),
+  { expiresIn: 900 }
+);
+```
+
+## Error handling
+
+```javascript
+import { S3ServiceException } from "@aws-sdk/client-s3";
+
+try {
+  await s3.send(new GetObjectCommand({ Bucket: "my-bucket", Key: "missing.txt" }));
+} catch (err) {
+  if (err instanceof S3ServiceException) {
+    console.error(err.name, err.message); // e.g. "NoSuchKey"
+  } else {
+    throw err;
+  }
+}
+```
+
+
+---
+
+# Go (aws-sdk-go-v2)
+
+Source: https://docs.fil.one/sdk/go
+
+```bash
+go get github.com/aws/aws-sdk-go-v2/aws
+go get github.com/aws/aws-sdk-go-v2/credentials
+go get github.com/aws/aws-sdk-go-v2/service/s3
+```
+
+## Client configuration
+
+```go
+func newClient() *s3.Client {
+    return s3.New(s3.Options{
+        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        Region:       "eu-west-1",
+        UsePathStyle: true,  // required
+        Credentials: credentials.NewStaticCredentialsProvider(
+            os.Getenv("FIL_ACCESS_KEY"),
+            os.Getenv("FIL_SECRET_KEY"),
+            "",
+        ),
+    })
+}
+```
+
+## Core operations
+
+```go
+// Upload bytes
+client.PutObject(ctx, &s3.PutObjectInput{
+    Bucket: aws.String("my-bucket"), Key: aws.String("data/file.json"),
+    Body: bytes.NewReader([]byte(`{"key":"value"}`)),
+    ContentType: aws.String("application/json"),
+})
+
+// Upload file
+f, _ := os.Open("report.pdf")
+defer f.Close()
+client.PutObject(ctx, &s3.PutObjectInput{
+    Bucket: aws.String("my-bucket"), Key: aws.String("reports/report.pdf"),
+    Body: f, ContentType: aws.String("application/pdf"),
+})
+
+// Download
+result, _ := client.GetObject(ctx, &s3.GetObjectInput{
+    Bucket: aws.String("my-bucket"), Key: aws.String("reports/report.pdf"),
+})
+defer result.Body.Close()
+out, _ := os.Create("local-report.pdf")
+io.Copy(out, result.Body)
+
+// List (paginated)
+paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
+    Bucket: aws.String("my-bucket"),
+})
+for paginator.HasMorePages() {
+    page, _ := paginator.NextPage(ctx)
+    for _, obj := range page.Contents {
+        fmt.Println(*obj.Key, obj.Size)
+    }
+}
+
+// Delete
+client.DeleteObject(ctx, &s3.DeleteObjectInput{
+    Bucket: aws.String("my-bucket"), Key: aws.String("reports/report.pdf"),
+})
+```
+
+## Presigned URLs
+
+```go
+presigner := s3.NewPresignClient(client)
+
+downloadReq, _ := presigner.PresignGetObject(ctx, &s3.GetObjectInput{
+    Bucket: aws.String("my-bucket"), Key: aws.String("reports/report.pdf"),
+}, s3.WithPresignExpires(time.Hour))
+
+uploadReq, _ := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
+    Bucket: aws.String("my-bucket"), Key: aws.String("uploads/new-file.txt"),
+}, s3.WithPresignExpires(15*time.Minute))
+```
+
+
+---
+
+# FAQ
+
+Source: https://docs.fil.one/faq
+
+**Is Fil One S3-compatible?**
+Yes. Any application, SDK, or tool that works with AWS S3 works with Fil One by
+changing the endpoint URL to https://eu-west-1.s3.fil.one.
+
+**Do I need to know anything about blockchain or cryptocurrency?**
+No. Fil One is a standard cloud storage service. You sign up with an email, store
+data using familiar S3 tools, and pay with a credit card.
+
+**Where is my data stored?**
+On a distributed network of storage providers. All data is encrypted at rest.
+
+**What happens when I delete an object?**
+The object disappears from your account immediately. There is no recycle bin or undo.
+
+**Can I migrate from AWS S3?**
+Yes. Use aws s3 sync, rclone, or any S3-compatible transfer utility pointed at
+the Fil One endpoint.
+
+**Do you charge for egress?**
+No. There are no egress or data transfer fees.
+
+**What is included in the free trial?**
+30-day trial with 1 TB storage, 2 TB egress, unlimited API operations. No credit
+card required.
+
+**Can I use Fil One for backups?**
+Yes. Works with Veeam, Commvault, Restic, Duplicati, and any S3-compatible backup tool.
+
+**How does Fil One verify data integrity?**
+Built on Filecoin, where storage providers must continuously submit cryptographic
+proofs (Proof of Replication and Proof of Spacetime) to prove they hold your data.
+Each object is identified by a content identifier (CID), a cryptographic fingerprint.
+If the data changes, the CID changes.
+
+**What happens to my data if I delete it?**
+Immediately removed from your Fil One account and no longer accessible. The
+underlying Filecoin storage deals persist until natural expiration (up to 180 days),
+but the data is inaccessible from the moment of deletion.
+
+**Can multiple users access the same account?**
+Currently accounts are single-user. Multi-user organization accounts with RBAC
+are planned. You can create multiple scoped API keys to share limited access.
+
+
+---
+
+# Limits & Quotas
+
+Source: https://docs.fil.one/limits
+
+## Account limits
+
+| Limit | Trial | Paid |
+|-------|-------|------|
+| Storage | 1 TB | No limit |
+| Egress bandwidth | 2 TB / month | No limit |
+| API operations | Unlimited | Unlimited |
+| Buckets per account | 100 | 1,000 |
+
+## Object limits
+
+| Limit | Value |
+|-------|-------|
+| Maximum object size | 5 TB |
+| Maximum object size (single PUT) | 5 GB |
+| Maximum parts per multipart upload | 10,000 |
+| Minimum part size (multipart) | 5 MB |
+| Maximum part size (multipart) | 5 GB |
+| Maximum object key length | 263 bytes |
+| Maximum metadata size per object | 2 KB |
+
+## API rate limits
+
+Rate limits are enforced by the underlying storage gateway. If you encounter
+SlowDown or ServiceUnavailable responses, use exponential backoff. Contact
+support if you are consistently hitting limits at scale.
+
+## Naming constraints
+
+**Bucket names:** 3-63 characters, lowercase letters/numbers/hyphens, must start
+and end with a letter or number, globally unique.
+
+**Object keys:** Up to 263 bytes (UTF-8). Avoid control characters and characters
+requiring special URL encoding for best compatibility.
