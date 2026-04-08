@@ -1,6 +1,6 @@
 # Fil One Docs
 
-User-facing documentation for [fil.one/docs](https://fil.one/docs). Built with [Docusaurus](https://docusaurus.io/) and deployed to [Vercel](https://vercel.com/).
+User-facing documentation for [docs.fil.one](https://docs.fil.one). Built with [Docusaurus](https://docusaurus.io/) and deployed to [Vercel](https://vercel.com/).
 
 ## Local development
 
@@ -10,6 +10,13 @@ npm start
 ```
 
 Opens at `http://localhost:3000/docs/`.
+
+To preview a production build locally:
+
+```bash
+npm run build
+npm run serve
+```
 
 ## Build
 
@@ -31,11 +38,10 @@ Static output goes to `./build/`.
    - **Install Command:** `npm install`
 4. Click **Deploy**.
 
-### Custom domain (fil.one/docs)
+### Custom domain (docs.fil.one)
 
 1. In the Vercel project dashboard, go to **Settings > Domains**.
-2. Add `fil.one` and configure the `/docs` path prefix.
-3. Alternatively, use a subdomain like `docs.fil.one` and set a CNAME record pointing to `cname.vercel-dns.com`.
+2. Add `docs.fil.one` and set a CNAME record pointing to `cname.vercel-dns.com`.
 
 ### Automatic deploys
 
@@ -57,7 +63,8 @@ docs/                    # All documentation pages (MDX)
   introduction.mdx
 docusaurus.config.js     # Site config (navbar, footer, theme)
 sidebars.js              # Sidebar navigation structure
-src/css/custom.css       # Custom styles
+src/                     # Custom React components and CSS
+  css/custom.css         # Custom styles
 static/img/              # Logo, favicon, images
 vercel.json              # Vercel deployment config
 ```
