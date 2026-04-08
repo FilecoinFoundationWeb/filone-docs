@@ -1,0 +1,98 @@
+# Fil One Documentation
+
+> Fil One is S3-compatible object storage built for AI agents and data-intensive
+> workloads. Backed by the Filecoin network for cryptographically verifiable data
+> integrity. No egress fees, no per-request charges, $4.99/TB/month flat rate.
+> Use any S3-compatible SDK or tool — point it at `https://eu-west-1.s3.fil.one`
+> with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
+
+Critical integration notes for developers:
+- Buckets must be created via the dashboard (app.fil.one) — CreateBucket and
+  DeleteBucket via S3 API are not supported and return AccessDenied
+- Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
+  (virtual-hosted-style URLs are not supported)
+- Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
+  handle this automatically
+- All buckets are private by default; all data is encrypted at rest (AES-256
+  SSE-KMS) and in transit (TLS); encryption cannot be disabled
+- Single region currently: eu-west-1 (additional regions planned)
+- Deletion is permanent and immediate — no recycle bin or soft-delete
+
+## Getting Started
+
+- [Quickstart](https://docs.fil.one/quickstart): Create an account, generate
+  API keys, and upload your first object — covers App, AWS CLI, Python, and
+  JavaScript paths
+- [Quickstart - AWS CLI](https://docs.fil.one/quickstart/cli): Full CLI walkthrough
+  including named profile setup to avoid repeating --endpoint-url
+- [Quickstart - SDK](https://docs.fil.one/quickstart/sdk): Copy-paste examples
+  for Python (boto3), JavaScript (AWS SDK v3), and Go to create a bucket, upload,
+  and verify
+
+## Storage
+
+- [Buckets](https://docs.fil.one/storage/buckets): Bucket naming rules, how to
+  create via dashboard, listing via API, and Filecoin deal lifecycle on deletion
+- [Objects](https://docs.fil.one/storage/objects): Upload, download, list, delete,
+  and presigned URL generation with code examples for App, AWS CLI, and boto3
+- [Multipart Uploads](https://docs.fil.one/storage/multipart-uploads): Required
+  for objects > 5 GB; recommended for > 100 MB. Includes AWS CLI and boto3
+  TransferConfig examples, part limits, and cleanup of incomplete uploads
+
+## Security
+
+- [Authentication](https://docs.fil.one/security/authentication): SigV4 auth
+  setup for AWS CLI, Python (boto3), JavaScript (AWS SDK v3), and Go; credential
+  best practices including environment variable usage
+- [API Keys](https://docs.fil.one/security/api-keys): Creating keys with scoped
+  permissions (Read/Write/List/Delete), bucket-level scoping, key expiration,
+  revocation, and security best practices
+- [Encryption](https://docs.fil.one/security/encryption): AES-256 SSE-KMS
+  encryption always on by default for all objects; TLS in transit; optional
+  client-side encryption supported
+
+## Billing
+
+- [Trial & Billing](https://docs.fil.one/billing/trial): 30-day free trial
+  includes 1 TB storage and 2 TB egress; trial lifecycle (active → grace period
+  → expiry); paid plan at $4.99/TB/month with no egress or request fees
+- [Pricing](https://docs.fil.one/billing/pricing): $4.99/TB/month, no egress
+  fees, no per-request charges, no hidden costs
+
+## API Reference
+
+- [API Reference Overview](https://docs.fil.one/reference/overview): Base endpoint,
+  SigV4 authentication requirement, path-style addressing, and response format
+- [S3 Compatibility](https://docs.fil.one/reference/s3-compatibility): Full table
+  of supported vs. unsupported S3 operations (GetObject, PutObject, DeleteObject,
+  ListObjectsV2, multipart, presigned URLs all supported; bucket policies, lifecycle
+  rules, IAM not yet supported); differences from AWS S3
+- [Error Reference](https://docs.fil.one/reference/errors): Standard S3 XML error
+  format, full table of 4xx and 5xx error codes, and troubleshooting for the most
+  common errors (SignatureDoesNotMatch, ServiceUnavailable)
+
+## SDKs & Tools
+
+- [SDKs & Tools Overview](https://docs.fil.one/sdk/overview): Connection parameters
+  for all tools (endpoint, region, credentials); recommended tools list including
+  rclone, Cyberduck, s3cmd, MinIO Client
+- [Python (boto3)](https://docs.fil.one/sdk/python): Full examples for upload,
+  download, list, delete, multipart, presigned URLs, and error handling
+- [JavaScript (AWS SDK v3)](https://docs.fil.one/sdk/javascript): Full examples
+  for Node.js including streaming downloads, pagination, presigned URLs, and
+  error handling; requires `forcePathStyle: true`
+- [Go (aws-sdk-go-v2)](https://docs.fil.one/sdk/go): Full examples for upload,
+  download, paginated listing, presigned URLs, and error handling; requires
+  `UsePathStyle: true`
+
+## Optional
+
+- [Using the Dashboard](https://docs.fil.one/app/overview): Browser-based UI at
+  app.fil.one for bucket creation, file upload/download, API key management, and
+  billing — no code required
+- [FAQ](https://docs.fil.one/faq): Common questions on S3 compatibility,
+  blockchain/crypto requirements, data residency, deletion behavior, migration
+  from AWS S3, backups, durability, and Filecoin data integrity mechanics
+- [Limits & Quotas](https://docs.fil.one/limits): Account limits (storage,
+  egress, buckets), object size limits (max 5 TB, use multipart above 5 GB),
+  API rate limits, and bucket/key naming constraints
