@@ -1,89 +1,85 @@
 ---
 title: Object Lock
-description: Protect data from deletion and overwrite with immutable retention policies.
+description: Protect objects from deletion and overwrite with WORM retention policies.
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-
-Object Lock lets you enforce Write-Once-Read-Many (WORM) protection on stored objects. Once an object is locked, it cannot be deleted or overwritten until the retention period expires -- not even by the account owner. This is designed for regulatory compliance, legal preservation, and data governance use cases.
-
-Object Lock on Fil One follows S3 Object Lock semantics. If you have used Object Lock on AWS S3, the behavior is identical.
+Object Lock lets you enforce Write-Once-Read-Many (WORM) protection on stored objects. Once an object is locked, it cannot be deleted or overwritten until the retention period expires — not even by the account owner. This is designed for regulatory compliance, legal preservation, and ransomware protection use cases.
 
 ## Key concepts
 
-**Retention period** -- A duration (from 1 day to 10 years) during which an object version cannot be deleted or overwritten.
+**Retention period** — A duration during which an object version cannot be deleted or overwritten.
 
-**Compliance mode** -- The strictest protection. No user, including the account owner, can shorten the retention period or delete a locked object before it expires. This mode satisfies regulatory requirements for immutable storage (SEC 17a-4, FINRA, HIPAA, GDPR).
+**Compliance mode** — The strictest protection. No user, including the account owner, can shorten the retention period or delete a locked object before it expires. Use this for SEC 17a-4, FINRA, HIPAA, and other regulatory requirements.
 
-**Versioning** -- Object Lock requires versioning, so versioning is always enabled on every bucket. Each version of an object can have its own retention settings.
+**Governance mode** — A softer protection. Users with the appropriate permissions can bypass retention and delete objects before the period expires. Use this for internal data governance policies where some flexibility is needed.
 
-:::note
-Governance mode and Legal Hold are planned for a future release. The current release supports Compliance mode only.
+**Versioning** — Object Lock requires versioning. You must enable both when creating the bucket. Once enabled, versioning cannot be suspended on a locked bucket.
+
+## Enabling Object Lock
+
+Object Lock is **opt-in** and must be enabled at **bucket creation time**. It cannot be added to an existing bucket, and once enabled it cannot be disabled.
+
+To create a bucket with Object Lock:
+
+1. From the dashboard, click **Create Bucket**.
+2. Enter a bucket name.
+3. Enable **Versioning**.
+4. Enable **Object Lock**.
+5. Select a retention mode: **Compliance** or **Governance**.
+6. Set a default retention duration.
+7. Click **Create**.
+
+:::warning
+Object Lock must be enabled at bucket creation. It cannot be added to an existing bucket.
 :::
 
-## Object Lock is always on
+## Retention modes
 
-Every bucket on Fil One has Object Lock enabled automatically. There is no way to disable it. This means every bucket supports WORM retention out of the box — you just need to configure a retention policy to start protecting objects.
+| Mode | Who can bypass | Typical use |
+|------|---------------|-------------|
+| **Compliance** | Nobody — including account owners and admins | SEC 17a-4, FINRA, HIPAA — legally mandated immutability |
+| **Governance** | Users with bypass permission | Internal policy retention, development, audit-friendly workflows |
 
-## Setting a default retention policy
+In **Compliance mode**, the retention period is absolute. No action can shorten or remove it once set. This is the mode required for most regulatory recordkeeping obligations.
 
-You can set a default retention period on the bucket. Any object uploaded to the bucket will automatically inherit this retention unless overridden at upload time.
+In **Governance mode**, users with the appropriate permission can delete locked objects before the retention period expires. This is useful when you need immutability by default but want flexibility for authorized users to correct mistakes.
+
+:::warning
+Choose your retention mode carefully at bucket creation. Compliance mode retention periods cannot be shortened or removed. Test with Governance mode before switching to Compliance mode in production.
+:::
+
+## Setting per-object retention
+
+The default retention period set at bucket creation is applied automatically to every object uploaded to that bucket. You can also set or extend retention on individual object versions directly via the S3 API.
 
 <Tabs>
-  <TabItem value="app" label="App">
-    Open your bucket, go to **Settings > Object Lock**, and configure the default retention mode and duration.
-  </TabItem>
-
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    aws s3api put-object-lock-configuration \
+    aws s3api put-object-retention \
       --bucket my-compliance-bucket \
-      --object-lock-configuration '{
-        "ObjectLockEnabled": "Enabled",
-        "Rule": {
-          "DefaultRetention": {
-            "Mode": "COMPLIANCE",
-            "Days": 365
-          }
-        }
-      }' \
+      --key important-record.pdf \
+      --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
       --endpoint-url https://eu-west-1.s3.fil.one
     ```
   </TabItem>
-
   <TabItem value="python-boto3" label="Python (boto3)">
     ```python
-    s3.put_object_lock_configuration(
+    s3.put_object_retention(
         Bucket="my-compliance-bucket",
-        ObjectLockConfiguration={
-            "ObjectLockEnabled": "Enabled",
-            "Rule": {
-                "DefaultRetention": {
-                    "Mode": "COMPLIANCE",
-                    "Days": 365,
-                }
-            },
+        Key="important-record.pdf",
+        Retention={
+            "Mode": "COMPLIANCE",
+            "RetainUntilDate": "2027-12-31T00:00:00Z",
         },
     )
     ```
   </TabItem>
 </Tabs>
 
-## Setting retention on individual objects
-
-You can set or extend retention on specific object versions, overriding the bucket default.
-
-```bash
-aws s3api put-object-retention \
-  --bucket my-compliance-bucket \
-  --key important-record.pdf \
-  --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-  --endpoint-url https://eu-west-1.s3.fil.one
-```
-
-**Retention can be extended but never shortened.** You can move the `RetainUntilDate` further into the future, but you cannot bring it closer. Attempting to shorten a Compliance mode retention period returns a `403 AccessDenied` error.
+**Retention can be extended but never shortened.** You can move `RetainUntilDate` further into the future, but you cannot bring it closer. Attempting to shorten a Compliance mode retention period returns `403 AccessDenied`.
 
 ## Checking retention status
 
@@ -107,36 +103,37 @@ Returns:
 
 ## Deleting locked objects
 
-**You cannot.** That is the point.
+Attempting to delete an object with active retention returns `403 AccessDenied`.
 
-Attempting to delete an object with active Compliance retention returns:
-
-```
-403 AccessDenied
-```
-
-The error message indicates the object is protected by a compliance retention lock and includes the retention expiry date.
-
-On a versioned bucket, a `DELETE` request places a delete marker. The object appears deleted to applications, but the underlying version is still protected and intact until retention expires.
+On a versioned bucket, a `DELETE` request without a version ID places a delete marker. The object appears deleted to applications, but the underlying version remains protected and intact until retention expires.
 
 ## Deleting buckets with locked objects
 
-If any object in a bucket has active Compliance retention, the bucket cannot be deleted. The system returns an error identifying the locked objects and the earliest retention expiry date.
+If any object in a bucket has active Compliance retention, the bucket cannot be deleted. Once all retention periods have expired, the bucket can be deleted normally.
 
-Once all retention periods have expired, the bucket can be deleted normally.
+## Object Lock and API keys
+
+Every API key automatically includes `GetBucketVersioning` and `GetBucketObjectLockConfiguration` access. Beyond that, Object Lock behavior depends on the key's permissions and the bucket's retention mode:
+
+- A key with **Delete** permission can delete objects in **Governance** mode buckets (subject to bypass permissions).
+- **Compliance** mode cannot be bypassed by any key, regardless of permissions.
 
 ## Object Lock during trial
 
-Object Lock is fully available during the free trial. Trial accounts are limited to a maximum retention period of **30 days** (matching the trial duration) to ensure account cleanup can proceed normally at trial expiration.
+Object Lock is fully available during the free trial. Trial accounts are limited to a maximum retention period of **30 days** (matching the trial duration). This ensures account cleanup can proceed normally at trial expiration.
 
 Paid accounts can set retention periods from 1 day to 10 years.
+
+## Object Lock and the Filecoin storage model
+
+When you delete an object after its retention period expires, it is immediately removed from your Fil One account and inaccessible via the API and dashboard. The underlying Filecoin storage deals persist until their natural expiration — up to 180 days — but the data is no longer retrievable through Fil One. This does not affect your compliance posture.
 
 ## Common use cases
 
 | Use case | Typical retention | Why Object Lock |
 |----------|-------------------|-----------------|
-| Financial records (SEC 17a-4) | 6-7 years | Regulatory requirement for immutable, non-rewritable storage. |
-| Healthcare records (HIPAA) | 6-10 years | Audit trail integrity and tamper-proof record retention. |
-| Legal hold / litigation | Variable | Preserve evidence without risk of spoliation. |
-| Backup integrity | 30-90 days | Prevent ransomware from encrypting or deleting backups. |
-| GDPR audit trail | Varies | Demonstrate data handling compliance with immutable logs. |
+| Financial records (SEC 17a-4) | 6–7 years | Regulatory requirement for immutable, non-rewritable storage |
+| Healthcare records (HIPAA) | 6–10 years | Tamper-proof audit trail and record integrity |
+| Ransomware-proof backup | 30–90 days | Prevents encrypted or deleted backups |
+| Legal hold / litigation | Variable | Preserve evidence without risk of spoliation |
+| GDPR audit trail | Varies | Demonstrate data handling compliance with immutable logs |

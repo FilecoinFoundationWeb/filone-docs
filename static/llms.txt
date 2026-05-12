@@ -38,6 +38,10 @@ Critical integration notes for developers:
 - [Multipart Uploads](https://docs.fil.one/storage/multipart-uploads): Required
   for objects > 5 GB; recommended for > 100 MB. Includes AWS CLI and boto3
   TransferConfig examples, part limits, and cleanup of incomplete uploads
+- [Object Lock](https://docs.fil.one/storage/object-lock): WORM retention for
+  regulatory compliance (SEC 17a-4, FINRA, HIPAA). Opt-in at bucket creation,
+  Compliance and Governance modes, per-object retention via PutObjectRetention,
+  30-day cap during trial
 
 ## Security
 
