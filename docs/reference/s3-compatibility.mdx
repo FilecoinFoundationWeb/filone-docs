@@ -5,12 +5,11 @@ description: Supported S3 operations, authentication, and endpoint configuration
 
 Fil One provides an S3-compatible API. If your application works with AWS S3, it works with Fil One — point your SDK or CLI at our endpoint and authenticate with your API keys.
 
-## Endpoints
+## Endpoint
 
-| Region | Identifier | Endpoint |
-|--------|------------|----------|
-| Europe (Ireland) | `eu-west-1` | `https://eu-west-1.s3.fil.one` |
-| US East (N. Virginia) | `us-east-1` | `https://us-east-1.s3.fil.one` |
+```
+https://eu-west-1.s3.fil.one
+```
 
 All requests use HTTPS. HTTP connections are rejected.
 
@@ -20,8 +19,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | Region-specific (see table above) |
-| Region | `eu-west-1` or `us-east-1` |
+| Endpoint | `https://eu-west-1.s3.fil.one` |
+| Region | `eu-west-1` |
 | Signature version | SigV4 |
 | Path style | Required |
 | Virtual-hosted style | Not supported |
@@ -163,6 +162,7 @@ Per-bucket access control via API key scoping is planned for a future release.
 | Object and bucket tagging | Phase 2 | Planned. |
 | Object Lock: Governance mode | Phase 2 | Compliance mode is supported today. |
 | Object Lock: Legal Hold | Phase 2 | Planned. |
+| Multi-region | Phase 2 | `eu-west-1` only today. `us-east-1` planned. |
 | IAM / multi-user accounts / RBAC | Phase 2 | Single-user accounts only. |
 | S3 Select | Not planned | |
 | S3 Inventory | Not planned | |
@@ -199,5 +199,5 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
 | Object Lock modes | Compliance and Governance. | Compliance only. Governance and Legal Hold planned. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
-| Regions | 30+ globally. | `eu-west-1` and `us-east-1`. |
+| Regions | 30+ globally. | `eu-west-1` only. Additional regions planned. |
 | Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage deals persist up to 180 days until natural sector expiration. |
