@@ -12,8 +12,6 @@ description: Service limits, quotas, and constraints.
 | API operations | Unlimited | Unlimited |
 | Buckets per account | 100 | 1,000 |
 
-<!-- PLACEHOLDER: Confirm bucket limits with engineering -->
-
 The trial lasts 30 days. After it ends, your account enters a 7-day read-only grace period before data is permanently deleted. See [Trial & Billing](/billing/trial) for the full timeline and email schedule.
 
 ## Object limits
@@ -29,6 +27,15 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 | Maximum metadata size per object | 2 KB |
 
 For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
+
+## Regions
+
+| Region | Identifier | Status |
+|--------|------------|--------|
+| Europe (Ireland) | `eu-west-1` | Available |
+| US East (N. Virginia) | `us-east-1` | Available |
+
+The region is selected at bucket creation time and cannot be changed afterward.
 
 ## API rate limits
 

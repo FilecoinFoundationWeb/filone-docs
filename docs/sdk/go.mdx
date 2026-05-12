@@ -47,12 +47,7 @@ Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardco
 
 ### Create a bucket
 
-```go
-_, err := client.CreateBucket(ctx, &s3.CreateBucketInput{
-    Bucket: aws.String("my-bucket"),
-})
-```
-
+Bucket creation is not supported through the S3 API. Use the [Fil One dashboard](https://app.fil.one) — go to **Buckets → Create Bucket**.
 
 ### Upload an object
 

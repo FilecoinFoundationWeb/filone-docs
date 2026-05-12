@@ -53,7 +53,7 @@ Every bucket is created with encryption enabled automatically.
 ## Deleting a bucket
 
 :::note
-Bucket deletion is not yet supported. The dashboard has a delete button, but it is currently inactive. The S3 API also returns `AccessDenied` for `DeleteBucket`. This will be enabled in a future release.
+Bucket deletion is not yet available. The delete button in the dashboard is visible but disabled while the underlying storage layer completes support for this operation. The S3 `DeleteBucket` API also returns `AccessDenied`. This will be enabled in a future release.
 :::
 
 :::info Logical deletion and Filecoin storage

@@ -31,6 +31,22 @@ Each key can be granted a combination of the following permissions:
 
 You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload but not remove data.
 
+### Granular permissions
+
+For buckets with [versioning](/storage/versioning) or [Object Lock](/storage/object-lock) enabled, you can enable additional granular permissions on top of the basic ones:
+
+| Granular permission | Requires basic | What it allows |
+|---------------------|----------------|----------------|
+| `GetObjectVersion` | Read | Retrieve specific versions of an object |
+| `GetObjectRetention` | Read | View retention policy on an object |
+| `GetObjectLegalHold` | Read | View legal hold status on an object |
+| `PutObjectRetention` | Write | Apply or extend retention policies |
+| `PutObjectLegalHold` | Write | Apply or remove legal holds |
+| `ListBucketVersions` | List | List all versions of objects in a bucket |
+| `DeleteObjectVersion` | Delete | Permanently delete a specific object version |
+
+Granular permissions are additive — a key must have the corresponding basic permission before a granular permission can be granted. For example, `PutObjectRetention` requires the **Write** basic permission.
+
 ## Bucket scope
 
 By default, a key has access to all buckets in your account. You can restrict a key to one or more specific buckets. A bucket-scoped key cannot list or access any bucket outside its allowed set.
@@ -55,11 +71,10 @@ Go to **API Keys** in the left menu to see all your active keys. The list shows:
 
 | Column | Description |
 |--------|-------------|
-| Name | The label you gave the key at creation |
+| Name | The label you gave the key at creation, with the Access Key ID shown beneath it |
+| Region | The region the key is scoped to |
 | Buckets | Which buckets the key can access (all, or a specific set) |
-| Permissions | The permission levels granted (Read, Write, List, Delete) |
-| Status | Whether the key is active or revoked |
-| Last Used | When the key last successfully authenticated a request |
+| Last Used | When the key last successfully authenticated a request (or "Never") |
 
 You cannot view the Secret Access Key after creation.
 

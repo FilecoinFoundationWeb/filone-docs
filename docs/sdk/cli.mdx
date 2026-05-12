@@ -64,9 +64,7 @@ aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
 
 ### Create a bucket
 
-```bash
-aws s3 mb s3://my-bucket --profile filone
-```
+Bucket creation is not supported through the S3 API. Use the [Fil One dashboard](https://app.fil.one) — go to **Buckets → Create Bucket**.
 
 ### Upload a file
 
@@ -108,11 +106,7 @@ aws s3 rm s3://my-bucket/reports/report.pdf --profile filone
 
 ### Delete a bucket
 
-A bucket must be empty before it can be deleted. The `--force` flag has the AWS CLI empty the bucket client-side first — this is a CLI convenience, not an API feature.
-
-```bash
-aws s3 rb s3://my-bucket --force --profile filone
-```
+Bucket deletion is managed through the [Fil One dashboard](https://app.fil.one). The `DeleteBucket` S3 API operation is not supported and returns `AccessDenied`.
 
 ## Multipart uploads
 

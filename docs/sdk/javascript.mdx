@@ -33,12 +33,7 @@ Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardco
 
 ### Create a bucket
 
-```javascript
-import { CreateBucketCommand } from "@aws-sdk/client-s3";
-
-await s3.send(new CreateBucketCommand({ Bucket: "my-bucket" }));
-```
-
+Bucket creation is not supported through the S3 API. Use the [Fil One dashboard](https://app.fil.one) — go to **Buckets → Create Bucket**.
 
 ### Upload an object
 

@@ -5,13 +5,12 @@ description: Supported S3 operations, authentication, and endpoint configuration
 
 Fil One provides an S3-compatible API. If your application works with AWS S3, it works with Fil One — point your SDK or CLI at our endpoint and authenticate with your API keys.
 
-## Endpoint
+## Endpoints
 
-```
-https://eu-west-1.s3.fil.one
-```
-
-<!-- PLACEHOLDER: Confirm final endpoint URL before launch -->
+| Region | Identifier | Endpoint |
+|--------|------------|----------|
+| Europe (Ireland) | `eu-west-1` | `https://eu-west-1.s3.fil.one` |
+| US East (N. Virginia) | `us-east-1` | `https://us-east-1.s3.fil.one` |
 
 All requests use HTTPS. HTTP connections are rejected.
 
@@ -21,8 +20,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | `https://eu-west-1.s3.fil.one` |
-| Region | `eu-west-1` |
+| Endpoint | Region-specific (see table above) |
+| Region | `eu-west-1` or `us-east-1` |
 | Signature version | SigV4 |
 | Path style | Required |
 | Virtual-hosted style | Not supported |
@@ -104,4 +103,4 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Public access | Configurable public bucket policies and ACLs. | No public bucket ACLs or public access settings. All access requires authentication. |
 | Lifecycle rules | Supported (expiration, transitions, etc.). | Not supported in the current release. Planned for a future release. Affects common archival and cleanup workflows. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.) | Single storage class. |
-| Regions | 30+ regions globally. | `eu-west-1` (additional regions planned). |
+| Regions | 30+ regions globally. | `eu-west-1` and `us-east-1`. |
