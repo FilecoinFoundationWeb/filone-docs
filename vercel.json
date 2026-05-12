@@ -2,5 +2,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "installCommand": "npm install",
-  "framework": "docusaurus-2"
+  "framework": "docusaurus-2",
+  "redirects": [
+    { "source": "/api-reference", "destination": "/reference/overview", "permanent": true },
+    { "source": "/security", "destination": "/security/authentication", "permanent": true },
+    { "source": "/billing", "destination": "/billing/trial", "permanent": true },
+    { "source": "/sdks", "destination": "/sdk/overview", "permanent": true },
+    { "source": "/sdks/:path*", "destination": "/sdk/:path*", "permanent": true }
+  ]
 }
