@@ -19,6 +19,7 @@ const sidebars = {
         "storage/buckets",
         "storage/objects",
         "storage/multipart-uploads",
+        "storage/versioning",
         "storage/object-lock",
       ],
     },
