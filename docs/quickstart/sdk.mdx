@@ -25,10 +25,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
         aws_secret_access_key="YOUR_SECRET_KEY",
     )
 
-    # Create a bucket
-    s3.create_bucket(Bucket="my-sdk-bucket")
-
-    # Upload a file
+    # Upload a file (create the bucket first in the dashboard)
     s3.upload_file("my-file.txt", "my-sdk-bucket", "my-file.txt")
 
     # Verify
@@ -44,7 +41,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
     ```
 
     ```javascript
-    import { S3Client, CreateBucketCommand, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+    import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
     import { readFileSync } from "fs";
 
     const client = new S3Client({
@@ -57,10 +54,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
       },
     });
 
-    // Create a bucket
-    await client.send(new CreateBucketCommand({ Bucket: "my-sdk-bucket" }));
-
-    // Upload a file
+    // Upload a file (create the bucket first in the dashboard)
     await client.send(new PutObjectCommand({
       Bucket: "my-sdk-bucket",
       Key: "my-file.txt",
@@ -109,12 +103,7 @@ Choose your language and follow along. Each example creates a bucket, uploads a 
 
         ctx := context.Background()
 
-        // Create bucket
-        client.CreateBucket(ctx, &s3.CreateBucketInput{
-            Bucket: aws.String("my-sdk-bucket"),
-        })
-
-        // Upload
+        // Upload (create the bucket first in the dashboard)
         client.PutObject(ctx, &s3.PutObjectInput{
             Bucket: aws.String("my-sdk-bucket"),
             Key:    aws.String("hello.txt"),

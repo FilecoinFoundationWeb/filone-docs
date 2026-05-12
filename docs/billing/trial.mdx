@@ -53,10 +53,19 @@ Payments are processed through Stripe. You can add a credit card from **Billing*
 - Usage details are visible in **Billing** in the left sidebar.
 - Payment is due on receipt of invoice.
 
+## Payment failures
+
+If a payment fails, your account enters **past due** status and Stripe will automatically retry the charge. During this period, your data remains accessible and uploads continue to work.
+
+If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below). You will receive email notifications at each stage.
+
 ## Cancellation
 
-You can cancel your paid plan at any time from the dashboard. After cancellation:
+You can cancel your paid plan at any time from the dashboard. After cancellation, your account enters a **30-day grace period**:
 
-1. Your account remains active through the end of the current billing period.
-2. At the end of the billing period, the account transitions to read-only.
-3. After a grace period, data is permanently deleted.
+| Phase | Duration | What you can do |
+|-------|----------|-----------------|
+| **Grace period** | 30 days | **Read-only.** Download your data or reactivate your plan. No new uploads. |
+| **Expired** | After grace period | Account closed. All data permanently deleted. API keys disabled. |
+
+Reactivating your plan during the grace period restores full access immediately.

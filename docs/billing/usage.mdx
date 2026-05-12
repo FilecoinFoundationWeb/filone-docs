@@ -1,8 +1,35 @@
 ---
 title: "Usage"
-description: "Coming soon."
+description: "Understanding your storage and bandwidth usage in Fil One."
 ---
 
-:::info
-This page is under construction and will be available at launch. In the meantime, see the [Quickstart](/quickstart) to get started.
-:::
+The **Billing** page in the dashboard shows your current usage for the active billing period.
+
+## What is measured
+
+| Metric | How it's measured |
+|--------|------------------|
+| **Storage** | Average daily storage across the billing period, in GB or TB |
+| **Egress bandwidth** | Total data downloaded from Fil One in the billing period |
+
+Storage is measured as an average rather than a peak — if you store 2 TB for half the month and 1 TB for the other half, you are billed for 1.5 TB.
+
+Egress bandwidth is unlimited and not charged. It is shown for informational purposes only.
+
+## Trial limits
+
+During the free trial, usage is capped at:
+- **1 TB** storage
+- **2 TB** egress bandwidth per month
+
+If you approach either limit during the trial, you will see a warning in the dashboard. Upgrading to a paid plan removes both caps immediately.
+
+## Versioning and storage costs
+
+If versioning is enabled on a bucket, every version of an object counts as stored storage. Overwriting a 1 GB file 10 times results in 10 GB of stored versions. Consider deleting old versions you no longer need to reduce storage costs. See [Versioning](/storage/versioning).
+
+## Billing period
+
+Paid accounts are billed monthly. The billing period resets on the same day each month (the date you first upgraded from trial). Usage resets at the start of each new billing period.
+
+See [Trial & Billing](/billing/trial) for pricing details.

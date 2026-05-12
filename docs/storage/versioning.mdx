@@ -6,15 +6,17 @@ description: How versioning works in Fil One and how to work with object version
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Versioning is **always enabled** on every Fil One bucket. It cannot be suspended or disabled. Every time you upload an object with the same key, Fil One creates a new version rather than overwriting the previous one.
+Versioning is **opt-in** and configured at bucket creation time. Once enabled on a bucket, it cannot be suspended or disabled. Every time you upload an object with the same key on a versioned bucket, Fil One creates a new version rather than overwriting the previous one.
 
 This means your data is always recoverable — you can retrieve any previous state of an object using its version ID.
+
+To enable versioning, turn on the **Versioning** toggle when creating a bucket in the dashboard. Versioning is required for [Object Lock](/storage/object-lock).
 
 ## How versions work
 
 When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object, Fil One places a **delete marker** at the current version — the object appears deleted, but all previous versions are still retrievable.
 
-Because versioning is always on and cannot be suspended, this behavior applies to all objects in all buckets.
+This behavior applies to all objects in versioned buckets.
 
 ## Billing implications
 
