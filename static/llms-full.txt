@@ -631,7 +631,7 @@ applies automatically.
 
 Source: https://docs.fil.one/billing/pricing
 
-Fil One is priced at **$4.99 / TB / month**.
+Fil One is priced at **$4.99 / TB / month**, with a **$4.99 / month minimum**. If you store less than 1 TB, you are billed the $4.99 minimum.
 
 No egress fees, no per-request charges, no hidden costs.
 
@@ -671,7 +671,7 @@ You can upgrade to a paid plan at any time during the trial or grace period.
 | Egress bandwidth | No charge |
 | API operations | Included |
 
-No minimum commitments. Billed based on average daily usage.
+Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. No contract or term commitment.
 
 
 ---
