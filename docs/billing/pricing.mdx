@@ -6,3 +6,25 @@ description: "Fil One storage pricing."
 Fil One is priced at **$4.99 / TB / month**, with a **$4.99 / month minimum**. If you store less than 1 TB, you are billed the $4.99 minimum.
 
 No egress fees, no per-request charges, no hidden costs.
+
+## How billing is calculated
+
+Your bill is based on the average amount of data you store over the month:
+
+- Stored bytes are sampled daily and averaged across the billing period.
+- The first TB is billed at the flat $4.99 / month minimum. Storage above 1 TB is billed at $4.99 per additional TB, pro-rated to your exact usage and rounded to the nearest cent.
+
+Usage is measured precisely, so you are billed for what you actually store above the first TB rather than being rounded up to the next whole TB.
+
+### Examples
+
+Assuming a steady amount stored for the full month:
+
+| Average stored | Monthly bill | Why |
+|----------------|--------------|-----|
+| 500 GB | $4.99 | Below 1 TB, so the $4.99 minimum applies |
+| 1,001 GB | $4.99 | 1 GB over 1 TB rounds to $0.00 |
+| 1,002 GB | $5.00 | 2 GB over 1 TB is about $0.01 |
+| 1,500 GB | $7.49 | $4.99 for the first TB plus $2.50 for the next 0.5 TB |
+
+If the amount you store changes during the month, it is averaged first. For example, storing 2 TB for the first 10 days and 0.5 TB for the remaining 20 days averages to 1 TB, billed at $4.99 for that month.
