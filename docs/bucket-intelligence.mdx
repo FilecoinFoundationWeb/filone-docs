@@ -1,0 +1,160 @@
+---
+title: Bucket Intelligence
+description: Turn a bucket into a queryable knowledge base. Early access.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+:::warning Early access
+Bucket Intelligence is in early access and is not generally available. Access is granted per account, so the feature does not appear in the dashboard unless your account has been enabled for it. If it is not available to you, contact support to ask about access.
+
+It is **free during early access**. Pricing after general availability has not been set.
+:::
+
+Bucket Intelligence turns a storage bucket into a queryable knowledge base. Enable it on a bucket, and Fil One indexes the objects in that bucket so you can ask questions in natural language and get an answer grounded in your own files, with the source objects cited.
+
+There are two parts: a background **indexer** that keeps each enabled bucket's index in sync, and a **query endpoint** that answers questions against it.
+
+## Enabling it on a bucket
+
+1. Go to **Bucket Intelligence** in the left menu of the dashboard.
+2. On the **Buckets** tab, toggle on the bucket you want to index.
+3. Wait for the first indexing pass to complete. The tab shows a sync badge for each bucket, along with the number of files indexed, the index size, and when it last synced.
+
+Available in `eu-west-1` and `us-east-1`.
+
+## How indexing works
+
+:::info Indexing is scheduled, not immediate
+The indexer runs on a schedule, **every 6 hours** (03:00, 09:00, 15:00, and 21:00 UTC). It is not triggered by uploads. A file you upload now becomes searchable after the next scheduled pass, so allow up to 6 hours.
+:::
+
+On each pass the indexer compares every object's `ETag` against what it indexed last time:
+
+- **New object** — text is extracted, split into chunks, embedded, and added to the index.
+- **Changed `ETag`** — the old chunks are removed and the object is re-indexed.
+- **Unchanged** — skipped.
+
+Deleted objects are reconciled out of the index on a full pass. Large buckets are checkpointed and resumed across runs, so the first pass over a big bucket may take several cycles to complete.
+
+Text is split into chunks of roughly 1,000 characters with 200 characters of overlap.
+
+### Supported file types
+
+| Type | Extensions |
+|------|-----------|
+| PDF | `.pdf` |
+| Plain text | `.txt` |
+| Markdown | `.md` |
+| HTML | `.html`, `.htm` |
+| Word | `.docx` |
+| PowerPoint | `.pptx` |
+
+Objects of any other type are ignored — they stay in your bucket untouched, they are just not indexed.
+
+:::caution No OCR
+PDFs are indexed by extracting their text layer. Scanned or image-only PDFs have no text layer, so they extract to nothing and are **silently skipped** — the file will not be searchable and no error is reported. Text-based PDFs work normally.
+:::
+
+## Models
+
+Bucket Intelligence uses models that Fil One manages on your behalf, through Amazon Bedrock:
+
+| Role | Model |
+|------|-------|
+| Embeddings | Amazon Titan Text Embeddings V2 (1,024 dimensions) |
+| Answers | Anthropic Claude Opus 4.8 |
+
+You cannot supply your own model or your own provider credentials, and you cannot choose a different embedding model. Bring-your-own-model support is planned but not available.
+
+## RAG API keys
+
+To query a bucket from outside the dashboard you need a **RAG API key** — a bearer token, distinct from your S3 access keys.
+
+:::note What a RAG API key can and cannot do
+A RAG API key authorizes **only** the query endpoint. It cannot read, write, list, or delete the contents of any bucket. It is also not a bring-your-own-LLM key — it authenticates you to Fil One, it does not carry credentials for a model provider.
+:::
+
+Create one from the **API Keys** tab of the Bucket Intelligence page. You can scope a key to all buckets in your account, or to a specific list of buckets (up to 50). Bucket names are region-specific, so a scoped key names each bucket together with its region.
+
+RAG API keys begin with `sk_rag_`. The token is shown **once**, at creation. Fil One stores only a hash of it, so it cannot be shown again — copy it immediately. The list view afterwards shows the key's name, a short prefix, its scope, when it was created, and when it was last used.
+
+:::caution Keys do not expire
+RAG API keys have no expiry and there is no rotation mechanism. A key stays valid until you delete it. Delete keys you are no longer using, and treat the token like any other long-lived secret — keep it in a secrets manager or an environment variable, never in source control.
+:::
+
+Deleting a key takes effect immediately. Access also depends on the account that created the key: if that account loses early-access eligibility or its subscription lapses, its keys stop working.
+
+## Querying a bucket
+
+### From the dashboard
+
+Open a bucket from the **Buckets** tab and use the **Ask a question** box in the bucket drawer. The answer appears with the objects it drew on listed as sources.
+
+### From the API
+
+```
+POST https://app.fil.one/api/buckets/{bucket}/query?region={region}
+```
+
+Authenticate with your RAG API key as a bearer token.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `query` | string | Required. The question to answer. |
+| `top_k` | number | Optional. How many chunks to retrieve. Default 10, maximum 100. |
+| `model` | string | Optional. Only the managed answer model is accepted. |
+
+`region` is a query parameter and defaults to `eu-west-1`. Add `objectKey` to restrict the search to a single object.
+
+<Tabs>
+  <TabItem value="curl" label="curl">
+    ```bash
+    curl -X POST \
+      "https://app.fil.one/api/buckets/my-bucket/query?region=eu-west-1" \
+      -H "Authorization: Bearer $FILONE_RAG_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"query": "What is our data retention policy?"}'
+    ```
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+    ```python
+    import os
+    import requests
+
+    response = requests.post(
+        "https://app.fil.one/api/buckets/my-bucket/query",
+        params={"region": "eu-west-1"},
+        headers={"Authorization": f"Bearer {os.environ['FILONE_RAG_KEY']}"},
+        json={"query": "What is our data retention policy?", "top_k": 10},
+    )
+    print(response.json()["answer"])
+    ```
+  </TabItem>
+</Tabs>
+
+The response contains the grounded answer and the object keys it came from:
+
+```json
+{
+  "answer": "Records are retained for seven years, per the policy in compliance/retention.pdf.",
+  "sources": ["compliance/retention.pdf", "policies/records-2025.docx"]
+}
+```
+
+If nothing relevant is found, the answer says so and `sources` is empty. Requesting a bucket that does not exist, or one outside your key's scope, returns `404` in both cases.
+
+## Not available yet
+
+| Feature | Status |
+|---------|--------|
+| MCP endpoint / MCP server for Claude, Cursor, and other clients | Not built. The dashboard marks it "Coming later." |
+| Bring-your-own LLM keys or custom embedding models | Not implemented. |
+| API key expiry and rotation | Not implemented. Keys are long-lived until deleted. |
+| Upload-triggered or near-real-time indexing | Not implemented. Indexing is on the 6-hourly schedule described above. |
+
+## Where your index is stored
+
+Embeddings and the extracted text chunks are held in storage that Fil One manages, separate from your bucket. Your objects themselves are not moved or modified by indexing. The extracted chunk text is retained in the index so answers can quote from it, which is worth knowing if a bucket holds sensitive material — enable Bucket Intelligence deliberately, per bucket, rather than across everything.

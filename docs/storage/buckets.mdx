@@ -22,7 +22,9 @@ These are the same naming rules as AWS S3.
 ## Creating a bucket
 
 :::note
-Bucket creation and deletion must be done through the Fil One dashboard. The S3 API does not support `CreateBucket` or `DeleteBucket` — those operations return `AccessDenied`. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API.
+Whether you can create a bucket through the S3 API depends on the region. `CreateBucket` and `DeleteBucket` are supported in `us-east-1`, but not in `eu-west-1` — in that region buckets must be created through the Fil One dashboard. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API in every region.
+
+To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that permission when you create it. See [API Keys](/security/api-keys).
 :::
 
 1. From the dashboard, click **Create Bucket**.
@@ -53,7 +55,9 @@ Every bucket is created with encryption enabled automatically.
 ## Deleting a bucket
 
 :::note
-Bucket deletion is not yet available. The delete button in the dashboard is visible but disabled while the underlying storage layer completes support for this operation. The S3 `DeleteBucket` API also returns `AccessDenied`. This will be enabled in a future release.
+Deleting a bucket from the dashboard is not yet available. The delete button is visible but disabled while the underlying storage layer completes support for this operation, and it will be enabled in a future release.
+
+In the meantime you can delete a bucket through the S3 API in `us-east-1`, using a key that has the `DeleteBucket` permission. The bucket must be empty. `DeleteBucket` is not available in `eu-west-1`.
 :::
 
 :::info Logical deletion and Filecoin storage

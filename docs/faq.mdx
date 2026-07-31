@@ -81,7 +81,7 @@ Yes. Fil One works with any backup tool that supports S3-compatible storage, inc
 <summary>What durability guarantees do you offer?</summary>
 <div>
 
-Fil One is designed for high durability through distributed storage across multiple providers. Data is replicated and verifiably stored. Specific durability SLA details are available on request.
+Fil One is designed for high durability through distributed storage across multiple providers. Specific durability SLA details are available on request.
 
 </div>
 </details>
@@ -96,10 +96,12 @@ Currently, Fil One accounts are single-user. Each account has one login and one 
 </details>
 
 <details>
-<summary>How does Fil One verify that my data hasn't been tampered with?</summary>
+<summary>How does Filecoin protect the integrity of stored data?</summary>
 <div>
 
-Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs — called Proof of Replication (PoRep) and Proof of Spacetime (PoSt) — to prove they are holding your data correctly over time. Each stored object is identified by a content identifier (CID), a cryptographic fingerprint of the data. If the data changes, the CID changes. This makes data integrity independently verifiable, not just claimed by a central authority.
+Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs — called Proof of Replication (PoRep) and Proof of Spacetime (PoSt) — to prove they are still holding the data they committed to store. Providers that fail to produce valid proofs are penalised. This proof cycle runs at the network level and is not something you trigger or check yourself.
+
+Fil One does not currently expose per-object proof data — content identifiers, deal IDs, and sealing state are not surfaced through the API or the dashboard, so you cannot independently audit an individual object today. For object-level integrity checks in your own application, compare the `ETag` returned by `HeadObject` against a checksum you keep, or apply [Object Lock](/storage/object-lock) to make objects immutable for a fixed retention period.
 
 </div>
 </details>

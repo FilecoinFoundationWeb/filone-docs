@@ -28,8 +28,8 @@ To create a bucket with Object Lock:
 2. Enter a bucket name.
 3. Enable **Versioning**.
 4. Enable **Object Lock**.
-5. Select a retention mode: **Compliance** or **Governance**.
-6. Set a default retention duration.
+5. Select a retention mode: **Governance** (the default) or **Compliance**.
+6. Set a default retention duration — from 1 day up to 100 years (36,500 days).
 7. Click **Create**.
 
 :::warning
@@ -40,8 +40,8 @@ Object Lock must be enabled at bucket creation. It cannot be added to an existin
 
 | Mode | Who can bypass | Typical use |
 |------|---------------|-------------|
+| **Governance** (default) | Users with bypass permission | Internal policy retention, development, audit-friendly workflows |
 | **Compliance** | Nobody — including account owners and admins | SEC 17a-4, FINRA, HIPAA — legally mandated immutability |
-| **Governance** | Users with bypass permission | Internal policy retention, development, audit-friendly workflows |
 
 In **Compliance mode**, the retention period is absolute. No action can shorten or remove it once set. This is the mode required for most regulatory recordkeeping obligations.
 
@@ -113,16 +113,16 @@ If any object in a bucket has active Compliance retention, the bucket cannot be 
 
 ## Object Lock and API keys
 
-Every API key automatically includes `GetBucketVersioning` and `GetBucketObjectLockConfiguration` access. Beyond that, Object Lock behavior depends on the key's permissions and the bucket's retention mode:
+`GetBucketVersioning` and `GetBucketObjectLockConfiguration` are selectable permissions that you grant when creating a key — they are not included automatically, so add them if the key needs to read a bucket's versioning or Object Lock settings. Beyond that, Object Lock behavior depends on the key's permissions and the bucket's retention mode:
 
 - A key with **Delete** permission can delete objects in **Governance** mode buckets (subject to bypass permissions).
 - **Compliance** mode cannot be bypassed by any key, regardless of permissions.
 
 ## Object Lock during trial
 
-Object Lock is fully available during the free trial. Trial accounts are limited to a maximum retention period of **30 days** (matching the trial duration). This ensures account cleanup can proceed normally at trial expiration.
+Object Lock is fully available during the free trial, with no trial-specific retention cap. Trial and paid accounts alike can set retention periods from **1 day to 100 years** (36,500 days).
 
-Paid accounts can set retention periods from 1 day to 10 years.
+Keep in mind that retention outlives the trial: a lock you set during the trial still applies after the trial ends, and retention cannot be shortened once set.
 
 ## Object Lock and the Filecoin storage model
 

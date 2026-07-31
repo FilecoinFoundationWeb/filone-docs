@@ -7,9 +7,12 @@ Fil One provides an S3-compatible API. If your application works with AWS S3, it
 
 ## Endpoint
 
-```
-https://eu-west-1.s3.fil.one
-```
+Endpoints are region-specific. Use the endpoint for the region your bucket lives in:
+
+| Region | Endpoint |
+|--------|----------|
+| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.fil.one` |
+| US East (Michigan) `us-east-1` | `https://us-east-1.s3.fil.one` |
 
 All requests use HTTPS. HTTP connections are rejected.
 
@@ -19,8 +22,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | `https://eu-west-1.s3.fil.one` |
-| Region | `eu-west-1` |
+| Endpoint | `https://<region>.s3.fil.one` |
+| Region | `eu-west-1` or `us-east-1` |
 | Signature version | SigV4 |
 | Path style | Required |
 | Virtual-hosted style | Not supported |
@@ -31,14 +34,14 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
-| `CreateBucket` | ❌ Not supported | Buckets must be created via the dashboard. |
-| `DeleteBucket` | ❌ Not supported | Bucket deletion is not yet available. |
+| `CreateBucket` | ⚠️ Region-dependent | Supported in `us-east-1`. Not available in `eu-west-1` — create buckets there via the dashboard. |
+| `DeleteBucket` | ⚠️ Region-dependent | Supported in `us-east-1` (the bucket must be empty). Not available in `eu-west-1`. |
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
 | `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets, `Suspended` is never returned. |
 | `PutBucketVersioning` | ⚠️ Partial | Accepted for SDK compatibility. Versioning cannot be suspended once enabled — suspend requests are rejected. |
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
-| `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention policy (Compliance mode). |
+| `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention policy in Governance or Compliance mode. |
 | `GetBucketEncryption` | ✅ Supported | Returns the default SSE-KMS (AES-256) configuration. |
 | `PutBucketEncryption` | ⚠️ No-op | Encryption cannot be modified or disabled. Accepted for SDK compatibility but has no effect. |
 | `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. See [ACLs](#acls). |
@@ -63,7 +66,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `HeadObject` | ✅ Supported | |
 | `ListObjectsV2` | ✅ Supported | |
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
-| `CopyObject` | ✅ Supported | Supports `x-amz-copy-source-version-id` to copy a specific version. |
+| `CopyObject` | ❌ Not supported | Server-side copy is not implemented. Download the object and re-upload it instead. |
 | `GetObjectRetention` | ✅ Supported | Returns the Object Lock Compliance retention for a specific version. |
 | `PutObjectRetention` | ✅ Supported | Sets Compliance retention on a specific version. Retention can be extended but not shortened. |
 | `GetObjectLegalHold` | ❌ Not supported | Planned for a future release. |
@@ -76,6 +79,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `SelectObjectContent` | ❌ Not planned | S3 Select is not planned. |
 
 ### Multipart upload
+
+Multipart upload is available through the S3 API. Note that uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling — use the S3 API or CLI for larger objects.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -96,21 +101,23 @@ Versioning is **opt-in** and configured at bucket creation time. Once enabled on
 | `ListObjectVersions` | ✅ Supported | Lists all versions and delete markers in a bucket. |
 | `GetObject` with `VersionId` | ✅ Supported | Retrieves a specific historical version by ID. |
 | `DeleteObject` with `VersionId` | ✅ Supported | Permanently deletes a specific version, bypassing delete markers. |
-| `CopyObject` with `x-amz-copy-source-version-id` | ✅ Supported | Copies a specific version to restore or duplicate it. |
 | `PutBucketVersioning` (suspend) | ❌ Rejected | Versioning cannot be suspended once enabled. Suspend requests return an error. |
+| `CopyObject` with `x-amz-copy-source-version-id` | ❌ Not supported | Server-side copy is not implemented, so there is no way to promote an older version to current. |
+
+There is **no restore, roll-back, or point-in-time recovery.** You can list, download, and delete any prior version, but you cannot make an older version the current one. To effectively revert, download the version you want and upload it again as a new version.
 
 See [Versioning](/storage/versioning) for detailed usage and examples.
 
 ### Object Lock
 
-Object Lock enforces WORM (Write-Once-Read-Many) protection. Compliance mode is supported. Governance mode and Legal Hold are planned for a future release.
+Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and Compliance mode are supported. Object Lock requires versioning, and both are set at bucket creation time.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy. |
-| `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention (Compliance mode, 1 day – 10 years). |
-| `GetObjectRetention` | ✅ Supported | Returns the Compliance retention for a specific object version. |
-| `PutObjectRetention` | ✅ Supported | Sets or extends Compliance retention on a version. Cannot be shortened. |
+| `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention (Governance or Compliance mode, 1 day – 100 years). |
+| `GetObjectRetention` | ✅ Supported | Returns the retention setting for a specific object version. |
+| `PutObjectRetention` | ✅ Supported | Sets or extends retention on a version. Cannot be shortened. |
 | `GetObjectLegalHold` | ❌ Not supported | Planned for a future release. |
 | `PutObjectLegalHold` | ❌ Not supported | Planned for a future release. |
 
@@ -118,8 +125,8 @@ Object Lock enforces WORM (Write-Once-Read-Many) protection. Compliance mode is 
 
 | Mode | Status |
 |------|--------|
+| Governance | ✅ Supported — the default when you enable Object Lock. Retention is enforced, but users holding the bypass permission can override it. |
 | Compliance | ✅ Supported — no user, including the account owner, can delete a locked object or shorten its retention. |
-| Governance | ❌ Not supported — planned for a future release. |
 
 See [Object Lock](/storage/object-lock) for compliance use cases, retention configuration, and examples.
 
@@ -160,9 +167,8 @@ Per-bucket access control via API key scoping is planned for a future release.
 | Lifecycle rules (expiration, transitions) | Phase 2 | Planned. Affects archival and cleanup workflows. |
 | Event notifications (SNS/SQS/Lambda triggers) | Phase 2 | Planned. |
 | Object and bucket tagging | Phase 2 | Planned. |
-| Object Lock: Governance mode | Phase 2 | Compliance mode is supported today. |
-| Object Lock: Legal Hold | Phase 2 | Planned. |
-| Multi-region | Phase 2 | `eu-west-1` only today. `us-east-1` planned. |
+| Object Lock: Legal Hold | Phase 2 | Planned. Governance and Compliance retention are supported today. |
+| Additional regions | Phase 2 | `eu-west-1` and `us-east-1` are available today. |
 | IAM / multi-user accounts / RBAC | Phase 2 | Single-user accounts only. |
 | S3 Select | Not planned | |
 | S3 Inventory | Not planned | |
@@ -191,13 +197,14 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|---------|
-| Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in per bucket. Once enabled, cannot be suspended or disabled. |
+| Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore or roll-back. |
+| Server-side copy | `CopyObject` supported. | Not supported. Download and re-upload instead. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on (AES-256 SSE-KMS). Cannot be disabled. |
-| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Buckets managed via dashboard only. `CreateBucket` and `DeleteBucket` return `AccessDenied`. Deletion not yet available. |
+| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. |
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
-| Object Lock modes | Compliance and Governance. | Compliance only. Governance and Legal Hold planned. |
+| Object Lock modes | Compliance and Governance. | Compliance and Governance. Legal Hold is not yet available. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
-| Regions | 30+ globally. | `eu-west-1` only. Additional regions planned. |
+| Regions | 30+ globally. | Two: `eu-west-1` and `us-east-1`. Additional regions planned. |
 | Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage deals persist up to 180 days until natural sector expiration. |
