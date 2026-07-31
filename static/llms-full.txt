@@ -23,7 +23,9 @@ Critical integration notes for developers:
   regional storage gateway and keys are held by the regional operator, NOT by Fil
   One and NOT customer-managed. Do not name a specific cipher or SSE mode
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
-- Deletion is permanent and immediate — no recycle bin or soft-delete
+- Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
+  On versioned buckets a plain delete places a delete marker and prior versions
+  are retained and still billed
 - CopyObject / server-side copy is NOT supported; there is no version restore,
   roll-back, or point-in-time recovery
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
@@ -392,8 +394,10 @@ aws s3 rm s3://my-bucket/my-file.txt \
   --endpoint-url https://eu-west-1.s3.fil.one
 ```
 
-Deletion is immediate — the object disappears from the dashboard and API
-instantly. There is no recycle bin or soft-delete.
+On a bucket without versioning, deletion is immediate — the object disappears from
+the dashboard and API instantly, and there is no recycle bin or soft-delete. On a
+versioned bucket a plain delete places a delete marker instead: prior versions are
+retained, downloadable by version ID, and still counted as stored storage.
 
 ## Presigned URLs
 
@@ -1201,17 +1205,25 @@ No. Fil One is a standard cloud storage service. You sign up with an email, stor
 data using familiar S3 tools, and pay with a credit card.
 
 **Where is my data stored?**
-On a distributed network of storage providers. All data is encrypted at rest.
+You choose the region at bucket creation: eu-west-1 Europe (France) or us-east-1
+US East (Michigan). Objects stay in their bucket's region and the region cannot be
+changed afterwards. Within a region, storage is fulfilled by a distributed network
+of storage providers on Filecoin. All data is encrypted at rest.
 
 **What happens when I delete an object?**
-The object disappears from your account immediately. There is no recycle bin or undo.
+On a bucket WITHOUT versioning: it disappears immediately, no recycle bin or undo.
+On a bucket WITH versioning: a plain delete places a delete marker instead. The
+object stops appearing in listings but every prior version is kept, downloadable
+by version ID, and the object can be made visible again by deleting the delete
+marker. Retained versions still count as stored storage.
 
 **Can I migrate from AWS S3?**
 Yes. Use aws s3 sync, rclone, or any S3-compatible transfer utility pointed at
 the Fil One endpoint.
 
 **Do you charge for egress?**
-No. There are no egress or data transfer fees.
+On a paid plan, no — there are no egress or data transfer fees. The free trial is
+the exception: it includes 2 TB of egress rather than unlimited.
 
 **What is included in the free trial?**
 30-day trial with 1 TB storage, 2 TB egress, unlimited API operations. No credit

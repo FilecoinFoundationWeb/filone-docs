@@ -27,7 +27,9 @@ No. Fil One is a standard cloud storage service. You sign up with an email, stor
 <summary>Where is my data stored?</summary>
 <div>
 
-Your data is stored on a distributed network of storage providers. All data is encrypted at rest. Geographic data residency options are available — contact support for details on region-specific storage.
+You choose the region when you create a bucket. Fil One currently offers **Europe (France)** as `eu-west-1` and **US East (Michigan)** as `us-east-1`. Objects in a bucket stay in that bucket's region, and the region cannot be changed afterwards, so pick it deliberately if data residency matters to you.
+
+Within a region, storage is fulfilled by a distributed network of storage providers on Filecoin. All data is encrypted at rest. See [Limits & Quotas](/limits) for the region list and [Encryption](/security/encryption) for how encryption is handled.
 
 </div>
 </details>
@@ -36,7 +38,9 @@ Your data is stored on a distributed network of storage providers. All data is e
 <summary>What happens when I delete an object?</summary>
 <div>
 
-The object disappears from your account immediately. There is no recycle bin or undo.
+On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
+
+On a bucket **with versioning enabled**, a plain delete places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. See [Versioning](/storage/versioning).
 
 </div>
 </details>
@@ -54,7 +58,9 @@ Yes. Because Fil One is S3-compatible, you can use standard migration tools like
 <summary>Do you charge for egress?</summary>
 <div>
 
-No. There are no egress or data transfer fees.
+On a paid plan, no. There are no egress or data transfer fees.
+
+The free trial is the exception: it includes 2 TB of egress rather than unlimited. See [Trial & Billing](/billing/trial).
 
 </div>
 </details>
