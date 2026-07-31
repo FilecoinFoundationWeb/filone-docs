@@ -7,15 +7,15 @@
 > with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
 
 Critical integration notes for developers:
-- Buckets must be created via the dashboard (app.fil.one) — CreateBucket and
-  DeleteBucket via S3 API are not supported and return AccessDenied
+- CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
+  in us-east-1, unavailable in eu-west-1 (use the dashboard there)
 - Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
   (virtual-hosted-style URLs are not supported)
 - Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
   handle this automatically
 - All buckets are private by default; all data is encrypted at rest (AES-256
   SSE-KMS) and in transit (TLS); encryption cannot be disabled
-- Single region currently: eu-west-1 (additional regions planned)
+- Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate — no recycle bin or soft-delete
 
 ## Getting Started

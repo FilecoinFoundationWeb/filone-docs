@@ -7,8 +7,8 @@
 > with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
 
 Critical integration notes for developers:
-- Buckets must be created via the dashboard (app.fil.one) — CreateBucket and
-  DeleteBucket via S3 API are not supported and return AccessDenied
+- CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
+  in us-east-1, unavailable in eu-west-1 (use the dashboard there)
 - Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
   (virtual-hosted-style URLs are not supported)
 - Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
@@ -259,9 +259,11 @@ These are the same naming rules as AWS S3.
 
 ## Creating a bucket
 
-Bucket creation and deletion must be done through the Fil One dashboard. The S3
-API does not support CreateBucket or DeleteBucket — those operations return
-AccessDenied. All other S3 operations work normally via the API.
+Whether you can create or delete a bucket through the S3 API depends on the
+region: CreateBucket and DeleteBucket are supported in us-east-1 but not in
+eu-west-1, where buckets are created through the Fil One dashboard. All other S3
+operations work normally via the API in every region. To use CreateBucket or
+DeleteBucket with an access key, grant the key that permission at creation.
 
 1. From the dashboard, click **Create Bucket**.
 2. Enter a bucket name.
@@ -613,7 +615,8 @@ on read. Applies to all objects in all buckets with no exceptions.
 
 ## Encryption in transit
 
-All connections to https://s3.fil.one use TLS. HTTP connections are rejected.
+All connections to the regional endpoints (https://eu-west-1.s3.fil.one,
+https://us-east-1.s3.fil.one) use TLS. HTTP connections are rejected.
 Applies to all API operations including uploads, downloads, presigned URLs,
 and metadata requests.
 
@@ -665,9 +668,9 @@ Every new account starts with a 30-day free trial. No credit card required.
 |-------|------|-----------------|
 | Active trial | 0-30 | Full access. |
 | Grace period | 31-37 | Read-only. Download your data and upgrade. |
-| Expired | 38+ | Account closed. All data permanently deleted. |
+| Expired | 38+ | Account disabled. No access to data, uploads, or API keys. |
 
-You can upgrade to a paid plan at any time during the trial or grace period.
+You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; Fil One does not run an automatic purge at that point, so contact support to restore access or request removal of your data.
 
 ## Paid plan pricing
 
@@ -739,8 +742,8 @@ endpoint and authenticate with your API keys.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
-| CreateBucket | Not supported | Buckets must be created via the dashboard. |
-| DeleteBucket | Not supported | Bucket deletion not yet available. |
+| CreateBucket | Region-dependent | Supported in us-east-1. Not available in eu-west-1 — use the dashboard. |
+| DeleteBucket | Region-dependent | Supported in us-east-1 (bucket must be empty). Not available in eu-west-1. |
 | ListBuckets | Supported | |
 | HeadBucket | Supported | |
 
@@ -814,7 +817,7 @@ Fil One returns standard S3 error responses in XML format.
 
 | Code | HTTP | Description |
 |------|------|-------------|
-| AccessDenied | 403 | No permission. Also returned for CreateBucket/DeleteBucket (not supported). |
+| AccessDenied | 403 | No permission. |
 | BucketAlreadyExists | 409 | Bucket name already taken. |
 | InvalidAccessKeyId | 403 | Key does not exist or has been revoked. |
 | InvalidBucketName | 400 | Name does not meet naming requirements. |
@@ -1215,7 +1218,21 @@ Source: https://docs.fil.one/limits
 | Storage | 1 TB | No limit |
 | Egress bandwidth | 2 TB / month | No limit |
 | API operations | Unlimited | Unlimited |
-| Buckets per account | 100 | 1,000 |
+| Buckets per account | 100 | 100 |
+
+The bucket limit is set per account rather than fixed by plan, and defaults to
+100. Contact support if you need a higher limit.
+
+## Regions
+
+| Region | Identifier | Status |
+|--------|------------|--------|
+| Europe (France) | eu-west-1 | Available (default) |
+| US East (Michigan) | us-east-1 | Available |
+
+The region is selected at bucket creation time and cannot be changed afterward.
+Access keys are also scoped to a single region. Bucket creation and deletion
+through the S3 API are available in us-east-1 but not in eu-west-1.
 
 ## Object limits
 
@@ -1226,7 +1243,7 @@ Source: https://docs.fil.one/limits
 | Maximum parts per multipart upload | 10,000 |
 | Minimum part size (multipart) | 5 MB |
 | Maximum part size (multipart) | 5 GB |
-| Maximum object key length | 263 bytes |
+| Maximum object key length | 1,024 bytes |
 | Maximum metadata size per object | 2 KB |
 
 ## API rate limits
@@ -1240,5 +1257,5 @@ support if you are consistently hitting limits at scale.
 **Bucket names:** 3-63 characters, lowercase letters/numbers/hyphens, must start
 and end with a letter or number, globally unique.
 
-**Object keys:** Up to 263 bytes (UTF-8). Avoid control characters and characters
+**Object keys:** Up to 1,024 bytes (UTF-8). Avoid control characters and characters
 requiring special URL encoding for best compatibility.

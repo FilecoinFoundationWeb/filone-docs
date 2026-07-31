@@ -13,14 +13,17 @@ API keys authenticate your requests to the Fil One S3 API. Each key consists of 
 1. Go to **API Keys** in the left menu of the dashboard.
 2. Click **Create Key**.
 3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`).
-4. Set the key's permissions and scope (see below).
-5. Optionally, set an expiration date.
-6. Click **Create**.
-7. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, you must create a new key.
+4. Choose the key's **region** (see [Region scope](#region-scope)).
+5. Set the key's permissions and bucket scope (see below).
+6. Optionally, set an expiration date.
+7. Click **Create**.
+8. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, you must create a new key.
 
 ## Key permissions
 
-Each key can be granted a combination of the following permissions:
+### Object permissions
+
+Each key can be granted a combination of the following object-level permissions:
 
 | Permission | What it allows |
 |------------|----------------|
@@ -30,6 +33,26 @@ Each key can be granted a combination of the following permissions:
 | **Delete** | `DeleteObject` |
 
 You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload but not remove data.
+
+### Bucket management permissions
+
+These are standalone permissions — they do not require any object permission. They are only offered in regions where bucket management is available through the S3 API, so they cannot be granted on an `eu-west-1` key. See [Buckets](/storage/buckets).
+
+| Permission | What it allows |
+|------------|----------------|
+| `CreateBucket` | Create a new bucket |
+| `DeleteBucket` | Delete an empty bucket |
+
+Listing buckets is always permitted and is not a separate, configurable permission.
+
+### Bucket configuration permissions
+
+These read a bucket's settings and are selectable in every region, including `eu-west-1`. They are **not** granted automatically — add them if your key needs them.
+
+| Permission | What it allows |
+|------------|----------------|
+| `GetBucketVersioning` | Read whether versioning is enabled on a bucket |
+| `GetBucketObjectLockConfiguration` | Read a bucket's default Object Lock retention policy |
 
 ### Granular permissions
 
@@ -46,6 +69,16 @@ For buckets with [versioning](/storage/versioning) or [Object Lock](/storage/obj
 | `DeleteObjectVersion` | Delete | Permanently delete a specific object version |
 
 Granular permissions are additive — a key must have the corresponding basic permission before a granular permission can be granted. For example, `PutObjectRetention` requires the **Write** basic permission.
+
+:::note
+`GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key, but Legal Hold operations are not yet available through the S3 API, so granting them has no effect today. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
+:::
+
+## Region scope
+
+Every key belongs to a **single region**, chosen when you create it. A key only authenticates requests to that region's endpoint — it cannot be used against another region, and it cannot be moved to one afterward. If you store data in both `eu-west-1` and `us-east-1`, you need a separate key for each.
+
+The region also determines which permissions are available: the bucket management permissions above cannot be granted on an `eu-west-1` key.
 
 ## Bucket scope
 

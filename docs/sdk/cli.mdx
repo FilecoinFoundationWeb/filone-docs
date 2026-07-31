@@ -106,7 +106,13 @@ aws s3 rm s3://my-bucket/reports/report.pdf --profile filone
 
 ### Delete a bucket
 
-Bucket deletion is managed through the [Fil One dashboard](https://app.fil.one). The `DeleteBucket` S3 API operation is not supported and returns `AccessDenied`.
+`DeleteBucket` support depends on the region. In `us-east-1` you can remove an empty bucket with a key that has the `DeleteBucket` permission:
+
+```bash
+aws s3 rb s3://my-bucket --profile filone
+```
+
+In `eu-west-1` the operation is not available, and dashboard deletion is not yet enabled either. See [Buckets](/storage/buckets).
 
 ## Multipart uploads
 
