@@ -7,10 +7,12 @@ If you have the AWS CLI installed, you can start using Fil One in under 2 minute
 
 ## 1. Install the AWS CLI
 
+Use **AWS CLI v2** — v1 does not read `endpoint_url` from config files:
+
 ```bash
-pip install awscli
-# or
 brew install awscli
+# or follow the official installer:
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 ```
 
 ## 2. Configure credentials
@@ -22,7 +24,11 @@ Set up a named profile so you don't have to pass `--endpoint-url` on every comma
 [profile filone]
 endpoint_url = https://eu-west-1.s3.fil.one
 region = eu-west-1
+s3 =
+    addressing_style = path
 ```
+
+The `addressing_style = path` line is required — Fil One only supports path-style URLs, and the CLI otherwise defaults to virtual-hosted style, which fails.
 
 :::note The endpoint depends on your bucket's region
 The example above uses `eu-west-1`, the default region. If your bucket is in `us-east-1`, use `https://us-east-1.s3.fil.one` and `region = us-east-1` instead. The endpoint and the region must both match the bucket you are working with, and your access key has to belong to that region too.
@@ -39,9 +45,9 @@ aws_secret_access_key = YOUR_SECRET_KEY
 
 ## 3. Create a bucket
 
-Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region — there, create buckets from the [Fil One dashboard](https://app.fil.one) by going to **Buckets → Create Bucket**, entering a name, and clicking **Create**.
+Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region — there, create buckets from the [Fil One dashboard](https://app.fil.one) by going to **Buckets → Create bucket**, entering a name, and clicking **Create bucket**.
 
-In `us-east-1` you can create a bucket from the CLI, using a key that has the `CreateBucket` permission:
+In `us-east-1` you can create a bucket from the CLI, using a key that has the `CreateBucket` permission. This requires a `us-east-1` profile — define one the same way as the `filone` profile above but with the `us-east-1` endpoint and region (shown here as `filone-us`):
 
 ```bash
 aws s3 mb s3://my-bucket --profile filone-us

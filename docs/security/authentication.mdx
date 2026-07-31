@@ -20,7 +20,7 @@ Each API key consists of two parts:
 | Component | Description | Example format |
 |-----------|-------------|----------------|
 | **Access Key ID** | Identifies your account. Included in request headers. | `FHXXXXXXXXXXXXXXXX` |
-| **Secret Access Key** | Signs your requests. Never sent over the wire. | `wJalrXUtnFEMI/K7MDENG/...` |
+| **Secret Access Key** | Signs your requests. Never sent over the wire. | `EXAMPLEfakeSECRETkeyDoNotUse...` |
 
 Your secret key is displayed **once** at creation time. Store it securely. If you lose it, you will need to create a new key pair.
 
@@ -29,55 +29,67 @@ Your secret key is displayed **once** at creation time. Store it securely. If yo
 <Tabs>
   <TabItem value="app" label="App">
     1. Go to **API Keys** in the left menu.
-    2. Click **Create Key**.
-    3. Give the key a descriptive name (e.g., `production-backend`, `local-dev`).
-    4. Copy both the Access Key ID and Secret Access Key immediately.
+    2. Click **Create new key** (this opens a dedicated page).
+    3. Give the key a descriptive name (e.g., `production-backend`, `local-dev`). Names are limited to 64 characters.
+    4. Choose the **Region** the key belongs to. This is required and cannot be changed later. A key only authenticates against its own region's endpoint — a key created in the wrong region fails with `403`, which is the single most common first-run mistake.
+    5. Select at least one permission (Read, Write, List, Delete), and optionally restrict the key to specific buckets and set an expiration (Never, 30 days, or a custom date).
+    6. Copy both the Access Key ID and Secret Access Key immediately — the secret is shown only once.
   </TabItem>
 </Tabs>
 
-You can create multiple API keys per account. Each key can be scoped to specific buckets and permissions (Read, Write, List, Delete), and you can set an expiration date. See [API Keys](/security/api-keys) for details on configuring key permissions.
+You can create multiple API keys per account. See [API Keys](/security/api-keys) for details on configuring key permissions.
 
 ## Revoking an API key
 
-Go to **API Keys** in the left menu, find the key, and click **Delete**. The key is revoked immediately. Any in-flight requests signed with that key will fail.
+Go to **API Keys** in the left menu, find the key, open its **⋯** action menu, and choose **Delete**. Deletion is forwarded to the regional storage operator; the key stops working once that change propagates, so rotate any dependent credentials rather than assuming an exact cut-off instant.
 
 ## Configuring your client
 
 ### AWS CLI
 
+Use **AWS CLI v2** — v1 ignores `endpoint_url` in config files. Configure credentials into a named `filone` profile (not the default), so they land where `--profile filone` will read them:
+
 ```bash
-aws configure
+aws configure --profile filone
 ```
 
-When prompted:
-
-```
-AWS Access Key ID: YOUR_ACCESS_KEY
-AWS Secret Access Key: YOUR_SECRET_KEY
-Default region name: eu-west-1
-Default output format: json
-```
-
-Then pass `--endpoint-url https://eu-west-1.s3.fil.one` on every command, or set it as a profile default:
+When prompted, enter your Access Key ID, Secret Access Key, and `eu-west-1` as the region. Then add the endpoint and path-style setting to the same profile:
 
 ```ini
 # ~/.aws/config
 [profile filone]
 endpoint_url = https://eu-west-1.s3.fil.one
 region = eu-west-1
-
-# ~/.aws/credentials
-[filone]
-aws_access_key_id = YOUR_ACCESS_KEY
-aws_secret_access_key = YOUR_SECRET_KEY
+s3 =
+    addressing_style = path
 ```
 
-Then use `--profile filone` on your commands.
+Then use `--profile filone` on your commands. Path-style addressing is required — without it the CLI uses virtual-hosted URLs that fail against Fil One.
 
 ### Python (boto3)
 
+Load credentials from environment variables (recommended). Both `region_name` (SigV4 needs a signing region) and the path-style config are required:
+
 ```python
 import boto3
+import os
+from botocore.config import Config
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://eu-west-1.s3.fil.one",
+    aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
+    region_name="eu-west-1",
+    config=Config(s3={"addressing_style": "path"}),
+)
+```
+
+For a quick local test only, you can pass credentials inline — never commit this to source control:
+
+```python
+import boto3
+from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
@@ -85,20 +97,7 @@ s3 = boto3.client(
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
     region_name="eu-west-1",
-)
-```
-
-For production use, load credentials from environment variables or AWS credential files rather than hardcoding them:
-
-```python
-import boto3
-import os
-
-s3 = boto3.client(
-    "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
-    aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
-    aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
+    config=Config(s3={"addressing_style": "path"}),
 )
 ```
 
@@ -110,6 +109,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 const client = new S3Client({
   endpoint: "https://eu-west-1.s3.fil.one",
   region: "eu-west-1",
+  forcePathStyle: true,
   credentials: {
     accessKeyId: process.env.FIL_ACCESS_KEY,
     secretAccessKey: process.env.FIL_SECRET_KEY,
@@ -135,6 +135,7 @@ func newClient() *s3.Client {
     return s3.New(s3.Options{
         BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
         Region:       "eu-west-1",
+        UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
             os.Getenv("FIL_ACCESS_KEY"),
             os.Getenv("FIL_SECRET_KEY"),

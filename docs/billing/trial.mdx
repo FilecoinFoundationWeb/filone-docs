@@ -9,12 +9,21 @@ Every new account starts with a 30-day free trial. No credit card is required.
 
 | Included | Amount |
 |----------|--------|
-| Storage | 1 TB (1,024 GB) |
-| Egress bandwidth | 2 TB |
+| Storage | 1 TB (1,000 GB) |
+| Egress bandwidth | 2 TB (2,000 GB) |
 | API operations | Unlimited |
 | Duration | 30 days from account creation |
 
-The trial gives you enough capacity to test real workloads, not just sample uploads. All features are available during the trial.
+The trial gives you enough capacity to test real workloads, not just sample uploads. Almost everything works during the trial; the two exceptions are generating **shareable links** for objects and viewing **invoice history**, both of which unlock on a paid plan.
+
+:::warning Trial caps are enforced, and the two caps behave differently
+The storage and egress figures above are hard limits, not soft allowances, and reaching them has different consequences:
+
+- **Storage reaching 1 TB** puts the account into a **write-locked** state — you can still read and download, but new uploads are rejected.
+- **Egress reaching 2 TB** **disables the account** — the same state as trial expiry, with no read or write access until you upgrade.
+
+Trial egress is a **single cumulative budget** across the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (around 07:00 and 19:00 UTC), so a cap may be exceeded for a few hours before access changes.
+:::
 
 ## What happens when the trial ends
 
@@ -59,13 +68,13 @@ Payments are processed through Stripe. You can add a credit card from **Billing*
 
 ## Payment failures
 
-If a payment fails, your account enters **past due** status and Stripe will automatically retry the charge. During this period, your data remains accessible and uploads continue to work.
+If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. **New uploads and other write operations are blocked from the moment the payment fails** — not after some later deadline. Your existing data stays readable and downloadable throughout the past-due window, but you cannot write to it until a payment succeeds.
 
 If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below). You will receive email notifications at each stage.
 
 ## Cancellation
 
-You can cancel your paid plan at any time from the dashboard. After cancellation, your account enters a **30-day grace period**:
+You can cancel your paid plan from the **Stripe billing portal**, which you open from **Billing** in the dashboard. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
 
 | Phase | Duration | What you can do |
 |-------|----------|-----------------|

@@ -3,7 +3,7 @@ title: Go (aws-sdk-go-v2)
 description: Using the AWS SDK for Go v2 with Fil One.
 ---
 
-Fil One is fully compatible with [aws-sdk-go-v2](https://github.com/aws/aws-sdk-go-v2). Configure the client to point at the Fil One endpoint and use the standard S3 API.
+Fil One works with [aws-sdk-go-v2](https://github.com/aws/aws-sdk-go-v2) — it is S3-API compatible. Configure the client to point at the Fil One endpoint with `UsePathStyle: true` and use the standard S3 API. A few S3 operations are not supported; see [S3 Compatibility](/reference/s3-compatibility) for the exceptions.
 
 :::note The endpoint depends on your bucket's region
 Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and `Region: "us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
@@ -47,11 +47,13 @@ func newClient() *s3.Client {
 
 Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
 
+The operation snippets below are fragments: each assumes the `client` returned by `newClient()` above and a `ctx` (e.g. `ctx := context.TODO()`) in scope, and shows only the imports specific to that snippet.
+
 ## Core operations
 
 ### Create a bucket
 
-`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create Bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
 
 ```go
 _, err := client.CreateBucket(ctx, &s3.CreateBucketInput{
@@ -114,6 +116,8 @@ io.Copy(out, result.Body)
 ### List objects
 
 ```go
+import "fmt"
+
 paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
     Bucket: aws.String("my-bucket"),
 })
@@ -124,7 +128,8 @@ for paginator.HasMorePages() {
         // handle error
     }
     for _, obj := range page.Contents {
-        fmt.Println(*obj.Key, obj.Size)
+        // obj.Size is a *int64; dereference it with aws.ToInt64 to print the number
+        fmt.Println(*obj.Key, aws.ToInt64(obj.Size))
     }
 }
 ```
@@ -141,7 +146,11 @@ _, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
 ## Presigned URLs
 
 ```go
-import "github.com/aws/aws-sdk-go-v2/service/s3"
+import (
+    "time"
+
+    "github.com/aws/aws-sdk-go-v2/service/s3"
+)
 
 presigner := s3.NewPresignClient(client)
 

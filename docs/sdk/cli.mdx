@@ -11,10 +11,18 @@ Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, 
 
 ## Installation
 
+Use **AWS CLI v2**. Version 1 (`pip install awscli`) does not read `endpoint_url` from `~/.aws/config`, so the profile setup below silently won't work — install v2 instead:
+
 ```bash
-pip install awscli
-# or
 brew install awscli
+# or follow the official installer for your platform:
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+```
+
+Confirm you have v2:
+
+```bash
+aws --version   # should print aws-cli/2.x
 ```
 
 ## Configuration
@@ -28,7 +36,11 @@ Add a `filone` profile to your AWS config files so you don't have to pass `--end
 [profile filone]
 endpoint_url = https://eu-west-1.s3.fil.one
 region = eu-west-1
+s3 =
+    addressing_style = path
 ```
+
+The `addressing_style = path` line is required: Fil One only supports path-style URLs, and the CLI defaults to virtual-hosted style even with a custom endpoint, which fails with a DNS or 404-shaped error.
 
 ```ini
 # ~/.aws/credentials
@@ -58,6 +70,12 @@ export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
 export AWS_DEFAULT_REGION=eu-west-1
 ```
 
+There is no environment variable for addressing style, so set path-style once in your config (it applies to the `default` profile):
+
+```bash
+aws configure set default.s3.addressing_style path
+```
+
 Then pass `--endpoint-url` on each command:
 
 ```bash
@@ -68,7 +86,7 @@ aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
 
 ### Create a bucket
 
-`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create Bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
 
 ```bash
 aws s3 mb s3://my-bucket --profile filone
@@ -130,8 +148,9 @@ The AWS CLI handles multipart uploads automatically. You can configure the thres
 
 ```bash
 # Set multipart threshold to 100 MB (default is 8 MB)
-aws configure set default.s3.multipart_threshold 100MB --profile filone
-aws configure set default.s3.multipart_chunksize 50MB --profile filone
+# Note: use the bare "s3." key with --profile; the "default." prefix is only for the default profile
+aws configure set s3.multipart_threshold 100MB --profile filone
+aws configure set s3.multipart_chunksize 50MB --profile filone
 ```
 
 ## Cleanup incomplete multipart uploads

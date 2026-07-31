@@ -6,7 +6,7 @@ const config = {
   title: "Fil One",
   tagline: "S3 object storage built for the AI era.",
   favicon: "img/favicon.svg",
-  url: "https://fil.one",
+  url: "https://docs.fil.one",
   baseUrl: "/",
   organizationName: "FilecoinFoundationWeb",
   projectName: "filone-docs",
@@ -30,21 +30,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Fil One",
-        "description": "S3 object storage built for the AI era. S3-compatible, backed by Filecoin for cryptographically verifiable data integrity. No egress fees, $4.99/TB/month flat rate.",
-        "url": "https://fil.one",
+        "description": "S3-compatible object storage backed by Filecoin. No egress fees on paid plans, $4.99/TB/month. Works with the S3 SDKs and tools you already use.",
+        "url": "https://docs.fil.one",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
         "offers": {
           "@type": "UnitPriceSpecification",
           "price": "4.99",
-          "priceCurrency": "USD",
-          "unitText": "TB/month"
+          "priceCurrency": "USD"
         },
         "featureList": [
           "S3-compatible API",
-          "No egress fees",
-          "AES-256 encryption at rest",
-          "Filecoin-backed verifiable data integrity",
+          "No egress fees on paid plans",
+          "Encryption at rest",
+          "Object Lock (WORM) retention",
           "Path-style addressing",
           "AWS SigV4 authentication",
           "30-day free trial"
@@ -116,7 +115,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           },
           {
             to: "/sdk/overview",
-            label: "SDKs",
+            label: "SDKs & Tools",
             position: "left",
           },
           {

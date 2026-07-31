@@ -7,43 +7,48 @@ The Fil One dashboard at [app.fil.one](https://app.fil.one) is the primary inter
 
 ## Signing in
 
-Go to [app.fil.one](https://app.fil.one) and sign in with your email address or SSO provider. If you don't have an account yet, click **Sign Up** — no credit card is required to start your 30-day free trial.
+Go to [app.fil.one](https://app.fil.one) and sign in. Fil One supports **passkeys** (positioned as the primary method), **Google**, **GitHub**, and **email + password**. If you don't have an account yet, click **Sign up** — no credit card is required to start your 30-day free trial.
+
+**Verify your email first.** A new account must confirm its email address before the dashboard opens — until you do, every page redirects to a verification screen. Check your inbox for the verification email after signing up.
 
 ## Creating a bucket
 
-1. From the dashboard home, click **Create Bucket**.
-2. Enter a bucket name. Names must be globally unique and follow standard S3 naming rules (3–63 characters, lowercase letters, numbers, and hyphens only).
-3. Click **Create**.
+1. From the dashboard home, click **New bucket** to open your buckets, then click **Create bucket**.
+2. Enter a bucket name — 3–63 characters, lowercase letters, numbers, and hyphens only (**no dots**, unlike AWS S3), unique within Fil One.
+3. Choose a **region** — `eu-west-1` Europe (France), the default, or `us-east-1` US East (Michigan). The region is permanent and determines the endpoint you connect to.
+4. Optionally enable **Versioning**, then **Object Lock**, then **Retention** — each nests inside the previous one. Like the region, all three are fixed at creation and cannot be changed afterward.
+5. Click **Create bucket**.
 
-Encryption is enabled automatically on every bucket and cannot be disabled.
+Encryption is enabled automatically on every bucket and cannot be disabled. See [Buckets](/storage/buckets) for the full walkthrough of the creation-time settings.
 
 ## Uploading files
 
 1. Click on a bucket to open it.
-2. Click **Upload**.
-3. Select one or more files from your local machine.
-4. The files appear in the object list as soon as the upload completes.
+2. Click **Upload object**.
+3. Select one or more files, or drag in a whole folder. You can optionally set a prefix to upload into a subpath.
+4. Click **Upload** to start the transfer — selecting files does not upload them on its own.
+5. The objects appear in the object list once the upload completes.
 
-For files larger than 5 GB, use the AWS CLI or an SDK with multipart upload support. See [Multipart Uploads](/storage/multipart-uploads).
+For very large objects, use the AWS CLI or an SDK with multipart upload support — the dashboard uploads with a single request. See [Multipart Uploads](/storage/multipart-uploads).
 
 ## Downloading files
 
-Click the file name to open its detail page, then select **Download** from the **"..."** menu. You can also click the download icon directly in the file list row without opening the detail page.
+Click the download icon directly on the object's row in the file list, or click the file name to open its detail page and use the **Download** button in the header.
+
+Generating a **shareable link** for an object is a paid-plan feature and is disabled during the trial.
 
 ## Deleting objects
 
-1. Select one or more objects using the checkboxes.
-2. Click **Delete**.
-3. Confirm by clicking **Delete** in the confirmation dialog.
+Click the trash icon on an object's row, then confirm in the dialog. The console deletes one object at a time — there are no checkboxes or bulk delete.
 
 ## Managing API keys
 
 1. Go to **API Keys** in the left sidebar.
-2. Click **Create Key** to generate a new key pair.
-3. Configure the key name, permissions (Read / Write / List / Delete), bucket scope, and optional expiration.
+2. Click **Create new key** — this opens a dedicated page.
+3. Configure the key name, its **region** (required — it locks the key to that region, and a key used against another region's endpoint returns `403`), permissions (Read / Write / List / Delete), bucket scope, and optional expiration.
 4. Copy the Secret Access Key immediately — it is shown only once.
 
-To revoke a key, click **Delete** next to the key. Revocation is immediate.
+To revoke a key, open its **⋯** action menu and choose **Delete**. Revocation is forwarded to the storage operator and takes effect shortly after.
 
 See [API Keys](/security/api-keys) for full details on key permissions and security best practices.
 
@@ -52,7 +57,7 @@ See [API Keys](/security/api-keys) for full details on key permissions and secur
 Go to **Billing** in the left sidebar to:
 - Add or update a payment method
 - View current usage (storage and bandwidth)
-- Download invoices
 - Upgrade from trial to a paid plan
+- Download invoices — available once you are on a paid plan; invoice history is hidden during the trial
 
 See [Trial & Billing](/billing/trial) for details on the trial lifecycle and pricing.

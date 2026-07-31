@@ -14,9 +14,9 @@ Objects are the files you store in Fil One. Each object consists of the file dat
 <Tabs>
   <TabItem value="app" label="App">
     1. Open a bucket from the dashboard.
-    2. Click **Upload**.
-    3. Select a file.
-    4. Objects appear in the file list immediately after upload completes.
+    2. Click **Upload object**.
+    3. Select one or more files, or drag a whole folder in (an optional prefix lets you upload into a subpath), then click **Upload** to start the transfer.
+    4. Objects appear in the file list once the upload completes.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -47,13 +47,13 @@ Objects are the files you store in Fil One. Each object consists of the file dat
   </TabItem>
 </Tabs>
 
-For files larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
+For very large objects (above the single-PUT limit — see [Limits](/limits)), use [multipart upload](/storage/multipart-uploads).
 
 ## Downloading objects
 
 <Tabs>
   <TabItem value="app" label="App">
-    Click the file name to open its detail page, then select **Download** from the **"..."** menu. You can also click the download icon directly in the file list row.
+    Click the download icon directly on the object's row in the file list, or click the file name to open its detail page and use the **Download** button in the header.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -89,7 +89,7 @@ for page in paginator.paginate(Bucket="my-bucket"):
 
 <Tabs>
   <TabItem value="app" label="App">
-    Select one or more objects and click **Delete**. Confirm by clicking **Delete** in the confirmation dialog.
+    Click the trash icon on an object's row, then confirm in the dialog. Deletion is one object at a time — the console has no multi-select or bulk delete.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -105,7 +105,7 @@ On a bucket without versioning, deletion is immediate — the object disappears 
 On a [versioned](/storage/versioning) bucket, a plain delete places a delete marker instead: the object stops appearing in listings, but prior versions are retained, remain downloadable by version ID, and continue to count as stored storage.
 
 :::info Logical deletion and Filecoin storage
-When you delete an object, it is immediately removed from your Fil One account and is no longer accessible. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model and does not affect your ability to manage your data in Fil One.
+When you delete an object, it is immediately removed from your Fil One account and is no longer accessible. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
 :::
 
 ## Presigned URLs
