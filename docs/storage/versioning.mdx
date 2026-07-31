@@ -166,6 +166,14 @@ Permanently deleting a version cannot be undone. If the version has an active Ob
 
 ## Versioning and Object Lock
 
-Object Lock retention applies to individual versions. When you set a retention period on an object, it applies to that specific version. Older versions retain their own retention settings independently. You cannot delete a version that is under active Compliance retention, regardless of whether a delete marker exists above it.
+Object Lock is configured on the **bucket**, when the bucket is created. You enable it there and set a default retention mode and duration, and Object Lock requires versioning to be enabled on the same bucket. Neither can be turned on later.
 
-See [Object Lock](/storage/object-lock) for details.
+Retention is then tracked per **version**. The bucket's default retention is applied to each new object version as it is uploaded, and each version carries its own retention independently — locking one version does not affect the versions above or below it, and older versions keep their own settings.
+
+What that means in practice:
+
+- You cannot delete a version that is under active Compliance retention, regardless of whether a delete marker exists above it.
+- A delete marker is not itself protected by retention, so an object can still appear deleted while its underlying versions remain locked and intact.
+- Because retention comes from the bucket default, a bucket with a long default retention will accumulate locked versions on every overwrite. Each one is billed as stored storage and cannot be removed until its retention expires.
+
+See [Object Lock](/storage/object-lock) for modes, durations, and examples.
