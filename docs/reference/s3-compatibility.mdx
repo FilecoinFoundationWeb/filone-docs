@@ -42,7 +42,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `PutBucketVersioning` | ⚠️ Partial | Accepted for SDK compatibility. Versioning cannot be suspended once enabled — suspend requests are rejected. |
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
 | `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention policy in Governance or Compliance mode. |
-| `GetBucketEncryption` | ✅ Supported | Returns the default SSE-KMS (AES-256) configuration. |
+| `GetBucketEncryption` | ✅ Supported | Returns the bucket's default server-side encryption configuration. |
 | `PutBucketEncryption` | ⚠️ No-op | Encryption cannot be modified or disabled. Accepted for SDK compatibility but has no effect. |
 | `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. See [ACLs](#acls). |
 | `PutBucketAcl` | ❌ Not supported | ACL model is not implemented. |
@@ -80,7 +80,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 ### Multipart upload
 
-Multipart upload is available through the S3 API. Note that uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling — use the S3 API or CLI for larger objects.
+Multipart upload is supported through the S3 API in **all regions**. Note that uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling — use the S3 API or CLI for larger objects.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -143,12 +143,12 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| SSE-KMS (AES-256) | ✅ Always on | All objects are encrypted at rest with AES-256. Applied automatically — no headers required. |
+| Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
-| `GetBucketEncryption` | ✅ Supported | Returns the default SSE-KMS (AES-256) configuration. |
+| `GetBucketEncryption` | ✅ Supported | Returns the bucket's default server-side encryption configuration. |
 | `PutBucketEncryption` | ⚠️ No-op | Accepted for SDK compatibility. Encryption cannot be modified or disabled. |
-| SSE-C (customer-provided keys) | ❌ Not supported | Key management is handled by Fil One infrastructure. |
-| Client-side encryption | ✅ Optional | Encrypt data before upload using AWS SDK encryption utilities. Server-side AES-256 is still applied on top. |
+| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. |
+| Client-side encryption | ✅ Optional | Encrypt data before upload using AWS SDK encryption utilities. Server-side encryption is still applied on top. |
 
 See [Encryption](/security/encryption) for details.
 
@@ -199,7 +199,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 |----------|--------|---------|
 | Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore or roll-back. |
 | Server-side copy | `CopyObject` supported. | Not supported. Download and re-upload instead. |
-| Encryption | Optional and configurable. Off by default for older buckets. | Always on (AES-256 SSE-KMS). Cannot be disabled. |
+| Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
 | Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. |
