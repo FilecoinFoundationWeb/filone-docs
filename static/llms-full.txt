@@ -1298,7 +1298,7 @@ Source: https://docs.fil.one/bucket-intelligence
 
 EARLY ACCESS — not generally available. Access is granted per account, so the
 feature is hidden in the dashboard unless the account has been enabled for it.
-FREE during early access; pricing after GA is not set.
+FREE during early access; pricing after GA will be announced later.
 
 Turn a storage bucket into a queryable knowledge base: a background indexer keeps
 each enabled bucket's index in sync, and a query endpoint answers questions
