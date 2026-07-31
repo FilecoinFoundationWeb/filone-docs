@@ -5,11 +5,14 @@ description: Endpoint, authentication, and request format for the Fil One S3 API
 
 ## Base endpoint
 
-```
-https://eu-west-1.s3.fil.one
-```
+The endpoint is region-specific. Use the one for the region your bucket is in:
 
-All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4).
+| Region | Endpoint |
+|--------|----------|
+| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.fil.one` |
+| US East (Michigan) `us-east-1` | `https://us-east-1.s3.fil.one` |
+
+All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4). Examples on this page and elsewhere in the docs use `eu-west-1` because it is the default region — substitute your own where it differs. Access keys are scoped to a single region and must match the endpoint you call.
 
 ## Request format
 

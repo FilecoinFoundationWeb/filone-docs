@@ -4,14 +4,18 @@
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees, no per-request charges, $4.99/TB/month flat rate.
-> Use any S3-compatible SDK or tool — point it at `https://eu-west-1.s3.fil.one`
-> with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
+> Use any S3-compatible SDK or tool — point it at your region's endpoint,
+> `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
+> auth. Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
   in us-east-1, unavailable in eu-west-1 (use the dashboard there)
 - Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
   (virtual-hosted-style URLs are not supported)
+- Access keys are scoped to ONE region and cannot be used against another
+- Region, versioning, Object Lock and retention are fixed at bucket creation and
+  cannot be changed afterwards (no update-bucket operation)
 - Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
   handle this automatically
 - All buckets are private by default; all data is encrypted at rest (AES-256
@@ -75,11 +79,26 @@ uploading your first object.
 From the dashboard, click **Create Bucket**. Give it a name (lowercase, no spaces
 — same rules as S3) and choose your settings:
 
-- Region: eu-west-1
+- Region: eu-west-1 Europe (France, default) or us-east-1 US East (Michigan)
 - Encryption: Always on (all data is encrypted at rest by default)
+- Versioning: off by default
+- Object Lock: off by default, requires versioning
+- Retention: off by default, requires Object Lock
+
+Region, versioning, Object Lock and retention are ALL fixed at creation. They
+cannot be changed on an existing bucket and a bucket cannot be moved between
+regions — you would have to create a new bucket and copy the data across.
+
+The three object settings nest and are enabled in order: versioning first
+(Object Lock is greyed out until it is on), then Object Lock (retention is greyed
+out until it is on), then retention. Retention modes: Governance (default — users
+with special permissions can delete or modify protected objects) and Compliance
+(no one can delete or modify objects until the retention period expires).
+Duration is set in days or years, from 1 day up to 100 years.
 
 You will also see an API key section during bucket creation. You can create a new
-API key here or configure permissions for an existing one.
+API key here or configure permissions for an existing one. A key belongs to a
+single region and must match the bucket's region.
 
 ## 3. Upload your first object
 

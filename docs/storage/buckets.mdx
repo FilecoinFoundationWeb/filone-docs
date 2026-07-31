@@ -29,10 +29,17 @@ To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that p
 
 1. From the dashboard, click **Create Bucket**.
 2. Enter a bucket name.
-3. Optionally create or configure an API key in the API key section.
-4. Click **Create**.
+3. Choose a **region** — `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
+4. Optionally enable **Versioning**. Leave it off and the bucket keeps only the current copy of each object.
+5. Optionally enable **Object Lock**, then **Retention**. Each requires the one before it, so Object Lock only becomes available once versioning is on, and retention only once Object Lock is on. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years.
+6. Optionally create or configure an API key in the API key section. A key belongs to a single region and must match the bucket's region.
+7. Click **Create**.
 
 Every bucket is created with encryption enabled automatically.
+
+:::warning Creation-time settings are permanent
+Region, versioning, Object Lock, and retention cannot be changed after the bucket exists — there is no update-bucket operation, and a bucket cannot be moved between regions. To change any of them you have to create a new bucket and copy the data across. Enable versioning and Object Lock now if you are likely to want them.
+:::
 
 ## Listing buckets
 

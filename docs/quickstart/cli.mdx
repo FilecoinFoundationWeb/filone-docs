@@ -24,6 +24,12 @@ endpoint_url = https://eu-west-1.s3.fil.one
 region = eu-west-1
 ```
 
+:::note The endpoint depends on your bucket's region
+The example above uses `eu-west-1`, the default region. If your bucket is in `us-east-1`, use `https://us-east-1.s3.fil.one` and `region = us-east-1` instead. The endpoint and the region must both match the bucket you are working with, and your access key has to belong to that region too.
+
+If you use both regions, set up a profile per region (`[profile filone-eu]`, `[profile filone-us]`) and pick with `--profile`.
+:::
+
 ```ini
 # ~/.aws/credentials
 [filone]
@@ -33,7 +39,15 @@ aws_secret_access_key = YOUR_SECRET_KEY
 
 ## 3. Create a bucket
 
-Buckets are created from the [Fil One dashboard](https://app.fil.one) — the S3 API does not support `CreateBucket`. Go to **Buckets → Create Bucket**, enter a name, and click **Create**.
+Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region — there, create buckets from the [Fil One dashboard](https://app.fil.one) by going to **Buckets → Create Bucket**, entering a name, and clicking **Create**.
+
+In `us-east-1` you can create a bucket from the CLI, using a key that has the `CreateBucket` permission:
+
+```bash
+aws s3 mb s3://my-bucket --profile filone-us
+```
+
+Creating from the dashboard is worth doing regardless, since that is where you set versioning and Object Lock — both are fixed at creation. See [Buckets](/storage/buckets).
 
 Once the bucket exists, use the AWS CLI for all object operations.
 

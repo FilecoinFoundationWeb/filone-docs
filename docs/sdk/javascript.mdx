@@ -5,6 +5,10 @@ description: Using the AWS SDK v3 for JavaScript with Fil One.
 
 Fil One is fully compatible with the [AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/). Point the client at the Fil One endpoint and use the standard API.
 
+:::note The endpoint depends on your bucket's region
+Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and `region: "us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
+:::
+
 ## Installation
 
 ```bash
@@ -33,7 +37,15 @@ Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardco
 
 ### Create a bucket
 
-Bucket creation is not supported through the S3 API. Use the [Fil One dashboard](https://app.fil.one) — go to **Buckets → Create Bucket**.
+`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create Bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+
+```javascript
+import { CreateBucketCommand } from "@aws-sdk/client-s3";
+
+await client.send(new CreateBucketCommand({ Bucket: "my-bucket" }));
+```
+
+Note that versioning and Object Lock can only be set when the bucket is created, and only from the dashboard. See [Buckets](/storage/buckets).
 
 ### Upload an object
 

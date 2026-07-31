@@ -4,14 +4,18 @@
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees, no per-request charges, $4.99/TB/month.
-> Use any S3-compatible SDK or tool — point it at `https://eu-west-1.s3.fil.one`
-> with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
+> Use any S3-compatible SDK or tool — point it at your region's endpoint,
+> `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
+> auth. Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
   in us-east-1, unavailable in eu-west-1 (use the dashboard there)
 - Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
   (virtual-hosted-style URLs are not supported)
+- Access keys are scoped to ONE region and cannot be used against another
+- Region, versioning, Object Lock and retention are fixed at bucket creation and
+  cannot be changed afterwards (no update-bucket operation)
 - Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
   handle this automatically
 - All buckets are private by default; all data is encrypted at rest (AES-256

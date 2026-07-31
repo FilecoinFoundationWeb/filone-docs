@@ -3,7 +3,11 @@ title: AWS CLI
 description: Using the AWS CLI with Fil One for object storage operations.
 ---
 
-The [AWS CLI](https://aws.amazon.com/cli/) works with Fil One out of the box. Install it, configure your credentials, and use `--endpoint-url https://eu-west-1.s3.fil.one` on every command — or set it as a profile default so you never have to type it.
+The [AWS CLI](https://aws.amazon.com/cli/) works with Fil One out of the box. Install it, configure your credentials, and use `--endpoint-url https://<region>.s3.fil.one` on every command — or set it as a profile default so you never have to type it.
+
+:::note The endpoint depends on your bucket's region
+Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region — set up one profile per region if you use both.
+:::
 
 ## Installation
 
@@ -64,7 +68,13 @@ aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
 
 ### Create a bucket
 
-Bucket creation is not supported through the S3 API. Use the [Fil One dashboard](https://app.fil.one) — go to **Buckets → Create Bucket**.
+`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create Bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+
+```bash
+aws s3 mb s3://my-bucket --profile filone
+```
+
+Note that versioning and Object Lock can only be set when the bucket is created, and only from the dashboard. See [Buckets](/storage/buckets).
 
 ### Upload a file
 
