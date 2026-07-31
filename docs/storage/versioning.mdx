@@ -78,31 +78,50 @@ Every version is a full copy of the object and is billed as stored storage. If y
   </TabItem>
 </Tabs>
 
-## Restoring a previous version
+## Going back to a previous version
 
-To "restore" a previous version, copy it back to the same key. This creates a new version that is identical to the old one, making it the current version.
+:::info No server-side restore
+Fil One has no restore, roll-back, or point-in-time recovery operation, and `CopyObject` is not supported. There is no way to promote an older version to current in place.
+:::
+
+To go back to an earlier version, download it and upload it again. The re-upload becomes a new current version, and the version you copied from stays intact.
 
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    aws s3api copy-object \
+    aws s3api get-object \
       --bucket my-bucket \
-      --copy-source "my-bucket/reports/q1.pdf?versionId=OLD_VERSION_ID" \
       --key reports/q1.pdf \
+      --version-id OLD_VERSION_ID \
+      q1-restored.pdf \
+      --profile filone
+
+    aws s3api put-object \
+      --bucket my-bucket \
+      --key reports/q1.pdf \
+      --body q1-restored.pdf \
       --profile filone
     ```
   </TabItem>
 
   <TabItem value="python-boto3" label="Python (boto3)">
     ```python
-    s3.copy_object(
+    old = s3.get_object(
         Bucket="my-bucket",
-        CopySource={"Bucket": "my-bucket", "Key": "reports/q1.pdf", "VersionId": "OLD_VERSION_ID"},
         Key="reports/q1.pdf",
+        VersionId="OLD_VERSION_ID",
+    )
+
+    s3.put_object(
+        Bucket="my-bucket",
+        Key="reports/q1.pdf",
+        Body=old["Body"].read(),
     )
     ```
   </TabItem>
 </Tabs>
+
+If the current version is a delete marker, you can instead make the object visible again by deleting that delete marker by its version ID — see below.
 
 ## Delete markers
 

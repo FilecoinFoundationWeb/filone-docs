@@ -23,6 +23,7 @@ const sidebars = {
         "storage/object-lock",
       ],
     },
+    "bucket-intelligence",
     {
       type: "category",
       label: "Security",

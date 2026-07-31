@@ -66,7 +66,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `HeadObject` | ✅ Supported | |
 | `ListObjectsV2` | ✅ Supported | |
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
-| `CopyObject` | ✅ Supported | Supports `x-amz-copy-source-version-id` to copy a specific version. |
+| `CopyObject` | ❌ Not supported | Server-side copy is not implemented. Download the object and re-upload it instead. |
 | `GetObjectRetention` | ✅ Supported | Returns the Object Lock Compliance retention for a specific version. |
 | `PutObjectRetention` | ✅ Supported | Sets Compliance retention on a specific version. Retention can be extended but not shortened. |
 | `GetObjectLegalHold` | ❌ Not supported | Planned for a future release. |
@@ -79,6 +79,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `SelectObjectContent` | ❌ Not planned | S3 Select is not planned. |
 
 ### Multipart upload
+
+Multipart upload is available through the S3 API. Note that uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling — use the S3 API or CLI for larger objects.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -99,8 +101,10 @@ Versioning is **opt-in** and configured at bucket creation time. Once enabled on
 | `ListObjectVersions` | ✅ Supported | Lists all versions and delete markers in a bucket. |
 | `GetObject` with `VersionId` | ✅ Supported | Retrieves a specific historical version by ID. |
 | `DeleteObject` with `VersionId` | ✅ Supported | Permanently deletes a specific version, bypassing delete markers. |
-| `CopyObject` with `x-amz-copy-source-version-id` | ✅ Supported | Copies a specific version to restore or duplicate it. |
 | `PutBucketVersioning` (suspend) | ❌ Rejected | Versioning cannot be suspended once enabled. Suspend requests return an error. |
+| `CopyObject` with `x-amz-copy-source-version-id` | ❌ Not supported | Server-side copy is not implemented, so there is no way to promote an older version to current. |
+
+There is **no restore, roll-back, or point-in-time recovery.** You can list, download, and delete any prior version, but you cannot make an older version the current one. To effectively revert, download the version you want and upload it again as a new version.
 
 See [Versioning](/storage/versioning) for detailed usage and examples.
 
@@ -193,7 +197,8 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|---------|
-| Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in per bucket. Once enabled, cannot be suspended or disabled. |
+| Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore or roll-back. |
+| Server-side copy | `CopyObject` supported. | Not supported. Download and re-upload instead. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on (AES-256 SSE-KMS). Cannot be disabled. |
 | Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |

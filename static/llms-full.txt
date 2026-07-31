@@ -1,8 +1,9 @@
 # Fil One Documentation
 
 > Fil One is S3-compatible object storage built for AI agents and data-intensive
-> workloads. Backed by the Filecoin network for cryptographically verifiable data
-> integrity. No egress fees, no per-request charges, $4.99/TB/month flat rate.
+> workloads. Stored on the Filecoin network, where storage providers must
+> continuously submit cryptographic proofs that they still hold the data they
+> committed to store. No egress fees, no per-request charges, $4.99/TB/month flat rate.
 > Use any S3-compatible SDK or tool — point it at `https://eu-west-1.s3.fil.one`
 > with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
 
@@ -15,8 +16,13 @@ Critical integration notes for developers:
   handle this automatically
 - All buckets are private by default; all data is encrypted at rest (AES-256
   SSE-KMS) and in transit (TLS); encryption cannot be disabled
-- Single region currently: eu-west-1 (additional regions planned)
+- Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate — no recycle bin or soft-delete
+- CopyObject / server-side copy is NOT supported; there is no version restore,
+  roll-back, or point-in-time recovery
+- Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
+  cannot independently audit an individual object
+- Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
 
 
 ---
@@ -32,10 +38,12 @@ AWS S3, you already know how to use Fil One.
 **S3-compatible from day one.** Use the tools you already know — AWS CLI, boto3,
 any S3-compatible SDK. Point your existing code at our endpoint and it works.
 
-**Verifiable data integrity.** Data stored on Fil One is backed by Filecoin, a
-distributed storage network where storage providers must continuously prove they
-are holding your data through cryptographic proofs. Your data's integrity is
-independently verifiable, not just claimed.
+**Backed by Filecoin.** Fil One stores your data on Filecoin, a distributed
+storage network where storage providers must continuously submit cryptographic
+proofs that they are still holding the data they committed to store, or face
+penalties. Note that this proof cycle is a property of the network — Fil One does
+not expose per-object CIDs, deal IDs, or sealing state, so an individual object
+cannot be independently audited by the customer today.
 
 **No egress fees.** Download your data as often as you need. There are no data
 transfer charges.
@@ -574,7 +582,7 @@ an Access Key ID (public identifier) and a Secret Access Key (used to sign reque
 | Permission | What it allows |
 |------------|----------------|
 | Read | GetObject, HeadObject |
-| Write | PutObject, CopyObject, multipart upload operations |
+| Write | PutObject, multipart upload operations |
 | List | ListBuckets, ListObjectsV2 |
 | Delete | DeleteObject |
 
@@ -756,7 +764,7 @@ endpoint and authenticate with your API keys.
 | DeleteObject | Supported | |
 | HeadObject | Supported | |
 | ListObjectsV2 | Supported | |
-| CopyObject | Supported | |
+| CopyObject | Not supported | Server-side copy is not implemented. Download and re-upload instead. There is no version restore, roll-back, or point-in-time recovery. |
 
 ### Multipart upload
 
@@ -1189,11 +1197,14 @@ card required.
 **Can I use Fil One for backups?**
 Yes. Works with Veeam, Commvault, Restic, Duplicati, and any S3-compatible backup tool.
 
-**How does Fil One verify data integrity?**
+**How does Filecoin protect the integrity of stored data?**
 Built on Filecoin, where storage providers must continuously submit cryptographic
-proofs (Proof of Replication and Proof of Spacetime) to prove they hold your data.
-Each object is identified by a content identifier (CID), a cryptographic fingerprint.
-If the data changes, the CID changes.
+proofs (Proof of Replication and Proof of Spacetime) that they still hold the data
+they committed to store, or face penalties. This runs at the network level and is
+not something a customer triggers or checks. Fil One does not expose per-object
+CIDs, deal IDs, or sealing state, so you cannot independently audit an individual
+object today. For your own integrity checks, compare the ETag from HeadObject
+against a checksum you keep, or use Object Lock for immutability.
 
 **What happens to my data if I delete it?**
 Immediately removed from your Fil One account and no longer accessible. The
@@ -1259,3 +1270,75 @@ and end with a letter or number, globally unique.
 
 **Object keys:** Up to 1,024 bytes (UTF-8). Avoid control characters and characters
 requiring special URL encoding for best compatibility.
+
+---
+
+# Bucket Intelligence
+
+Source: https://docs.fil.one/bucket-intelligence
+
+EARLY ACCESS — not generally available. Access is granted per account, so the
+feature is hidden in the dashboard unless the account has been enabled for it.
+FREE during early access; pricing after GA is not set.
+
+Turn a storage bucket into a queryable knowledge base: a background indexer keeps
+each enabled bucket's index in sync, and a query endpoint answers questions
+grounded in the bucket's objects, citing the source objects.
+
+Enable per bucket from the Bucket Intelligence page in the dashboard (Buckets
+tab). Available in eu-west-1 and us-east-1.
+
+## Indexing
+
+Indexing runs on a schedule, every 6 hours (03:00, 09:00, 15:00, 21:00 UTC). It
+is NOT triggered by uploads — allow up to 6 hours for a new file to become
+searchable. Each pass diffs object ETags: new objects are extracted, chunked,
+embedded and added; changed ETags are re-indexed; unchanged objects are skipped.
+Deletions reconcile on a full pass. Large buckets checkpoint and resume across
+runs. Chunks are ~1,000 characters with 200 characters of overlap.
+
+Supported file types: PDF, .txt, .md, .html/.htm, .docx, .pptx. Other types are
+ignored. NO OCR — scanned or image-only PDFs extract to nothing and are silently
+skipped with no error.
+
+## Models
+
+Managed by Fil One via Amazon Bedrock. Embeddings: Amazon Titan Text Embeddings
+V2 (1,024 dimensions). Answers: Anthropic Claude Opus 4.8. Bring-your-own models
+and custom embedding models are NOT supported.
+
+## RAG API keys
+
+Bearer tokens (sk_rag_ prefix) that authorize ONLY the query endpoint. They
+cannot read, write, list, or delete bucket contents, and they are not
+bring-your-own-LLM keys. Distinct from S3 access keys. Created from the API Keys
+tab; scoped to all buckets or a specific list (max 50, each named with its
+region). Shown once at creation — only a hash is stored. Keys have NO expiry and
+NO rotation mechanism; they stay valid until deleted. Deletion is immediate.
+
+## Querying
+
+POST https://app.fil.one/api/buckets/{bucket}/query?region={region}
+Authorization: Bearer $FILONE_RAG_KEY
+
+Body: query (string, required), top_k (default 10, max 100), model (optional,
+only the managed answer model is accepted). Query params: region (default
+eu-west-1), objectKey (optional, restricts search to one object).
+
+Response: { "answer": "...", "sources": ["key1", "key2"] }. If nothing relevant
+is found, the answer says so and sources is empty. A bucket that does not exist
+and a bucket outside the key's scope both return 404.
+
+The dashboard also has an "Ask a question" box in the per-bucket drawer.
+
+## Not available yet
+
+- MCP endpoint / MCP server for Claude, Cursor, etc. — NOT built.
+- Bring-your-own LLM keys or custom embedding models — not implemented.
+- API key expiry and rotation — not implemented.
+- Upload-triggered or near-real-time indexing — not implemented.
+
+Embeddings and extracted chunk text are held in storage Fil One manages, separate
+from the bucket. Objects themselves are not moved or modified. Extracted chunk
+text is retained in the index so answers can quote it — enable Bucket
+Intelligence deliberately per bucket rather than across everything.

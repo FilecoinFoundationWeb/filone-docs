@@ -1,8 +1,9 @@
 # Fil One Documentation
 
 > Fil One is S3-compatible object storage built for AI agents and data-intensive
-> workloads. Backed by the Filecoin network for cryptographically verifiable data
-> integrity. No egress fees, no per-request charges, $4.99/TB/month flat rate.
+> workloads. Stored on the Filecoin network, where storage providers must
+> continuously submit cryptographic proofs that they still hold the data they
+> committed to store. No egress fees, no per-request charges, $4.99/TB/month.
 > Use any S3-compatible SDK or tool — point it at `https://eu-west-1.s3.fil.one`
 > with region `eu-west-1` and standard Access Key ID / Secret Access Key auth.
 
@@ -17,6 +18,10 @@ Critical integration notes for developers:
   SSE-KMS) and in transit (TLS); encryption cannot be disabled
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate — no recycle bin or soft-delete
+- CopyObject / server-side copy is NOT supported; there is no version restore,
+  roll-back, or point-in-time recovery
+- Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
+  cannot independently audit an individual object
 
 ## Getting Started
 
@@ -40,8 +45,14 @@ Critical integration notes for developers:
   TransferConfig examples, part limits, and cleanup of incomplete uploads
 - [Object Lock](https://docs.fil.one/storage/object-lock): WORM retention for
   regulatory compliance (SEC 17a-4, FINRA, HIPAA). Opt-in at bucket creation,
-  Compliance and Governance modes, per-object retention via PutObjectRetention,
-  30-day cap during trial
+  Governance (default) and Compliance modes, per-object retention via
+  PutObjectRetention, 1 day to 100 years, no trial-specific cap
+- [Bucket Intelligence](https://docs.fil.one/bucket-intelligence): EARLY ACCESS,
+  allowlisted, free during early access. Turn a bucket into a queryable
+  knowledge base. Indexing runs on a 6-hourly cron (NOT upload-triggered).
+  Managed models only (Titan Text Embeddings V2, Claude Opus 4.8 via Bedrock).
+  sk_rag_ bearer keys authorize only the query endpoint and never expire.
+  Types: PDF/txt/md/html/docx/pptx, no OCR. MCP endpoint is NOT built
 
 ## Security
 
@@ -49,8 +60,9 @@ Critical integration notes for developers:
   setup for AWS CLI, Python (boto3), JavaScript (AWS SDK v3), and Go; credential
   best practices including environment variable usage
 - [API Keys](https://docs.fil.one/security/api-keys): Creating keys with scoped
-  permissions (Read/Write/List/Delete), bucket-level scoping, key expiration,
-  revocation, and security best practices
+  permissions (Read/Write/List/Delete), CreateBucket/DeleteBucket and
+  GetBucketVersioning/GetBucketObjectLockConfiguration groups, single-region
+  scoping, bucket-level scoping, key expiration, revocation, best practices
 - [Encryption](https://docs.fil.one/security/encryption): AES-256 SSE-KMS
   encryption always on by default for all objects; TLS in transit; optional
   client-side encryption supported
