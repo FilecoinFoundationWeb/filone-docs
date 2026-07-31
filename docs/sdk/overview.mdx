@@ -3,7 +3,7 @@ title: SDKs & Tools
 description: Use any S3-compatible SDK or tool with Fil One.
 ---
 
-Fil One works with any tool or library that supports the S3 API. You do not need a custom SDK -- configure your existing S3 tools to point at `https://eu-west-1.s3.fil.one` with region `eu-west-1` and authenticate with your API keys.
+Fil One works with any tool or library that supports the S3 API. You do not need a custom SDK -- configure your existing S3 tools to point at your region's endpoint and authenticate with your API keys.
 
 ## Recommended tools
 
@@ -22,9 +22,18 @@ Every SDK and tool needs the same three things:
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | `https://eu-west-1.s3.fil.one` |
-| Region | `eu-west-1` |
+| Endpoint | `https://<region>.s3.fil.one` |
+| Region | `eu-west-1` or `us-east-1` |
 | Credentials | Your Access Key ID and Secret Access Key from the dashboard |
+
+The endpoint is region-specific, and it has to match the region of the bucket you are addressing:
+
+| Region | Endpoint |
+|--------|----------|
+| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.fil.one` |
+| US East (Michigan) `us-east-1` | `https://us-east-1.s3.fil.one` |
+
+Access keys are also scoped to a single region, so a key issued for `eu-west-1` will not work against `us-east-1`. Code examples throughout these docs use `eu-west-1` because it is the default — substitute your own region where it differs.
 
 ## Quick setup guides
 

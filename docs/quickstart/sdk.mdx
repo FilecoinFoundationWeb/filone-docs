@@ -9,6 +9,10 @@ import TabItem from '@theme/TabItem';
 
 Choose your language and follow along. Each example creates a bucket, uploads a file, and verifies the upload.
 
+:::note The endpoint depends on your bucket's region
+These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
+:::
+
 <Tabs>
   <TabItem value="python" label="Python">
     ```bash

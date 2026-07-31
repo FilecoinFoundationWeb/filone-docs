@@ -19,12 +19,31 @@ This guide walks you through creating an account, setting up credentials, and up
 
 From the dashboard, click **Create Bucket**. Give it a name (lowercase, no spaces — same rules as S3) and choose your settings:
 
-| Setting | Value | Notes |
-|---------|-------|-------|
-| Region | `eu-west-1` | |
-| Encryption | Always on | All data is encrypted at rest by default. |
+| Setting | Options | Notes |
+|---------|---------|-------|
+| Region | `eu-west-1` Europe (France) or `us-east-1` US East (Michigan) | Defaults to `eu-west-1`. Cannot be changed later. |
+| Encryption | Always on | All data is encrypted at rest by default. Nothing to configure. |
+| Versioning | Off by default | Keeps a history of every version of an object. |
+| Object Lock | Off by default | WORM protection. Requires versioning. |
+| Retention | Off by default | A default retention period applied to new objects. Requires Object Lock. |
 
-You will also see an optional **API key** section during bucket creation. Expand it to create a new key scoped to this bucket in one step. If you plan to use the CLI or SDK, set up your key at this step — otherwise skip it and go to **API Keys** in the left menu later.
+:::warning These settings are permanent
+Region, versioning, Object Lock, and retention are all fixed **at creation**. There is no way to turn versioning or Object Lock on for an existing bucket, or to move a bucket to another region — you would have to create a new bucket and copy your data across. If you think you will want version history or WORM protection, enable it now.
+:::
+
+The three object settings nest, so you enable them in order:
+
+1. **Versioning** — turn this on first. Object Lock stays greyed out until you do.
+2. **Object Lock** — becomes available once versioning is on. Retention stays greyed out until you enable it.
+3. **Retention** — becomes available once Object Lock is on. Choose a mode and a duration:
+   - **Governance** (the default) — users with special permissions can delete or modify protected objects.
+   - **Compliance** — no one can delete or modify objects until the retention period expires.
+
+   The duration can be set in days or years, from 1 day up to 100 years.
+
+See [Versioning](/storage/versioning) and [Object Lock](/storage/object-lock) for the full picture before committing to either.
+
+You will also see an optional **API key** section during bucket creation. Expand it to create a new key scoped to this bucket in one step. If you plan to use the CLI or SDK, set up your key at this step — otherwise skip it and go to **API Keys** in the left menu later. Note that a key belongs to a single region, so it must match the region you picked above.
 
 ## 3. Upload your first object
 
@@ -35,7 +54,11 @@ Choose your preferred method. The App requires no API key. For CLI and SDK acces
 
 :::note
 Your secret key is shown once. Copy it and store it securely. If you lose it, you'll need to generate a new key pair.
+
+A key also belongs to a single region, so create it in the same region as your bucket.
 :::
+
+The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1` instead.
 
 <Tabs>
   <TabItem value="app-ui" label="App">
