@@ -18,8 +18,10 @@ Critical integration notes for developers:
   cannot be changed afterwards (no update-bucket operation)
 - Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
   handle this automatically
-- All buckets are private by default; all data is encrypted at rest (AES-256
-  SSE-KMS) and in transit (TLS); encryption cannot be disabled
+- All buckets are private by default; all data is encrypted at rest and in
+  transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
+  regional storage gateway and keys are held by the regional operator, NOT by Fil
+  One and NOT customer-managed. Do not name a specific cipher or SSE mode
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate — no recycle bin or soft-delete
 - CopyObject / server-side copy is NOT supported; there is no version restore,
@@ -67,7 +69,7 @@ Critical integration notes for developers:
   permissions (Read/Write/List/Delete), CreateBucket/DeleteBucket and
   GetBucketVersioning/GetBucketObjectLockConfiguration groups, single-region
   scoping, bucket-level scoping, key expiration, revocation, best practices
-- [Encryption](https://docs.fil.one/security/encryption): AES-256 SSE-KMS
+- [Encryption](https://docs.fil.one/security/encryption): server-side
   encryption always on by default for all objects; TLS in transit; optional
   client-side encryption supported
 

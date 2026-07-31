@@ -7,9 +7,9 @@ Fil One encrypts all data by default. There is nothing to configure — encrypti
 
 ## Encryption at rest
 
-All objects stored in Fil One are encrypted at rest using **AES-256** encryption via SSE-KMS (Server-Side Encryption with Key Management Service). Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options.
+All objects stored in Fil One are encrypted at rest. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
 
-This applies to all objects in all buckets, with no exceptions.
+Encryption is performed by the S3 storage gateway for the region your bucket lives in, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
 
 ## Encryption in transit
 
@@ -19,7 +19,9 @@ This applies to all API operations, including uploads, downloads, presigned URLs
 
 ## Key management
 
-Encryption keys are managed by the Fil One infrastructure. You do not need to supply or manage encryption keys for standard use.
+Encryption keys are held by the **regional storage operator** that fulfils storage for your bucket's region, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
+
+If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, contact support — those details are set by the regional operator rather than by Fil One.
 
 ## Client-side encryption
 

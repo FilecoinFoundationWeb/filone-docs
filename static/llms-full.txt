@@ -18,8 +18,10 @@ Critical integration notes for developers:
   cannot be changed afterwards (no update-bucket operation)
 - Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
   handle this automatically
-- All buckets are private by default; all data is encrypted at rest (AES-256
-  SSE-KMS) and in transit (TLS); encryption cannot be disabled
+- All buckets are private by default; all data is encrypted at rest and in
+  transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
+  regional storage gateway and keys are held by the regional operator, NOT by Fil
+  One and NOT customer-managed. Do not name a specific cipher or SSE mode
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate — no recycle bin or soft-delete
 - CopyObject / server-side copy is NOT supported; there is no version restore,
@@ -636,9 +638,11 @@ Fil One encrypts all data by default. There is nothing to configure.
 
 ## Encryption at rest
 
-All objects are encrypted using AES-256 via SSE-KMS (Server-Side Encryption with
-Key Management Service). Applied automatically on write, decrypted automatically
-on read. Applies to all objects in all buckets with no exceptions.
+All objects are encrypted at rest. Applied automatically on write, decrypted
+automatically on read, and it cannot be disabled. Applies to all objects in all
+buckets with no exceptions. Encryption is performed by the S3 storage gateway for
+the bucket's region, not by the Fil One console. The specific cipher is set by the
+regional operator and is not documented here.
 
 ## Encryption in transit
 
@@ -1250,8 +1254,8 @@ Source: https://docs.fil.one/limits
 | API operations | Unlimited | Unlimited |
 | Buckets per account | 100 | 100 |
 
-The bucket limit is set per account rather than fixed by plan, and defaults to
-100. Contact support if you need a higher limit.
+The bucket limit is set per account rather than fixed by plan. In eu-west-1 it is
+100 buckets per account. Contact support if you need a higher limit.
 
 ## Regions
 
