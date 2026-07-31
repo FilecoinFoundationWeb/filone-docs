@@ -12,17 +12,17 @@ The **Billing** page in the dashboard shows your current usage for the active bi
 | **Storage** | Average daily storage across the billing period, in GB or TB |
 | **Egress bandwidth** | Total data downloaded from Fil One in the billing period |
 
-Storage is measured as an average rather than a peak — if you store 2 TB for half the month and 1 TB for the other half, you are billed for 1.5 TB.
+Storage is measured as an average rather than a peak — if you store 2 TB for half the month and 1 TB for the other half, you are billed for 1.5 TB. Fil One counts storage in **decimal** units: 1 TB is 1,000 GB, and 1 GB is 1,000,000,000 bytes.
 
-Egress bandwidth is unlimited and not charged. It is shown for informational purposes only.
+**On a paid plan, egress is not charged** — there are no egress fees. During the trial, egress is capped (see below).
 
 ## Trial limits
 
 During the free trial, usage is capped at:
-- **1 TB** storage
-- **2 TB** egress bandwidth per month
+- **Storage — 1 TB (1,000 GB):** reaching this limit **write-locks** the account. You can still read and download; new uploads are rejected.
+- **Egress — 2 TB (2,000 GB), cumulative over the whole trial:** reaching this limit **disables** the account entirely — no read or write access — the same state as trial expiry. This is a single budget for the full 30 days, not a monthly amount that resets.
 
-If you approach either limit during the trial, you will see a warning in the dashboard. Upgrading to a paid plan removes both caps immediately.
+These caps are enforced by a usage job that runs **twice a day** (around 07:00 and 19:00 UTC), so you may exceed a cap for a few hours before the account state changes — there is no real-time block at the exact moment you cross it. Upgrading to a paid plan removes both caps immediately.
 
 ## Versioning and storage costs
 

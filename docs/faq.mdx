@@ -49,7 +49,7 @@ On a bucket **with versioning enabled**, a plain delete places a delete marker i
 <summary>Can I migrate from AWS S3?</summary>
 <div>
 
-Yes. Because Fil One is S3-compatible, you can use standard migration tools like `aws s3 sync`, `rclone`, or any S3-compatible transfer utility. Point the tool at your Fil One endpoint and credentials. Detailed migration guides are coming soon.
+Yes. Because Fil One is S3-compatible, you can use standard migration tools like `aws s3 sync`, `rclone`, or any S3-compatible transfer utility. Point the tool at your Fil One endpoint and credentials (with path-style addressing enabled — see [SDKs & Tools](/sdk/overview)). One naming caveat: Fil One does not allow dots in bucket names, so a bucket like `my.data.bucket` must be renamed during migration.
 
 </div>
 </details>
@@ -116,7 +116,7 @@ Fil One does not currently expose per-object proof data — content identifiers,
 <summary>What happens to my data if I delete it?</summary>
 <div>
 
-When you delete an object or bucket, it is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model. The data is inaccessible through Fil One from the moment of deletion — the Filecoin deal expiration is an infrastructure detail, not a user-facing state.
+When you delete an object or bucket, it is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — an infrastructure detail set by the storage layer, not a user-facing state. The data is inaccessible through Fil One from the moment of deletion.
 
 </div>
 </details>

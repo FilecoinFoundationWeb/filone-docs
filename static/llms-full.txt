@@ -53,11 +53,11 @@ penalties. Note that this proof cycle is a property of the network — Fil One d
 not expose per-object CIDs, deal IDs, or sealing state, so an individual object
 cannot be independently audited by the customer today.
 
-**No egress fees.** Download your data as often as you need. There are no data
-transfer charges.
+**No egress fees on paid plans.** On a paid plan there are no data-transfer
+charges. (The free trial has a 2 TB egress cap.)
 
-**Simple, flat pricing.** $4.99 / TB / month. No per-request charges, no hidden
-fees, no tiered pricing.
+**Simple, flat pricing.** $4.99 / TB / month, with a $4.99 / month minimum. No
+per-request charges, no hidden fees, no tiered pricing.
 
 **30-day free trial.** 1 TB of storage and 2 TB of bandwidth, no credit card
 required.
@@ -80,8 +80,9 @@ uploading your first object.
 
 ## 2. Create a bucket
 
-From the dashboard, click **Create Bucket**. Give it a name (lowercase, no spaces
-— same rules as S3) and choose your settings:
+From the dashboard, click **New bucket**, then **Create bucket**. Give it a name
+(lowercase letters, numbers, and hyphens — no dots, unlike AWS S3) and choose
+your settings:
 
 - Region: eu-west-1 Europe (France, default) or us-east-1 US East (Michigan)
 - Encryption: Always on (all data is encrypted at rest by default)
@@ -95,10 +96,12 @@ regions — you would have to create a new bucket and copy the data across.
 
 The three object settings nest and are enabled in order: versioning first
 (Object Lock is greyed out until it is on), then Object Lock (retention is greyed
-out until it is on), then retention. Retention modes: Governance (default — users
-with special permissions can delete or modify protected objects) and Compliance
-(no one can delete or modify objects until the retention period expires).
-Duration is set in days or years, from 1 day up to 100 years.
+out until it is on), then retention. Retention modes: Governance (default — in
+standard S3 a bypass permission can override it, but Fil One exposes no grantable
+bypass permission, so in practice it protects for the retention period) and
+Compliance (no one, including the account owner, can delete or modify objects
+until the retention period expires). Duration is set in days or years, from 1 day
+up to 100 years.
 
 You will also see an API key section during bucket creation. You can create a new
 API key here or configure permissions for an existing one. A key belongs to a
@@ -106,7 +109,7 @@ single region and must match the bucket's region.
 
 ## 3. Upload your first object
 
-Go to **API Keys** in the left menu and click **Create Key**. You'll get two values:
+Go to **API Keys** in the left menu and click **Create new key**. You'll get two values:
 
 - **Access Key ID** — identifies your account (safe to store in config)
 - **Secret Access Key** — authenticates your requests (treat like a password)
@@ -282,11 +285,13 @@ Buckets are containers for your objects. Every object in Fil One lives inside a 
 ## Bucket naming rules
 
 - Between 3 and 63 characters
-- Lowercase letters, numbers, and hyphens only
+- Lowercase letters, numbers, and hyphens only (no dots)
 - Must start and end with a letter or number
-- Globally unique across all Fil One accounts
+- Unique within Fil One
 
-These are the same naming rules as AWS S3.
+These rules are close to AWS S3's but not identical: Fil One does NOT allow dots
+(.) in bucket names, which AWS S3 permits. A bucket named `my.data.bucket` must be
+renamed when migrating.
 
 ## Creating a bucket
 
@@ -296,10 +301,10 @@ eu-west-1, where buckets are created through the Fil One dashboard. All other S3
 operations work normally via the API in every region. To use CreateBucket or
 DeleteBucket with an access key, grant the key that permission at creation.
 
-1. From the dashboard, click **Create Bucket**.
+1. From the dashboard, click **New bucket**, then **Create bucket**.
 2. Enter a bucket name.
-3. Optionally create or configure an API key.
-4. Click **Create**.
+3. Choose a region, and optionally enable versioning → Object Lock → retention (all permanent), and create or configure an API key.
+4. Click **Create bucket**.
 
 Every bucket is created with encryption enabled automatically.
 
@@ -320,8 +325,9 @@ for bucket in response["Buckets"]:
 Bucket deletion is not yet supported. This will be enabled in a future release.
 
 Note: When you delete a bucket and its objects, the data is immediately removed
-from your Fil One account. However, the underlying Filecoin storage deals persist
-until their natural expiration (up to 180 days). This does not affect your ability
+from your Fil One account. Because Filecoin stores data in sealed sectors, the
+underlying storage may persist for a bounded period until the sector naturally
+expires (duration set by the storage layer). This does not affect your ability
 to manage your data in Fil One.
 
 
@@ -359,7 +365,7 @@ s3.put_object(
 )
 ```
 
-For files larger than 5 GB, use multipart upload.
+For very large objects (above the single-PUT limit — the standard S3 5 GB, not independently confirmed for Fil One), use multipart upload.
 
 ## Downloading objects
 
@@ -422,8 +428,13 @@ Presigned URLs work for both GetObject (downloads) and PutObject (uploads).
 
 Source: https://docs.fil.one/storage/multipart-uploads
 
-For objects larger than 5 GB, you must use multipart upload. Recommended for
-any file over 100 MB for improved reliability.
+For very large objects you must use multipart upload. The single-PUT ceiling is
+the standard S3 5 GB, which Fil One's gateway is expected to follow but which is
+not independently confirmed. Recommended for any file over 100 MB for improved
+reliability. Note: the dashboard uploads with a single PUT, so multipart applies
+when using your own SDK/CLI; there is no lifecycle rule to auto-abort incomplete
+uploads. The 5 TB / 10,000-part / 5 MB-5 GB part limits are standard S3 values,
+not independently confirmed.
 
 ## How it works
 
@@ -515,10 +526,12 @@ aws configure
 Named profile (recommended):
 
 ```ini
-# ~/.aws/config
+# ~/.aws/config  (AWS CLI v2 — v1 ignores endpoint_url)
 [profile filone]
 endpoint_url = https://eu-west-1.s3.fil.one
 region = eu-west-1
+s3 =
+    addressing_style = path
 
 # ~/.aws/credentials
 [filone]
@@ -531,6 +544,7 @@ aws_secret_access_key = YOUR_SECRET_KEY
 ```python
 import boto3
 import os
+from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
@@ -538,6 +552,7 @@ s3 = boto3.client(
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
+    config=Config(s3={"addressing_style": "path"}),  # required
 )
 ```
 
@@ -595,21 +610,23 @@ an Access Key ID (public identifier) and a Secret Access Key (used to sign reque
 ## Creating an API key
 
 1. Go to **API Keys** in the left menu of the dashboard.
-2. Click **Create Key**.
-3. Give the key a descriptive name (e.g., production-backend, ci-pipeline).
-4. Set permissions and scope.
-5. Optionally set an expiration date.
-6. Click **Create**.
+2. Click **Create new key** (opens a dedicated page).
+3. Give the key a descriptive name (e.g., production-backend, ci-pipeline). Max 64 chars.
+4. Choose the key's region (required, fixed) and set permissions and bucket scope. At least one permission is required.
+5. Optionally set an expiration: Never, 30 days, or a Custom date.
+6. Click **Create key**.
 7. **Copy the Secret Access Key immediately.** It is shown only once.
 
 ## Key permissions
 
 | Permission | What it allows |
 |------------|----------------|
-| Read | GetObject, HeadObject |
-| Write | PutObject, multipart upload operations |
-| List | ListBuckets, ListObjectsV2 |
+| Read | GetObject (and HeadObject, same underlying permission), ListMultipartUploadParts |
+| Write | PutObject, AbortMultipartUpload |
+| List | ListObjectsV2 / ListBucket, ListBucketMultipartUploads |
 | Delete | DeleteObject |
+
+Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Governance Object Lock has no grantable bypass permission; PutObjectRetention is grantable but its gateway support is unverified. The key list in the dashboard has no Region column — record each key's region yourself.
 
 ## Bucket scope
 
@@ -618,8 +635,10 @@ key to specific buckets. This limits the blast radius of a compromised key.
 
 ## Key expiration
 
-You can set an expiration date when creating a key. After expiration, the key is
-automatically revoked and requests fail with 403 AccessDenied.
+You can set an expiration date when creating a key. After expiration, the key no
+longer authenticates and requests fail with a 403 (typically AccessDenied or
+InvalidAccessKeyId). Revocation/deletion is forwarded to the regional operator;
+treat it as effective quickly rather than at a guaranteed instant.
 
 ## Security best practices
 
@@ -657,8 +676,10 @@ and metadata requests.
 
 ## Client-side encryption
 
-Optional. If your requirements call for client-side encryption, you can use the
-encryption utilities in the AWS SDKs. Fil One stores whatever bytes you send.
+Optional. If your requirements call for client-side encryption, encrypt the bytes
+in your own application before uploading. AWS's S3 Encryption Client exists only
+for some SDKs (Java, .NET, Go, Ruby) — NOT boto3, the AWS CLI, or JS v3 — so with
+those you supply your own crypto. Fil One stores whatever bytes you send.
 Client-side encryption is in addition to the server-side encryption that Fil One
 applies automatically.
 
@@ -675,9 +696,9 @@ No egress fees, no per-request charges, no hidden costs.
 
 ## How billing is calculated
 
-Your bill is based on the average amount of data you store over the month. Stored bytes are sampled daily and averaged across the billing period. The first TB is billed at the flat $4.99 / month minimum; storage above 1 TB is billed at $4.99 per additional TB, pro-rated to your exact usage and rounded to the nearest cent.
+Your bill is based on the average amount of data you store over the billing period. Stored bytes are sampled by a metering job that runs twice a day (~07:00 and 19:00 UTC) and averaged. Storage is charged at a single flat rate of $4.99 per TB per month with a $4.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
 
-Examples (steady amount stored for the full month): 500 GB = $4.99 (minimum applies below 1 TB); 1,001 GB = $4.99 (1 GB over rounds to $0.00); 1,002 GB = $5.00 (about $0.01 over); 1,500 GB = $7.49 ($4.99 for the first TB plus $2.50 for the next 0.5 TB). Storage that changes during the month is averaged first.
+Illustrative figures (steady amount stored for the full month, at $4.99/TB with the $4.99 minimum applied): 500 GB ≈ $4.99 (minimum applies); 1 TB (1,000 GB) ≈ $4.99; 1.5 TB ≈ $7.49; 2 TB ≈ $9.98. These are illustrative — your invoice on the Billing page is the source of truth for exact amounts. Storage that changes during the month is averaged first.
 
 
 ---
@@ -692,10 +713,12 @@ Every new account starts with a 30-day free trial. No credit card required.
 
 | Included | Amount |
 |----------|--------|
-| Storage | 1 TB (1,024 GB) |
-| Egress bandwidth | 2 TB |
+| Storage | 1 TB (1,000 GB) |
+| Egress bandwidth | 2 TB (cumulative over the trial) |
 | API operations | Unlimited |
 | Duration | 30 days from account creation |
+
+The two caps are enforcement thresholds, not soft allowances, and behave differently: reaching the storage cap (1 TB) WRITE-LOCKS the account (reads still work), while reaching the egress cap (2 TB) DISABLES it entirely (no access), the same state as trial expiry. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (~07:00/19:00 UTC), so a cap can be exceeded for a few hours before access changes. Generating shareable links and viewing invoice history are the two features reserved for paid plans.
 
 ## What happens when the trial ends
 
@@ -715,7 +738,7 @@ You can upgrade to a paid plan at any time during the trial or grace period. Dis
 | Egress bandwidth | No charge |
 | API operations | Included |
 
-Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. No contract or term commitment.
+Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. No contract or term commitment. If a payment fails, the account enters **past due** and writes are blocked immediately (reads continue); the ~30-day past-due window is retrieval-only before the account is disabled. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
 
 
 ---
@@ -742,7 +765,8 @@ https://eu-west-1.s3.fil.one/my-bucket/my-key
 
 Virtual-hosted-style URLs (https://my-bucket.s3.fil.one/my-key) are not supported.
 Configure your S3 client to use path-style requests:
-- boto3: no special config needed (path-style is default for custom endpoints)
+- boto3: set `config=Config(s3={"addressing_style": "path"})` — path-style is NOT the default, even with a custom endpoint, and requests fail without it
+- AWS CLI: set `s3.addressing_style = path` in the profile (or `aws configure set default.s3.addressing_style path`)
 - AWS SDK JS v3: set `forcePathStyle: true`
 - Go aws-sdk-go-v2: set `UsePathStyle: true`
 
@@ -1242,9 +1266,12 @@ object today. For your own integrity checks, compare the ETag from HeadObject
 against a checksum you keep, or use Object Lock for immutability.
 
 **What happens to my data if I delete it?**
-Immediately removed from your Fil One account and no longer accessible. The
-underlying Filecoin storage deals persist until natural expiration (up to 180 days),
-but the data is inaccessible from the moment of deletion.
+Immediately removed from your Fil One account and no longer accessible. Because
+Filecoin stores data in sealed sectors, the underlying storage may persist for a
+bounded period until the sector naturally expires (duration set by the storage
+layer), but the data is inaccessible from the moment of deletion. Note: account
+closure does NOT purge data — the account is disabled and access blocked, and
+no automatic purge runs; contact support to request removal.
 
 **Can multiple users access the same account?**
 Currently accounts are single-user. Multi-user organization accounts with RBAC
@@ -1261,13 +1288,16 @@ Source: https://docs.fil.one/limits
 
 | Limit | Trial | Paid |
 |-------|-------|------|
-| Storage | 1 TB | No limit |
-| Egress bandwidth | 2 TB / month | No limit |
+| Storage | 1 TB (1,000 GB) | No limit |
+| Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
 | API operations | Unlimited | Unlimited |
 | Buckets per account | 100 | 100 |
 
-The bucket limit is set per account rather than fixed by plan. In eu-west-1 it is
-100 buckets per account. Contact support if you need a higher limit.
+During the trial the storage cap write-locks the account and the egress cap
+disables it; trial egress is a single cumulative budget for the 30 days. The
+bucket limit is set per account rather than fixed by plan. In eu-west-1 it is 100
+buckets per account; the us-east-1 limit is not separately confirmed. Contact
+support if you need a higher limit.
 
 ## Regions
 
@@ -1292,6 +1322,10 @@ through the S3 API are available in us-east-1 but not in eu-west-1.
 | Maximum object key length | 1,024 bytes |
 | Maximum metadata size per object | 2 KB |
 
+Only the object key length (1,024 bytes) is code-backed for Fil One. The other
+values are standard AWS S3 limits that the gateway is expected to follow but that
+are NOT independently confirmed — treat them as guidance.
+
 ## API rate limits
 
 Rate limits are enforced by the underlying storage gateway. If you encounter
@@ -1300,8 +1334,8 @@ support if you are consistently hitting limits at scale.
 
 ## Naming constraints
 
-**Bucket names:** 3-63 characters, lowercase letters/numbers/hyphens, must start
-and end with a letter or number, globally unique.
+**Bucket names:** 3-63 characters, lowercase letters/numbers/hyphens (no dots,
+unlike AWS S3), must start and end with a letter or number, unique within Fil One.
 
 **Object keys:** Up to 1,024 bytes (UTF-8). Avoid control characters and characters
 requiring special URL encoding for best compatibility.

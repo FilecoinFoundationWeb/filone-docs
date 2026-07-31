@@ -17,7 +17,7 @@ This guide walks you through creating an account, setting up credentials, and up
 
 ## 2. Create a bucket
 
-From the dashboard, click **Create Bucket**. Give it a name (lowercase, no spaces — same rules as S3) and choose your settings:
+From the dashboard, click **New bucket** to open your buckets, then **Create bucket**. Give it a name (lowercase letters, numbers, and hyphens — note that Fil One does **not** allow dots, unlike AWS S3) and choose your settings:
 
 | Setting | Options | Notes |
 |---------|---------|-------|
@@ -47,7 +47,7 @@ You will also see an optional **API key** section during bucket creation. Expand
 
 ## 3. Upload your first object
 
-Choose your preferred method. The App requires no API key. For CLI and SDK access, go to **API Keys** in the left menu and click **Create Key**. You'll get two values:
+Choose your preferred method. The App requires no API key. For CLI and SDK access, go to **API Keys** in the left menu and click **Create new key**. You'll get two values:
 
 - **Access Key ID** — identifies your account (safe to store in config)
 - **Secret Access Key** — authenticates your requests (treat like a password)
@@ -63,9 +63,9 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
 <Tabs>
   <TabItem value="app-ui" label="App">
     1. Open your bucket from the dashboard.
-    2. Click **Upload** and select a file.
-    3. Your object appears in the file list immediately.
-    4. To download: click the file name to open its detail page, then select **Download** from the **"..."** menu. You can also click the download icon directly in the file list row.
+    2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
+    3. Your objects appear in the file list once the upload completes.
+    4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -75,6 +75,8 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
     aws configure set aws_access_key_id YOUR_ACCESS_KEY
     aws configure set aws_secret_access_key YOUR_SECRET_KEY
     aws configure set default.region eu-west-1
+    # Path-style is required — Fil One does not support virtual-hosted URLs
+    aws configure set default.s3.addressing_style path
     ```
 
     Upload a file:
@@ -94,12 +96,15 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
   <TabItem value="python-boto3" label="Python (boto3)">
     ```python
     import boto3
+    from botocore.config import Config
 
     s3 = boto3.client(
         "s3",
         endpoint_url="https://eu-west-1.s3.fil.one",
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
+        region_name="eu-west-1",
+        config=Config(s3={"addressing_style": "path"}),
     )
 
     # Upload a file
@@ -120,6 +125,7 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
     const client = new S3Client({
       endpoint: "https://eu-west-1.s3.fil.one",
       region: "eu-west-1",
+      forcePathStyle: true,
       credentials: {
         accessKeyId: "YOUR_ACCESS_KEY",
         secretAccessKey: "YOUR_SECRET_KEY",

@@ -3,7 +3,7 @@ title: Python (boto3)
 description: Using boto3 with Fil One for object storage operations.
 ---
 
-Fil One is fully compatible with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html), the AWS SDK for Python. No custom library is needed — configure the client to point at the Fil One endpoint and use the standard API.
+Fil One works with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html), the AWS SDK for Python — it is S3-API compatible, so no custom library is needed. Configure the client to point at the Fil One endpoint, **enable path-style addressing**, and use the standard API. A few S3 operations are not supported; see [S3 Compatibility](/reference/s3-compatibility) for the exceptions.
 
 :::note The endpoint depends on your bucket's region
 Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and `region_name="us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
@@ -20,6 +20,7 @@ pip install boto3
 ```python
 import boto3
 import os
+from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
@@ -27,16 +28,21 @@ s3 = boto3.client(
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
+    config=Config(s3={"addressing_style": "path"}),
 )
 ```
 
 Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
 
+:::warning Path-style addressing is required
+Fil One only supports **path-style** URLs (`https://eu-west-1.s3.fil.one/my-bucket/key`). boto3 defaults to virtual-hosted style (`https://my-bucket.eu-west-1.s3.fil.one/key`) even with a custom `endpoint_url`, which fails with a DNS or 404-shaped error. The `config=Config(s3={"addressing_style": "path"})` line above is not optional — without it, every request fails. `region_name` is also required, since SigV4 cannot sign without a region.
+:::
+
 ## Core operations
 
 ### Create a bucket
 
-`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create Bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
 
 ```python
 s3.create_bucket(Bucket="my-bucket")
@@ -82,7 +88,7 @@ s3.delete_object(Bucket="my-bucket", Key="reports/report.pdf")
 
 ## Multipart uploads
 
-For files larger than 5 GB, boto3 handles multipart uploads automatically via `upload_file` and `upload_fileobj`. You can configure thresholds and concurrency:
+boto3's `upload_file` and `upload_fileobj` switch to multipart automatically for any file larger than the `multipart_threshold`, which defaults to **8 MB** (not 5 GB). You can configure the threshold and concurrency:
 
 ```python
 from boto3.s3.transfer import TransferConfig

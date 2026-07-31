@@ -7,12 +7,14 @@ description: Service limits, quotas, and constraints.
 
 | Limit | Trial | Paid |
 |-------|-------|------|
-| Storage | 1 TB | No limit |
-| Egress bandwidth | 2 TB / month | No limit |
+| Storage | 1 TB (1,000 GB) | No limit |
+| Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
 | API operations | Unlimited | Unlimited |
 | Buckets per account | 100 | 100 |
 
-The bucket limit is set per account rather than fixed by plan. In `eu-west-1` it is 100 buckets per account. Contact support if you need a higher limit.
+During the trial these two caps behave differently: reaching the **storage** cap **write-locks** the account (reads still work), while reaching the **egress** cap **disables** it entirely. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. See [Trial & Billing](/billing/trial).
+
+The bucket limit is set per account rather than fixed by plan. In `eu-west-1` it is 100 buckets per account; the limit in `us-east-1` has not been separately confirmed. Contact support if you need a higher limit.
 
 The trial lasts 30 days. After it ends, your account enters a 7-day read-only grace period. If you do not upgrade before the grace period ends, the account is disabled and access is blocked. See [Trial & Billing](/billing/trial) for the full timeline and email schedule.
 
@@ -27,6 +29,10 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 | Maximum part size (multipart) | 5 GB |
 | Maximum object key length | 1,024 bytes |
 | Maximum metadata size per object | 2 KB |
+
+:::note Which of these are Fil One-specific
+The **maximum object key length (1,024 bytes)** is enforced by Fil One and verified in code. The other values in this table (maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
+:::
 
 For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
 
@@ -49,9 +55,9 @@ Rate limits are enforced by the underlying storage gateway. Fil One does not imp
 
 **Bucket names:**
 - 3-63 characters
-- Lowercase letters, numbers, hyphens
+- Lowercase letters, numbers, hyphens (no dots — Fil One's naming rules are stricter than AWS S3 here)
 - Must start and end with a letter or number
-- Globally unique
+- Unique within Fil One
 
 **Object keys:**
 - Up to 1,024 bytes (UTF-8)

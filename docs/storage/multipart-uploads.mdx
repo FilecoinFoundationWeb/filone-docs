@@ -3,7 +3,11 @@ title: Multipart Uploads
 description: Upload large files in parts for reliability and performance.
 ---
 
-For objects larger than 5 GB, you must use multipart upload. Multipart upload is also recommended for any file over 100 MB for improved reliability -- if a part fails, you retry only that part instead of the entire file.
+For very large objects you must use multipart upload. Under standard S3 behaviour the single-PUT ceiling is 5 GB — this is an AWS S3 limit that Fil One's storage gateway is expected to follow but that we have not independently confirmed (see [Limits](/limits)). Multipart upload is also recommended for any file over 100 MB for improved reliability -- if a part fails, you retry only that part instead of the entire file.
+
+:::note
+The Fil One dashboard uploads objects with a single PUT, so multipart applies when you use your own S3 SDK or the AWS CLI, not the console upload flow.
+:::
 
 ## How it works
 
@@ -18,7 +22,7 @@ If something goes wrong, **abort** the upload to clean up incomplete parts.
 The AWS CLI handles multipart uploads automatically for large files:
 
 ```bash
-# Files over 8 MB are automatically multipart-uploaded
+# The AWS CLI switches to multipart above its own client-side threshold (8 MB by default)
 aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
   --endpoint-url https://eu-west-1.s3.fil.one
 ```
@@ -60,9 +64,13 @@ s3.upload_file(
 | Minimum part size | 5 MB (except last part) |
 | Maximum part size | 5 GB |
 
+:::note
+These are the standard AWS S3 multipart limits. Fil One's storage gateway is expected to follow them, but we have not independently confirmed the exact values — treat them as guidance and test against your own workload before hard-coding a part size. See [Limits](/limits).
+:::
+
 ## Cleaning up incomplete uploads
 
-Incomplete multipart uploads consume storage. List and abort any stale uploads:
+Incomplete multipart uploads are generally expected to consume storage until aborted. Fil One has **no lifecycle-rule mechanism** to expire them automatically (there is no `AbortIncompleteMultipartUpload` lifecycle support), so you must list and abort stale uploads yourself:
 
 ```bash
 aws s3api list-multipart-uploads \

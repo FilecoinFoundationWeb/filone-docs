@@ -30,6 +30,10 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 ## Supported operations
 
+:::note About the numeric limits below
+Specific size and count limits quoted in this table (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](/limits).
+:::
+
 ### Bucket operations
 
 | Operation | Status | Notes |
@@ -67,8 +71,8 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 | `ListObjectsV2` | ✅ Supported | |
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
 | `CopyObject` | ❌ Not supported | Server-side copy is not implemented. Download the object and re-upload it instead. |
-| `GetObjectRetention` | ✅ Supported | Returns the Object Lock Compliance retention for a specific version. |
-| `PutObjectRetention` | ✅ Supported | Sets Compliance retention on a specific version. Retention can be extended but not shortened. |
+| `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
+| `PutObjectRetention` | ⚠️ Unverified | Offered as a grantable access-key permission, but the console never calls it and gateway support has not been tested. Do not rely on setting per-object retention over the API until this is confirmed. |
 | `GetObjectLegalHold` | ❌ Not supported | Planned for a future release. |
 | `PutObjectLegalHold` | ❌ Not supported | Planned for a future release. |
 | `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. |
@@ -117,7 +121,7 @@ Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy. |
 | `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention (Governance or Compliance mode, 1 day – 100 years). |
 | `GetObjectRetention` | ✅ Supported | Returns the retention setting for a specific object version. |
-| `PutObjectRetention` | ✅ Supported | Sets or extends retention on a version. Cannot be shortened. |
+| `PutObjectRetention` | ⚠️ Unverified | Offered as a grantable access-key permission, but the console never calls it and gateway support has not been tested. Do not rely on it until confirmed. |
 | `GetObjectLegalHold` | ❌ Not supported | Planned for a future release. |
 | `PutObjectLegalHold` | ❌ Not supported | Planned for a future release. |
 
@@ -125,7 +129,7 @@ Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and
 
 | Mode | Status |
 |------|--------|
-| Governance | ✅ Supported — the default when you enable Object Lock. Retention is enforced, but users holding the bypass permission can override it. |
+| Governance | ✅ Supported — the default when you enable Object Lock. In standard S3, Governance retention can be overridden by a caller with the bypass permission, but **Fil One does not currently expose a grantable bypass permission**, so treat Governance objects as protected for their retention period in practice. |
 | Compliance | ✅ Supported — no user, including the account owner, can delete a locked object or shorten its retention. |
 
 See [Object Lock](/storage/object-lock) for compliance use cases, retention configuration, and examples.
@@ -148,7 +152,7 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 | `GetBucketEncryption` | ✅ Supported | Returns the bucket's default server-side encryption configuration. |
 | `PutBucketEncryption` | ⚠️ No-op | Accepted for SDK compatibility. Encryption cannot be modified or disabled. |
 | SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. |
-| Client-side encryption | ✅ Optional | Encrypt data before upload using AWS SDK encryption utilities. Server-side encryption is still applied on top. |
+| Client-side encryption | ✅ Optional | Encrypt data in your own application before upload. AWS's S3 Encryption Client exists only for some SDKs (Java, .NET, Go, Ruby) — not boto3, the CLI, or JS v3 — so with those you supply your own crypto. Server-side encryption is still applied on top. |
 
 See [Encryption](/security/encryption) for details.
 
@@ -207,4 +211,4 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Object Lock modes | Compliance and Governance. | Compliance and Governance. Legal Hold is not yet available. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
 | Regions | 30+ globally. | Two: `eu-west-1` and `us-east-1`. Additional regions planned. |
-| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage deals persist up to 180 days until natural sector expiration. |
+| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage may persist for a bounded period until the sealed sector naturally expires. |

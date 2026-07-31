@@ -25,6 +25,6 @@ If your compliance requirements depend on the specific cipher in use, or on who 
 
 ## Client-side encryption
 
-If your security requirements call for client-side encryption (encrypting data before it reaches the network), you can use the encryption utilities in the AWS SDKs. Fil One stores whatever bytes you send — if you encrypt client-side, the stored object is the encrypted blob.
+If your security requirements call for client-side encryption (encrypting data before it reaches the network), encrypt the bytes in your own application before uploading. Note that AWS's dedicated **S3 Encryption Client** exists only for some SDKs (Java, .NET, Go, Ruby) — **boto3, the AWS CLI, and the JavaScript SDK v3 do not provide one** — so with Python, the CLI, or JavaScript you must handle encryption yourself with a standard crypto library. Fil One stores whatever bytes you send: if you encrypt client-side, the stored object is the encrypted blob.
 
 Client-side encryption is optional and is in addition to the server-side encryption that Fil One applies automatically.

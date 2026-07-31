@@ -3,7 +3,8 @@
 > Fil One is S3-compatible object storage built for AI agents and data-intensive
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
-> committed to store. No egress fees, no per-request charges, $4.99/TB/month.
+> committed to store. No egress fees on paid plans, no per-request charges,
+> $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -28,6 +29,21 @@ Critical integration notes for developers:
   roll-back, or point-in-time recovery
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
+- Paid past_due status is READ-ONLY immediately: writes are blocked from the
+  moment a payment fails, not after a later deadline; the ~30-day window is
+  retrieval-only before the account is disabled
+- Trial caps are enforcement thresholds, not allowances: storage reaching 1 TB
+  WRITE-LOCKS the account; egress reaching 2 TB DISABLES it entirely. Trial
+  egress is a single cumulative budget over the 30 days. Enforced by a
+  twice-daily job (~07:00/19:00 UTC), not in real time
+- Storage is DECIMAL: 1 TB = 1,000 GB, 1 GB = 1,000,000,000 bytes
+- Governance Object Lock has NO grantable bypass permission in the product
+- PutObjectRetention (per-object retention) is offered as a key permission but
+  gateway support is UNVERIFIED — do not rely on it; use the bucket-level
+  default retention set at creation
+- Object/part size limits (5 TB object, 5 GB single-PUT, 10,000 parts, 5 MB min
+  part) are standard AWS S3 values, NOT independently confirmed for Fil One
+- Bucket names forbid dots (unlike AWS S3); object key max is 1,024 bytes
 
 ## Getting Started
 
@@ -47,12 +63,15 @@ Critical integration notes for developers:
 - [Objects](https://docs.fil.one/storage/objects): Upload, download, list, delete,
   and presigned URL generation with code examples for App, AWS CLI, and boto3
 - [Multipart Uploads](https://docs.fil.one/storage/multipart-uploads): Required
-  for objects > 5 GB; recommended for > 100 MB. Includes AWS CLI and boto3
-  TransferConfig examples, part limits, and cleanup of incomplete uploads
-- [Object Lock](https://docs.fil.one/storage/object-lock): WORM retention for
-  regulatory compliance (SEC 17a-4, FINRA, HIPAA). Opt-in at bucket creation,
-  Governance (default) and Compliance modes, per-object retention via
-  PutObjectRetention, 1 day to 100 years, no trial-specific cap
+  above the single-PUT ceiling (standard S3 5 GB, not independently confirmed);
+  recommended for > 100 MB. Dashboard uploads are single-PUT; multipart is via
+  your own SDK/CLI. No lifecycle rule to auto-abort incomplete uploads
+- [Object Lock](https://docs.fil.one/storage/object-lock): WORM retention.
+  Opt-in at bucket creation, Governance (default) and Compliance modes, 1 day to
+  100 years, no trial-specific cap. NO third-party compliance attestation, NO
+  grantable Governance bypass permission, and per-object PutObjectRetention
+  support is UNVERIFIED. Regulations (SEC 17a-4, FINRA, HIPAA) are illustrative
+  use cases, not a certification claim
 - [Bucket Intelligence](https://docs.fil.one/bucket-intelligence): EARLY ACCESS,
   allowlisted, free during early access. Turn a bucket into a queryable
   knowledge base. Indexing runs on a 6-hourly cron (NOT upload-triggered).
@@ -70,16 +89,21 @@ Critical integration notes for developers:
   GetBucketVersioning/GetBucketObjectLockConfiguration groups, single-region
   scoping, bucket-level scoping, key expiration, revocation, best practices
 - [Encryption](https://docs.fil.one/security/encryption): server-side
-  encryption always on by default for all objects; TLS in transit; optional
-  client-side encryption supported
+  encryption always on by default for all objects; TLS in transit; keys held by
+  the regional operator (no customer-managed keys, cipher unconfirmed).
+  Client-side encryption is up to you — AWS's S3 Encryption Client exists only
+  for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
 
 ## Billing
 
-- [Trial & Billing](https://docs.fil.one/billing/trial): 30-day free trial
-  includes 1 TB storage and 2 TB egress; trial lifecycle (active → grace period
-  → expiry); paid plan at $4.99/TB/month with no egress or request fees
-- [Pricing](https://docs.fil.one/billing/pricing): $4.99/TB/month, no egress
-  fees, no per-request charges, no hidden costs
+- [Trial & Billing](https://docs.fil.one/billing/trial): 30-day free trial with
+  1 TB storage (1,000 GB) and 2 TB egress (cumulative); storage cap write-locks,
+  egress cap disables the account; trial lifecycle (active → grace → expiry);
+  paid past_due is read-only immediately; paid plan $4.99/TB/month, $4.99/month
+  minimum, no egress or request fees. Cancellation is via the Stripe portal
+- [Pricing](https://docs.fil.one/billing/pricing): $4.99/TB/month (decimal TB,
+  1,000 GB) with a $4.99/month minimum; single linear rate plus a floor (no
+  first-TB tier); metered twice daily; no egress or per-request charges
 
 ## API Reference
 

@@ -11,12 +11,12 @@ API keys authenticate your requests to the Fil One S3 API. Each key consists of 
 ## Creating an API key
 
 1. Go to **API Keys** in the left menu of the dashboard.
-2. Click **Create Key**.
-3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`).
-4. Choose the key's **region** (see [Region scope](#region-scope)).
-5. Set the key's permissions and bucket scope (see below).
-6. Optionally, set an expiration date.
-7. Click **Create**.
+2. Click **Create new key** (this opens a dedicated page).
+3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`). Names are limited to 64 characters (letters, numbers, spaces, and `_ - .`).
+4. Choose the key's **region** (see [Region scope](#region-scope)). This is required and fixed for the life of the key.
+5. Set the key's permissions and bucket scope (see below). At least one permission is required.
+6. Optionally set an expiration: **Never**, **30 days**, or a **Custom** date.
+7. Click **Create key**.
 8. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, you must create a new key.
 
 ## Key permissions
@@ -27,12 +27,14 @@ Each key can be granted a combination of the following object-level permissions:
 
 | Permission | What it allows |
 |------------|----------------|
-| **Read** | `GetObject`, `HeadObject` |
-| **Write** | `PutObject`, multipart upload operations |
-| **List** | `ListBuckets`, `ListObjectsV2` |
+| **Read** | `GetObject` (and `HeadObject`, which uses the same underlying permission), `ListMultipartUploadParts` |
+| **Write** | `PutObject`, `AbortMultipartUpload` |
+| **List** | `ListObjectsV2` / `ListBucket`, and listing in-progress multipart uploads (`ListBucketMultipartUploads`) |
 | **Delete** | `DeleteObject` |
 
 You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload but not remove data.
+
+Listing the *names* of your buckets (`ListAllMyBuckets`) is granted to every key automatically and is not one of the permissions above. Note that the operator's documented **Write** grant covers `PutObject` and `AbortMultipartUpload`; the `CreateMultipartUpload` / `UploadPart` / `CompleteMultipartUpload` operations are not separately enumerated in the grant map.
 
 ### Bucket management permissions
 
@@ -56,19 +58,23 @@ These read a bucket's settings and are selectable in every region, including `eu
 
 ### Granular permissions
 
-For buckets with [versioning](/storage/versioning) or [Object Lock](/storage/object-lock) enabled, you can enable additional granular permissions on top of the basic ones:
+You can enable additional granular permissions on top of the basic object permissions. Each granular permission requires only its **parent basic permission** — the bucket does **not** need versioning or Object Lock enabled for the permission to be selectable:
 
 | Granular permission | Requires basic | What it allows |
 |---------------------|----------------|----------------|
 | `GetObjectVersion` | Read | Retrieve specific versions of an object |
 | `GetObjectRetention` | Read | View retention policy on an object |
 | `GetObjectLegalHold` | Read | View legal hold status on an object |
-| `PutObjectRetention` | Write | Apply or extend retention policies |
+| `PutObjectRetention` | Write | Apply or modify retention policies |
 | `PutObjectLegalHold` | Write | Apply or remove legal holds |
 | `ListBucketVersions` | List | List all versions of objects in a bucket |
 | `DeleteObjectVersion` | Delete | Permanently delete a specific object version |
 
 Granular permissions are additive — a key must have the corresponding basic permission before a granular permission can be granted. For example, `PutObjectRetention` requires the **Write** basic permission.
+
+:::note
+Granting `PutObjectRetention` makes the permission available on the key, but the gateway's support for per-object retention calls has not been verified — see [S3 Compatibility](/reference/s3-compatibility#object-lock). A grantable permission is not proof the operation works.
+:::
 
 :::note
 `GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key, but Legal Hold operations are not yet available through the S3 API, so granting them has no effect today. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
@@ -82,7 +88,7 @@ The region also determines which permissions are available: the bucket managemen
 
 ## Bucket scope
 
-By default, a key has access to all buckets in your account. You can restrict a key to one or more specific buckets. A bucket-scoped key cannot list or access any bucket outside its allowed set.
+By default, a key has access to all buckets in your account. You can restrict a key to one or more specific buckets, which limits **object operations** to that set. Note that listing your bucket *names* (`ListAllMyBuckets`) is always permitted, so bucket scoping restricts access to bucket **contents** rather than hiding that other buckets exist.
 
 This is useful when:
 - Different services need access to different buckets
@@ -91,7 +97,7 @@ This is useful when:
 
 ## Key expiration
 
-You can set an expiration date when creating a key. After the expiration date, the key is automatically revoked and all requests signed with it will fail with `403 AccessDenied`.
+You can set an expiration date when creating a key. After the expiration date, the key no longer authenticates and requests signed with it fail with a `403` (typically `AccessDenied` or `InvalidAccessKeyId`).
 
 Expiring keys are useful for:
 - Temporary access grants
@@ -105,15 +111,20 @@ Go to **API Keys** in the left menu to see all your active keys. The list shows:
 | Column | Description |
 |--------|-------------|
 | Name | The label you gave the key at creation, with the Access Key ID shown beneath it |
-| Region | The region the key is scoped to |
 | Buckets | Which buckets the key can access (all, or a specific set) |
+| Permissions | The permissions granted to the key |
+| Status | The key's current status (for example, active or expired) |
 | Last Used | When the key last successfully authenticated a request (or "Never") |
 
 You cannot view the Secret Access Key after creation.
 
+:::note
+The key list does **not** show a key's region. Because keys are region-scoped, record which region you created each key in — a key used against the wrong region's endpoint returns `403`.
+:::
+
 ## Revoking a key
 
-Find the key in **API Keys** and click **Delete**. The key is revoked immediately. Any in-flight requests signed with that key will fail.
+Find the key in **API Keys**, open its **⋯** action menu, and choose **Delete**. Deletion is forwarded to the regional storage operator; the key stops working once that change propagates, so treat revocation as taking effect quickly rather than at a guaranteed instant, and rotate anything that depended on it.
 
 ## Security best practices
 
@@ -122,7 +133,7 @@ Find the key in **API Keys** and click **Delete**. The key is revoked immediatel
 - **Scope keys to specific buckets** when possible, especially for external integrations.
 - **Set expiration dates** on keys that are only needed temporarily.
 - **Rotate keys periodically.** Create a new key, update your application, then delete the old key.
-- **Revoke keys immediately** if you suspect compromise. There is no delay — revocation takes effect instantly.
+- **Revoke keys immediately** if you suspect compromise, and rotate anything that depended on them. Revocation is forwarded to the storage operator, so treat it as effective quickly rather than assuming a precise cut-off instant.
 - **Never hardcode credentials** in source code. Use environment variables or a secrets manager.
 
 See [Authentication](/security/authentication) for how to configure your S3 client with your API keys.

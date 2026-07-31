@@ -13,11 +13,11 @@ Buckets are containers for your objects. Every object in Fil One lives inside a 
 
 Bucket names must be:
 - Between 3 and 63 characters
-- Lowercase letters, numbers, and hyphens only
+- Lowercase letters, numbers, and hyphens only (**no dots**)
 - Must start and end with a letter or number
-- Globally unique across all Fil One accounts
+- Unique within Fil One
 
-These are the same naming rules as AWS S3.
+These rules are close to AWS S3's but not identical: in particular Fil One does **not** allow dots (`.`) in bucket names, which AWS S3 permits. If you are migrating a bucket whose name contains a dot, you will need to rename it.
 
 ## Creating a bucket
 
@@ -27,13 +27,13 @@ Whether you can create a bucket through the S3 API depends on the region. `Creat
 To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that permission when you create it. See [API Keys](/security/api-keys).
 :::
 
-1. From the dashboard, click **Create Bucket**.
+1. From the dashboard, click **New bucket** (or open **Buckets** in the left menu), then click **Create bucket**.
 2. Enter a bucket name.
 3. Choose a **region** — `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
 4. Optionally enable **Versioning**. Leave it off and the bucket keeps only the current copy of each object.
 5. Optionally enable **Object Lock**, then **Retention**. Each requires the one before it, so Object Lock only becomes available once versioning is on, and retention only once Object Lock is on. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years.
 6. Optionally create or configure an API key in the API key section. A key belongs to a single region and must match the bucket's region.
-7. Click **Create**.
+7. Click **Create bucket** (the button reads **Create bucket and API key** if you expanded the key section).
 
 Every bucket is created with encryption enabled automatically.
 
@@ -68,6 +68,6 @@ In the meantime you can delete a bucket through the S3 API in `us-east-1`, using
 :::
 
 :::info Logical deletion and Filecoin storage
-When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. However, the underlying Filecoin storage deals persist until their natural expiration, which can be up to 180 days. This is a property of the Filecoin network's sealed sector model and does not affect your ability to manage your data in Fil One.
+When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
 :::
 
