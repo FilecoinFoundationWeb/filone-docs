@@ -105,7 +105,7 @@ On a bucket without versioning, deletion is immediate — the object disappears 
 On a [versioned](/storage/versioning) bucket, a plain delete places a delete marker instead: the object stops appearing in listings, but prior versions are retained, remain downloadable by version ID, and continue to count as stored storage.
 
 :::info Logical deletion and Filecoin storage
-When you delete an object, it is immediately removed from your Fil One account and is no longer accessible. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
+When you delete an object, it is immediately removed from your Fil One account and is no longer accessible. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](/security/encryption). The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
 :::
 
 ## Presigned URLs

@@ -322,13 +322,20 @@ for bucket in response["Buckets"]:
 
 ## Deleting a bucket
 
-Bucket deletion is not yet supported. This will be enabled in a future release.
+Deleting a bucket from the dashboard is not yet available. The delete button is
+visible but disabled while the underlying storage layer completes support for
+this operation, and it will be enabled in a future release.
+
+In the meantime you can delete a bucket through the S3 API in us-east-1, using a
+key that has the DeleteBucket permission. The bucket must be empty. DeleteBucket
+is not available in eu-west-1.
 
 Note: When you delete a bucket and its objects, the data is immediately removed
 from your Fil One account. Because Filecoin stores data in sealed sectors, the
 underlying storage may persist for a bounded period until the sector naturally
-expires (duration set by the storage layer). This does not affect your ability
-to manage your data in Fil One.
+expires (duration set by the storage layer). That residual data stays encrypted,
+and key custody sits with the regional storage operator rather than with you or
+Fil One. This does not affect your ability to manage your data in Fil One.
 
 
 ---
@@ -1269,7 +1276,9 @@ against a checksum you keep, or use Object Lock for immutability.
 Immediately removed from your Fil One account and no longer accessible. Because
 Filecoin stores data in sealed sectors, the underlying storage may persist for a
 bounded period until the sector naturally expires (duration set by the storage
-layer), but the data is inaccessible from the moment of deletion. Note: account
+layer), but the data is inaccessible from the moment of deletion. That residual
+data stays encrypted, and key custody sits with the regional storage operator
+rather than with you or Fil One. Note: account
 closure does NOT purge data — the account is disabled and access blocked, and
 no automatic purge runs; contact support to request removal.
 
