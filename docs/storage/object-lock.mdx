@@ -139,7 +139,7 @@ Retention outlives the trial: a lock you set during the trial still applies afte
 
 ## Object Lock and the Filecoin storage model
 
-When you delete an object after its retention period expires, it is immediately removed from your Fil One account and inaccessible via the API and dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires; the exact duration is set by the storage layer rather than measured by Fil One. Whether that bounded persistence matters for a particular regulatory obligation is a question for your own compliance review — this documentation does not make that determination.
+When you delete an object after its retention period expires, it is immediately removed from your Fil One account and inaccessible via the API and dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires; the exact duration is set by the storage layer rather than measured by Fil One. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](/security/encryption). Whether that bounded persistence matters for a particular regulatory obligation is a question for your own compliance review — this documentation does not make that determination.
 
 ## Common use cases
 

@@ -68,6 +68,6 @@ In the meantime you can delete a bucket through the S3 API in `us-east-1`, using
 :::
 
 :::info Logical deletion and Filecoin storage
-When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
+When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](/security/encryption). The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
 :::
 
