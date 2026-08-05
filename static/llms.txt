@@ -153,8 +153,12 @@ Critical integration notes for developers:
 ## Optional
 
 - [Using the Dashboard](https://docs.fil.one/app/overview): Browser-based UI at
-  app.fil.one for bucket creation, file upload/download, API key management, and
-  billing — no code required
+  app.fil.one for bucket creation, file upload/download, API key management,
+  billing, and Settings (profile fields, notification preferences). No code
+  required. Changing your email in Settings resets verification and re-triggers
+  the verification-screen redirect; Google/GitHub accounts cannot change name or
+  email in Fil One; the "Email notifications" toggle is not available yet
+  ("Coming soon"), so no upload or storage-limit emails are sent
 - [FAQ](https://docs.fil.one/faq): Common questions on S3 compatibility,
   blockchain/crypto requirements, data residency, deletion behavior, migration
   from AWS S3, backups, durability, and Filecoin data integrity mechanics

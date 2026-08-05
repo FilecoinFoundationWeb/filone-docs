@@ -1479,6 +1479,51 @@ current usage (storage and bandwidth), upgrade from trial to a paid plan, and
 download invoices — available once on a paid plan; invoice history is hidden
 during the trial.
 
+## Settings
+
+**Settings** sits at the bottom of the left sidebar: profile, notification
+preferences, and account security.
+
+### Profile
+
+| Field | Rules |
+|-------|-------|
+| Full name | Cannot be empty, up to 200 characters |
+| Company name | 2 to 100 characters, letters, numbers, spaces, hyphens, periods only |
+| Email | Must be a valid address; disposable addresses are rejected |
+
+**Save changes** is disabled until a field is edited, and a note beside it lists
+what will be saved.
+
+CHANGING THE EMAIL ADDRESS RESETS VERIFICATION. Saving a new address marks the
+account unverified, sends a verification email to the new address, and lands the
+user on the verification screen; every page redirects there until it is
+confirmed, as for a new account. The address can be edited again while
+unverified, so a typo is recoverable.
+
+GOOGLE AND GITHUB ACCOUNTS CANNOT CHANGE NAME OR EMAIL IN FIL ONE. Both fields
+are read-only for social sign-ins, labelled "Managed by Google" / "Managed by
+GitHub" with a link to that provider's profile page; change them at the
+provider. Company name stays editable on every account type.
+
+### Notifications
+
+Marketing emails ("Receive updates about new features") is a working toggle. It
+reflects the current subscription status, is off until turned on, and saves on
+flip with no Save button.
+
+Email notifications ("Get notified about your uploads and when approaching
+storage limits") is visible but DISABLED and marked "Coming soon". NOT AVAILABLE
+YET, so do not rely on Fil One emailing as a storage limit approaches.
+
+### Security
+
+Two-factor authentication, passkeys, recovery codes and password changes are all
+under Settings > Security (see Account Security). Password is managed by the
+provider on Google and GitHub accounts, so no Change button appears.
+
+Account deletion is not self-service: email support@fil.one.
+
 
 ---
 
