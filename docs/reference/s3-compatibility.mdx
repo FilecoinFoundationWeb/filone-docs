@@ -151,6 +151,7 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
 | `GetBucketEncryption` | ✅ Supported | Returns the bucket's default server-side encryption configuration. |
 | `PutBucketEncryption` | ⚠️ No-op | Accepted for SDK compatibility. Encryption cannot be modified or disabled. |
+| SSE-KMS (`aws:kms`) | ❌ Not supported | Uploads specifying `ServerSideEncryption: aws:kms` are rejected in `us-east-1` with `InvalidRequest`. Not yet tested in `eu-west-1`. Omit encryption headers — server-side encryption is applied automatically. |
 | SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. |
 | Client-side encryption | ✅ Optional | Encrypt data in your own application before upload. AWS's S3 Encryption Client exists only for some SDKs (Java, .NET, Go, Ruby) — not boto3, the CLI, or JS v3 — so with those you supply your own crypto. Server-side encryption is still applied on top. |
 
