@@ -1,0 +1,66 @@
+---
+title: Data Deletion
+description: What happens when you delete an object, a bucket, or close your account.
+---
+
+This page is the single reference for what deletion means in Fil One — at the object level, the bucket level, and the account level. If you are answering a due-diligence questionnaire or a data-subject request, start here.
+
+The short version: **deletion in Fil One removes your access immediately.** Because storage is fulfilled by the Filecoin network, the underlying encrypted bytes may persist in a sealed sector for a bounded period afterward, and closing an account blocks access rather than purging data. Both behaviours are described in full below.
+
+## Deleting an object
+
+On a bucket **without** versioning, deletion is immediate. The object disappears from the dashboard and the API at once, and there is no recycle bin or soft-delete to recover it from.
+
+On a **versioned** bucket, a delete request without a version ID places a **delete marker** instead. The object stops appearing in listings and `GetObject` returns `NoSuchKey`, but prior versions remain intact, remain downloadable by version ID, and **continue to count as stored storage for billing**. To remove a version permanently, delete it by its version ID. See [Versioning](/storage/versioning).
+
+Deleting the delete marker itself makes the object visible again.
+
+## Deleting a bucket
+
+Bucket deletion from the dashboard is not yet available — the delete button is visible but disabled while the underlying storage layer completes support for it.
+
+Over the S3 API, `DeleteBucket` is available in `us-east-1` with a key holding the `DeleteBucket` permission. The bucket must be empty. It is not available in `eu-west-1`. See [Buckets](/storage/buckets).
+
+## Deletion under Object Lock
+
+An object with active retention cannot be deleted — the request returns `403 AccessDenied`. This holds regardless of key permissions in **Compliance** mode, and in **Governance** mode Fil One exposes no grantable bypass permission, so in practice a Governance-locked object is also protected until its retention expires.
+
+On a versioned bucket a delete marker can still be placed over a locked object: the object appears deleted to applications while the underlying version stays protected and intact until retention expires. See [Object Lock](/storage/object-lock).
+
+## Closing an account
+
+When a trial expires (after its grace period) or a paid subscription is cancelled and its grace period ends, the account is **disabled**.
+
+:::warning Disabling blocks access — it does not purge data
+Disabling makes your data unreachable through both the API and the dashboard, and access keys stop working. **Fil One does not run an automatic purge at that point.** Data is retained until removal is requested.
+
+To restore access, or to request removal of your data, contact support.
+:::
+
+This distinction matters for retention and privacy reviews: "account closed" means access revoked, not data destroyed. Do not treat account closure as a deletion event.
+
+Account-level deletion is currently handled by support rather than as a self-service flow in the dashboard.
+
+## Residual data on the Filecoin network
+
+Filecoin stores data in **sealed sectors**. When you delete an object, it becomes inaccessible through Fil One immediately, but the bytes inside an already-sealed sector may persist until that sector naturally expires. The exact duration is set by the storage layer, not measured or controlled by Fil One.
+
+Two things are true of that residual data:
+
+- **It stays encrypted.** Key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](/security/encryption).
+- **It is not reachable through Fil One.** There is no API or dashboard path to it from the moment of deletion.
+
+This is a property of how the underlying network stores data, not a Fil One retention policy, and it does not affect your ability to manage data in your account.
+
+## Open questions
+
+Two questions that reviewers commonly ask do not yet have documented answers. If either is material to your evaluation, contact support and we will get you a direct answer:
+
+- **Proof obligations after deletion.** Storage providers continuously prove they still hold committed data (see [How does Filecoin protect the integrity of stored data?](/faq)). What happens to that obligation for deleted data is not currently documented.
+- **Replica count.** Storage is fulfilled by a distributed network of providers. Fil One does not currently document how many replicas exist or what deletion means across them.
+
+## What Fil One does not claim
+
+- **No cryptographic proof of deletion.** Fil One surfaces no per-object CID, deal ID, or seal state, so there is nothing you can present to an auditor to demonstrate that a specific object was destroyed.
+- **No guaranteed destruction timeline.** The bounded sealed-sector persistence above is set by the storage layer; Fil One does not publish a maximum.
+- **No determination of regulatory sufficiency.** Whether this deletion behaviour satisfies a specific obligation (GDPR erasure, a retention schedule, a DSAR deadline) is a question for your own compliance review.

@@ -103,6 +103,12 @@ Critical integration notes for developers:
   the regional operator (no customer-managed keys, cipher unconfirmed).
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
+- [Data Deletion](https://docs.fil.one/security/data-deletion): single reference
+  for deletion semantics — object delete (immediate on non-versioned, delete
+  marker on versioned), bucket delete, deletion under Object Lock, account
+  closure (blocks access, does NOT purge — no automatic purge job exists),
+  residual encrypted data in sealed sectors. Open/undocumented: proof
+  obligations after deletion, replica count. No cryptographic proof of deletion
 
 ## Billing
 

@@ -122,7 +122,9 @@ Fil One does not currently expose per-object proof data — content identifiers,
 <summary>What happens to my data if I delete it?</summary>
 <div>
 
-When you delete an object or bucket, it is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — an infrastructure detail set by the storage layer, not a user-facing state. That residual data stays encrypted, with key custody held by the regional storage operator rather than by you or Fil One (see [Encryption](/security/encryption)). The data is inaccessible through Fil One from the moment of deletion.
+When you delete an object or bucket, it is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — that residual data stays encrypted and is unreachable through Fil One from the moment of deletion.
+
+Note that closing an account blocks access but does not purge data. For the full picture — versioned buckets, Object Lock, account closure, and residual data — see [Data Deletion](/security/data-deletion).
 
 </div>
 </details>
