@@ -3,7 +3,8 @@
 > Fil One is S3-compatible object storage built for AI agents and data-intensive
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
-> committed to store. No egress fees, no per-request charges, $4.99/TB/month flat rate.
+> committed to store. No egress fees on paid plans, no per-request charges,
+> $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -32,6 +33,13 @@ Critical integration notes for developers:
   fallback there. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
+- Governance Object Lock has NO grantable bypass permission in the product
+- PutObjectRetention (per-object retention) is offered as a key permission and
+  is confirmed working in us-east-1 (including Governance-mode bypass); not
+  yet confirmed in eu-west-1 — use the bucket-level default retention there
+- Legal Hold (GetObjectLegalHold/PutObjectLegalHold) is confirmed working in
+  us-east-1, incl. blocking delete while a hold is active; not yet confirmed
+  in eu-west-1
 - Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
 
 
