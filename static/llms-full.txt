@@ -1219,6 +1219,11 @@ buckets with no exceptions. Encryption is performed by the S3 storage gateway fo
 the bucket's region, not by the Fil One console. The specific cipher is set by the
 regional operator and is not documented here.
 
+Do NOT send encryption headers. You cannot request a specific mode. Uploads
+specifying ServerSideEncryption: aws:kms (SSE-KMS) are REJECTED in us-east-1 with
+InvalidRequest; not yet tested in eu-west-1. Omit the header entirely —
+encryption is applied either way.
+
 ## Encryption in transit
 
 All connections to the regional endpoints (https://eu-west-1.s3.fil.one,
@@ -1234,6 +1239,135 @@ for some SDKs (Java, .NET, Go, Ruby) — NOT boto3, the AWS CLI, or JS v3 — so
 those you supply your own crypto. Fil One stores whatever bytes you send.
 Client-side encryption is in addition to the server-side encryption that Fil One
 applies automatically.
+
+
+---
+
+# Data Deletion
+
+Source: https://docs.fil.one/security/data-deletion
+
+Single reference for what deletion means at the object, bucket, and account
+level. Short version: deletion removes your access immediately; because storage
+is fulfilled by the Filecoin network the underlying encrypted bytes may persist
+in a sealed sector for a bounded period afterward; and closing an account blocks
+access rather than purging data.
+
+## Deleting an object
+
+On a bucket WITHOUT versioning, deletion is immediate — no recycle bin, no
+soft-delete.
+
+On a VERSIONED bucket, a delete without a version ID places a DELETE MARKER
+instead. The object stops appearing in listings and GetObject returns NoSuchKey,
+but prior versions remain intact, remain downloadable by version ID, and
+CONTINUE TO COUNT AS STORED STORAGE for billing. To remove a version
+permanently, delete it by its version ID. Deleting the delete marker makes the
+object visible again.
+
+## Deleting a bucket
+
+Dashboard bucket deletion is not yet available (button visible but disabled
+while the storage layer completes support). Over the S3 API, DeleteBucket works
+in us-east-1 with a key holding the DeleteBucket permission and an empty bucket;
+it is not available in eu-west-1.
+
+## Deletion under Object Lock
+
+An object with active retention cannot be deleted — 403 AccessDenied. True
+regardless of key permissions in Compliance mode; in Governance mode Fil One
+exposes no grantable bypass permission, so a Governance-locked object is also
+protected until retention expires. A delete marker can still be placed over a
+locked object: it appears deleted while the underlying version stays protected.
+
+## Closing an account
+
+When a trial expires (after its grace period) or a paid subscription is
+cancelled and its grace period ends, the account is DISABLED.
+
+Disabling makes data unreachable through the API and dashboard and stops access
+keys working. Fil One does NOT run an automatic purge at that point — data is
+retained until removal is requested. Contact support to restore access or
+request removal.
+
+"Account closed" means access revoked, NOT data destroyed. Do not treat account
+closure as a deletion event. Account-level deletion is handled by support rather
+than as a self-service dashboard flow.
+
+## Residual data on the Filecoin network
+
+Filecoin stores data in sealed sectors. A deleted object becomes inaccessible
+through Fil One immediately, but bytes inside an already-sealed sector may
+persist until that sector naturally expires — duration set by the storage layer,
+not measured or controlled by Fil One. That residual data stays encrypted (key
+custody with the regional storage operator) and is not reachable through Fil One
+from the moment of deletion. This is a property of the underlying network, not a
+Fil One retention policy.
+
+## Open questions
+
+Not currently documented; contact support if material to an evaluation:
+- Proof obligations after deletion — what happens to a provider's obligation to
+  keep proving it holds data that has been deleted.
+- Replica count — how many replicas exist and what deletion means across them.
+
+## What Fil One does not claim
+
+- No cryptographic proof of deletion — no per-object CID, deal ID, or seal state
+  to present to an auditor.
+- No guaranteed destruction timeline — no published maximum for sealed-sector
+  persistence.
+- No determination of regulatory sufficiency (GDPR erasure, retention schedules,
+  DSAR deadlines) — that is for your own compliance review.
+
+
+---
+
+# Compliance & Certifications
+
+Source: https://docs.fil.one/security/compliance
+
+## Certification status
+
+Fil One does NOT hold SOC 2 Type II or ISO 27001 certification today. Both are
+actively being pursued. Fil One holds NO third-party compliance attestation for
+any feature — including SEC 17a-4 assessments of the Object Lock / WORM
+capability. Contact security@fil.one if a certification is a hard requirement.
+
+## Shared responsibility
+
+| Layer | Operated by | Responsible for |
+|-------|-------------|-----------------|
+| Console, API, identity, billing | Fil One | Authentication, access-key issuance and scoping, MFA, dashboard, request authorization, subscription state |
+| Regional S3 storage gateway | Regional storage operator | Accepting/serving object data, server-side encryption at rest, CUSTODY OF ENCRYPTION KEYS |
+| Underlying storage network | Filecoin storage providers | Physically holding data, producing the network's proof-of-storage |
+
+Consequences: encryption key custody sits with the regional storage operator,
+not Fil One and not the customer (no customer-managed keys, no SSE-C); and the
+specific cipher / SSE mode is set by the regional operator and is not published.
+
+## Available to a procurement team today
+
+Security contact: security@fil.one. Customer-verifiable controls: passkey /
+Google / GitHub / email-password auth with opt-in MFA (TOTP, WebAuthn security
+keys, device biometrics — SMS intentionally not offered); region-scoped,
+permission-scoped, optionally bucket-scoped and expiring access keys; always-on
+encryption in transit (TLS, HTTP rejected) and at rest; WORM retention via
+Object Lock in Governance and Compliance modes. Questions about Fil One's own
+controls go to security@fil.one; questions about the gateway's encryption
+implementation or key custody are answered by the regional operator via support.
+
+## What Fil One explicitly does not claim
+
+- No third-party attestation or certification of any kind, for any feature.
+- No auditor-presentable per-object proof — no CID, deal ID, or seal state is
+  surfaced, so there is nothing to hand an auditor as evidence a specific object
+  was stored intact or destroyed. Filecoin's network-level proof cycle is real
+  but is a property of the network and is not exposed per object.
+- No determination that any feature satisfies a specific regulation. Regulations
+  named anywhere in these docs are illustrative use cases, not certification
+  claims.
+- No published cipher or key-management scheme for encryption at rest.
 
 
 ---
