@@ -2178,15 +2178,13 @@ Source: https://docs.fil.one/limits
 | Storage | 1 TB (1,000 GB) | No limit |
 | Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
 | API operations | Unlimited | Unlimited |
-| Buckets per account | 100 | 100 in eu-west-1, 300 in us-east-1 |
+| Buckets per account | — | 100 in eu-west-1, 300 in us-east-1 |
 
 During the trial the storage cap write-locks the account and the egress cap
 disables it; trial egress is a single cumulative budget for the 30 days. The
 bucket limit is provisioned per account rather than fixed by plan, and differs by
-region: on a paid plan it is 100 buckets in eu-west-1 and 300 in us-east-1. The
-trial figure has not been confirmed separately per region — 100 is the value used
-when the storage layer does not report one. Contact support if you need a higher
-limit.
+region: on a paid plan it is 100 buckets in eu-west-1 and 300 in us-east-1.
+Contact support if you need a higher limit.
 
 ## Regions
 
