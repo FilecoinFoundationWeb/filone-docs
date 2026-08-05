@@ -28,6 +28,7 @@ const sidebars = {
       type: "category",
       label: "Security",
       items: [
+        "security/account-security",
         "security/authentication",
         "security/api-keys",
         "security/encryption",
