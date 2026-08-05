@@ -55,8 +55,8 @@ Choose your retention mode carefully **at bucket creation** — it is fixed for 
 
 The default retention period set at bucket creation is applied automatically to every object uploaded to that bucket.
 
-:::warning `PutObjectRetention` is not yet verified
-Setting or changing retention on an *individual* object version via `PutObjectRetention` is offered as a grantable access-key permission, but the Fil One console never calls it and gateway support has **not been tested**. The examples below are the standard S3 form and are provided for reference — do not build a workflow that depends on per-object retention calls until this is confirmed. If you need guaranteed retention today, rely on the bucket-level default set at creation.
+:::info `PutObjectRetention` is region-dependent
+Setting or changing retention on an *individual* object version via `PutObjectRetention` is offered as a grantable access-key permission. It is **confirmed working in `us-east-1`** — including extending a retention period and, with the bypass permission, shortening one. It has **not yet been confirmed in `eu-west-1`** — until then, rely on the bucket-level default set at creation for guaranteed retention there.
 :::
 
 Object Lock buckets are always versioned, so a retention call should target a specific version with `--version-id`; without it the call targets whatever the current version is (possibly a delete marker).
@@ -69,7 +69,7 @@ Object Lock buckets are always versioned, so a retention call should target a sp
       --key important-record.pdf \
       --version-id YOUR_VERSION_ID \
       --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-      --endpoint-url https://eu-west-1.s3.fil.one
+      --endpoint-url https://us-east-1.s3.fil.one
     ```
   </TabItem>
   <TabItem value="python-boto3" label="Python (boto3)">
@@ -87,7 +87,7 @@ Object Lock buckets are always versioned, so a retention call should target a sp
   </TabItem>
 </Tabs>
 
-In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). Fil One's gateway is expected to follow this, but as noted above the behaviour has not been independently verified.
+In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). Fil One's `us-east-1` gateway has been confirmed to follow this; `eu-west-1` has not yet been independently verified.
 
 ## Checking retention status
 
@@ -127,7 +127,7 @@ Bucket deletion is currently restricted regardless of retention state. The dashb
 
 - A key with **Delete** permission can delete objects in **Governance** mode buckets once retention has expired. Fil One does not expose a bypass permission for deleting *before* expiry.
 - **Compliance** mode cannot be overridden by any key, regardless of permissions.
-- To set retention on an individual version you would grant the `PutObjectRetention` granular permission — but see the [unverified note above](#setting-per-object-retention); the permission being grantable does not confirm the gateway honours the call.
+- To set retention on an individual version you would grant the `PutObjectRetention` granular permission — see the [region-dependent note above](#setting-per-object-retention): confirmed in `us-east-1`, not yet confirmed in `eu-west-1`.
 
 ## Object Lock during trial
 
@@ -150,7 +150,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 | Financial records | 6–7 years | Immutable, non-rewritable storage for the retention period |
 | Healthcare records | 6–10 years | Prevents deletion or overwrite of records under retention |
 | Ransomware-resistant backup | 30–90 days | Backups cannot be encrypted-over or deleted while locked |
-| Legal preservation | Variable | Retention-based preservation of evidence (note: S3 *Legal Hold* is not yet available — use a retention period) |
+| Legal preservation | Variable | Retention-based preservation of evidence, or S3 *Legal Hold* (confirmed in `us-east-1`, not yet confirmed in `eu-west-1`) |
 | Audit-log retention | Varies | Keeps logs unmodified for a fixed window |
 
 ## On regulatory compliance
@@ -158,7 +158,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement at the storage gateway has **not been independently verified** (see the note under [Setting per-object retention](#setting-per-object-retention)).
+- Retention enforcement at the storage gateway is **confirmed in `us-east-1`** and **not yet independently verified in `eu-west-1`** (see the note under [Setting per-object retention](#setting-per-object-retention)).
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.

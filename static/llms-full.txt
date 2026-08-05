@@ -26,8 +26,10 @@ Critical integration notes for developers:
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets a plain delete places a delete marker and prior versions
   are retained and still billed
-- CopyObject / server-side copy is NOT supported; there is no version restore,
-  roll-back, or point-in-time recovery
+- CopyObject / server-side copy is confirmed working in us-east-1, including
+  copying a specific version onto the current key to promote it (a version
+  restore). Not yet confirmed in eu-west-1; download and re-upload as a
+  fallback there. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
 - Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
@@ -633,7 +635,7 @@ an Access Key ID (public identifier) and a Secret Access Key (used to sign reque
 | List | ListObjectsV2 / ListBucket, ListBucketMultipartUploads |
 | Delete | DeleteObject |
 
-Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Governance Object Lock has no grantable bypass permission; PutObjectRetention is grantable but its gateway support is unverified. The key list in the dashboard has no Region column — record each key's region yourself.
+Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Governance Object Lock has no grantable bypass permission in the product. PutObjectRetention and Legal Hold (GetObjectLegalHold/PutObjectLegalHold) are grantable and confirmed working in us-east-1; neither has yet been verified in eu-west-1. The key list in the dashboard has no Region column — record each key's region yourself.
 
 ## Bucket scope
 
@@ -822,7 +824,7 @@ endpoint and authenticate with your API keys.
 | DeleteObject | Supported | |
 | HeadObject | Supported | |
 | ListObjectsV2 | Supported | |
-| CopyObject | Not supported | Server-side copy is not implemented. Download and re-upload instead. There is no version restore, roll-back, or point-in-time recovery. |
+| CopyObject | Region-dependent | Confirmed working in us-east-1, including copying a specific VersionId onto the current key (version restore). Not yet confirmed in eu-west-1 — download and re-upload as a fallback there. |
 
 ### Multipart upload
 
