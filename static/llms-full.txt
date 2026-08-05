@@ -3,7 +3,8 @@
 > Fil One is S3-compatible object storage built for AI agents and data-intensive
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
-> committed to store. No egress fees, no per-request charges, $4.99/TB/month flat rate.
+> committed to store. No egress fees on paid plans, no per-request charges,
+> $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -26,10 +27,19 @@ Critical integration notes for developers:
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets a plain delete places a delete marker and prior versions
   are retained and still billed
-- CopyObject / server-side copy is NOT supported; there is no version restore,
-  roll-back, or point-in-time recovery
+- CopyObject / server-side copy is confirmed working in us-east-1, including
+  copying a specific version onto the current key to promote it (a version
+  restore). Not yet confirmed in eu-west-1; download and re-upload as a
+  fallback there. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
+- Governance Object Lock has NO grantable bypass permission in the product
+- PutObjectRetention (per-object retention) is offered as a key permission and
+  is confirmed working in us-east-1 (including Governance-mode bypass); not
+  yet confirmed in eu-west-1 — use the bucket-level default retention there
+- Legal Hold (GetObjectLegalHold/PutObjectLegalHold) is confirmed working in
+  us-east-1, incl. blocking delete while a hold is active; not yet confirmed
+  in eu-west-1
 - Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
 
 
@@ -633,7 +643,7 @@ an Access Key ID (public identifier) and a Secret Access Key (used to sign reque
 | List | ListObjectsV2 / ListBucket, ListBucketMultipartUploads |
 | Delete | DeleteObject |
 
-Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Governance Object Lock has no grantable bypass permission; PutObjectRetention is grantable but its gateway support is unverified. The key list in the dashboard has no Region column — record each key's region yourself.
+Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Governance Object Lock has no grantable bypass permission in the product. PutObjectRetention and Legal Hold (GetObjectLegalHold/PutObjectLegalHold) are grantable and confirmed working in us-east-1; neither has yet been verified in eu-west-1. The key list in the dashboard has no Region column — record each key's region yourself.
 
 ## Bucket scope
 
@@ -796,13 +806,17 @@ endpoint and authenticate with your API keys.
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | https://eu-west-1.s3.fil.one |
-| Region | eu-west-1 |
+| Endpoint | https://<region>.s3.fil.one — region-specific |
+| Region | eu-west-1 (Europe, France, default) or us-east-1 (US East, Michigan) |
 | Signature version | SigV4 |
 | Path style | Required |
 | Virtual-hosted style | Not supported |
 
 ## Supported operations
+
+Numeric limits quoted below (5 TB max object, 5 GB single-PUT, 5 MB/5 GB part
+sizes, 10,000 parts, 1,000-object bulk delete) are standard AWS S3 values, not
+independently confirmed for Fil One.
 
 ### Bucket operations
 
@@ -812,49 +826,87 @@ endpoint and authenticate with your API keys.
 | DeleteBucket | Region-dependent | Supported in us-east-1 (bucket must be empty). Not available in eu-west-1. |
 | ListBuckets | Supported | |
 | HeadBucket | Supported | |
+| GetBucketVersioning / PutBucketVersioning | Supported | Versioning cannot be suspended once enabled; suspend requests are rejected. |
+| GetBucketObjectLockConfiguration / PutBucketObjectLockConfiguration | Supported | Sets the bucket-level default retention (Governance or Compliance, 1 day to 100 years). Object Lock requires versioning; both are set at bucket creation only. |
+| GetBucketEncryption | Supported | Returns the bucket's server-side encryption configuration. |
+| PutBucketEncryption | No-op | Accepted for SDK compatibility. Encryption cannot be modified or disabled. |
+| Bucket ACLs, bucket policies, lifecycle rules, event notifications, bucket tagging | Not supported | See "Not yet supported" below. |
 
 ### Object operations
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | PutObject | Supported | Max 5 TB (use multipart for > 5 GB). |
-| GetObject | Supported | |
-| DeleteObject | Supported | |
+| GetObject | Supported | Supports Range requests and a VersionId to retrieve a specific version. |
+| DeleteObject / DeleteObjects | Supported | Bulk delete up to 1,000 objects per request. Creates a delete marker on versioned buckets; pass VersionId to permanently delete a specific version. |
 | HeadObject | Supported | |
 | ListObjectsV2 | Supported | |
-| CopyObject | Not supported | Server-side copy is not implemented. Download and re-upload instead. There is no version restore, roll-back, or point-in-time recovery. |
+| ListObjectVersions | Supported | Returns all versions and delete markers. |
+| CopyObject | Region-dependent | Confirmed working in us-east-1, including copying a specific VersionId onto the current key (version restore — promotes an older version to current). Not yet confirmed in eu-west-1 — download and re-upload as a fallback there. |
+| GetObjectRetention | Supported | Returns the Object Lock retention for a specific version. |
+| PutObjectRetention | Region-dependent | Confirmed working in us-east-1 — set, extend, or (with the bypass permission) shorten a version's retention. Not yet confirmed in eu-west-1. |
+| GetObjectLegalHold / PutObjectLegalHold | Region-dependent | Confirmed working in us-east-1, including blocking delete while a hold is active — requires the matching access-key permission. Not yet confirmed in eu-west-1. |
+| Object ACLs, object tagging | Not supported | |
+| RestoreObject | Not applicable | Single storage class — no archival tiers to restore from. |
+| SelectObjectContent | Not planned | S3 Select is not planned. |
 
 ### Multipart upload
 
-| Operation | Status |
-|-----------|--------|
-| CreateMultipartUpload | Supported |
-| UploadPart | Supported |
-| CompleteMultipartUpload | Supported |
-| AbortMultipartUpload | Supported |
+Supported through the S3 API in all regions: CreateMultipartUpload, UploadPart
+(5 MB–5 GB parts), CompleteMultipartUpload (max 10,000 parts),
+AbortMultipartUpload, ListParts, ListMultipartUploads. Dashboard uploads
+always use a single PutObject, so browser uploads are bounded by the
+single-PUT ceiling — use the S3 API or CLI for larger objects.
+
+### Versioning
+
+Opt-in, set at bucket creation only, cannot be suspended once enabled. The
+dashboard has no restore/roll-back/"make current" action; in us-east-1 you can
+promote an older version via CopyObject (see above), not yet confirmed in
+eu-west-1.
+
+### Object Lock
+
+WORM protection; requires versioning; both Governance (default) and
+Compliance modes supported, set at bucket creation only. In standard S3,
+Governance retention can be overridden by a caller with the bypass
+permission, but Fil One does not currently expose a grantable bypass
+permission, so treat Governance objects as protected for their retention
+period in practice.
 
 ### Presigned URLs
 
-| Operation | Status |
-|-----------|--------|
-| Presigned GetObject | Supported |
-| Presigned PutObject | Supported |
+Presigned GetObject and PutObject are both supported.
+
+### Server-side encryption
+
+Always on for every bucket, nothing to configure, cannot be disabled. Keys
+are held by the regional storage operator — not by Fil One, not
+customer-managed. No SSE-C. Encryption in transit (TLS) is always on; HTTP is
+rejected.
 
 ### Not yet supported
 
-Bucket policies / ACLs, lifecycle rules, S3 Select, S3 Inventory, S3 Batch
-Operations, IAM policies, public access settings.
+Bucket/object ACLs, bucket policies, lifecycle rules (expiration,
+transitions), event notifications, object and bucket tagging, S3 Select, S3
+Inventory, S3 Batch Operations, IAM / multi-user accounts / RBAC, multiple
+storage classes, additional regions beyond eu-west-1 and us-east-1.
 
 ## Differences from AWS S3
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|---------|
-| Bucket management | CreateBucket/DeleteBucket via API | Dashboard only |
-| IAM policies | Full support | Not supported (planned) |
-| Public access | Configurable ACLs | Not supported; all access requires auth |
-| Lifecycle rules | Supported | Not supported (planned) |
-| Storage classes | Multiple | Single class |
-| Regions | 30+ | eu-west-1 (more planned) |
+| Versioning | Configurable — enable, suspend, or leave off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the dashboard; achievable via the API in us-east-1 using CopyObject. |
+| Server-side copy | CopyObject supported. | Confirmed working in us-east-1. Not yet confirmed in eu-west-1 — download and re-upload as a fallback there. |
+| Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys held by the regional storage operator; no customer-managed keys. |
+| Bucket management | CreateBucket and DeleteBucket via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in us-east-1; in eu-west-1 buckets are managed through the dashboard only. |
+| IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
+| Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. |
+| Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
+| Object Lock modes | Compliance and Governance. | Compliance and Governance. Legal Hold confirmed working in us-east-1; not yet confirmed in eu-west-1. |
+| Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
+| Regions | 30+ globally. | Two: eu-west-1 and us-east-1. Additional regions planned. |
+| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage may persist for a bounded period until the sealed sector naturally expires. That residual data stays encrypted. |
 
 
 ---

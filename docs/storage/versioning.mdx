@@ -80,11 +80,47 @@ Every version is a full copy of the object and is billed as stored storage. If y
 
 ## Going back to a previous version
 
-:::info No server-side restore
-Fil One has no restore, roll-back, or point-in-time recovery operation, and `CopyObject` is not supported. There is no way to promote an older version to current in place.
+The Fil One **dashboard** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current.
+
+:::info Region-dependent
+Promoting a version to current with `CopyObject` is confirmed working in `us-east-1`. This has not yet been confirmed in `eu-west-1` — use the download-and-reupload method there instead.
 :::
 
-To go back to an earlier version, download it and upload it again. The re-upload becomes a new current version, and the version you copied from stays intact.
+### In `us-east-1`: copy the version onto the current key
+
+Use `CopyObject` with `x-amz-copy-source-version-id` to promote an older version to current in place:
+
+<Tabs>
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3api copy-object \
+      --bucket my-bucket \
+      --key reports/q1.pdf \
+      --copy-source "my-bucket/reports/q1.pdf?versionId=OLD_VERSION_ID" \
+      --profile filone
+    ```
+  </TabItem>
+
+  <TabItem value="python-boto3" label="Python (boto3)">
+    ```python
+    s3.copy_object(
+        Bucket="my-bucket",
+        Key="reports/q1.pdf",
+        CopySource={
+            "Bucket": "my-bucket",
+            "Key": "reports/q1.pdf",
+            "VersionId": "OLD_VERSION_ID",
+        },
+    )
+    ```
+  </TabItem>
+</Tabs>
+
+This creates a new current version with the old content; the version you copied from stays intact.
+
+### In `eu-west-1`, or as a universal fallback: download and re-upload
+
+To go back to an earlier version without `CopyObject`, download it and upload it again. The re-upload becomes a new current version, and the version you copied from stays intact.
 
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">

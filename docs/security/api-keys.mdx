@@ -73,11 +73,11 @@ You can enable additional granular permissions on top of the basic object permis
 Granular permissions are additive — a key must have the corresponding basic permission before a granular permission can be granted. For example, `PutObjectRetention` requires the **Write** basic permission.
 
 :::note
-Granting `PutObjectRetention` makes the permission available on the key, but the gateway's support for per-object retention calls has not been verified — see [S3 Compatibility](/reference/s3-compatibility#object-lock). A grantable permission is not proof the operation works.
+Granting `PutObjectRetention` makes the permission available on the key. Gateway support for per-object retention calls is confirmed in `us-east-1`; it has not yet been verified in `eu-west-1` — see [S3 Compatibility](/reference/s3-compatibility#object-lock).
 :::
 
 :::note
-`GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key, but Legal Hold operations are not yet available through the S3 API, so granting them has no effect today. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
+`GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key. Legal Hold operations are confirmed working through the S3 API in `us-east-1`; they have not yet been verified in `eu-west-1`. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
 :::
 
 ## Region scope
