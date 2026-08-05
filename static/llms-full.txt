@@ -523,6 +523,395 @@ aws s3api abort-multipart-upload \
 
 ---
 
+# Versioning
+
+Source: https://docs.fil.one/storage/versioning
+
+Versioning is opt-in and configured at bucket creation time. Once enabled on a
+bucket it cannot be suspended or disabled. Every upload to an existing key on a
+versioned bucket creates a new version rather than overwriting the previous one,
+so any previous state of an object can be retrieved by its version ID.
+Versioning is required for Object Lock.
+
+## How versions work
+
+The first upload of `reports/q1.pdf` creates version v1; a later upload of the
+same key creates v2 and leaves v1 intact. Deleting the object places a delete
+marker at the current version — the object appears deleted, but all previous
+versions are still retrievable.
+
+## Billing implications
+
+Every version is a full copy of the object and is billed as stored storage.
+Uploading and then overwriting 100 files leaves 200 billable object versions
+consuming storage.
+
+## Listing versions
+
+```bash
+# List all versions in a bucket
+aws s3api list-object-versions --bucket my-bucket --profile filone
+
+# List versions for a specific object
+aws s3api list-object-versions \
+  --bucket my-bucket \
+  --prefix reports/q1.pdf \
+  --profile filone
+```
+
+```python
+paginator = s3.get_paginator("list_object_versions")
+for page in paginator.paginate(Bucket="my-bucket", Prefix="reports/q1.pdf"):
+    for version in page.get("Versions", []):
+        print(version["VersionId"], version["LastModified"], version["Size"])
+    for marker in page.get("DeleteMarkers", []):
+        print("DELETE MARKER", marker["VersionId"], marker["LastModified"])
+```
+
+## Retrieving a specific version
+
+```bash
+aws s3api get-object \
+  --bucket my-bucket \
+  --key reports/q1.pdf \
+  --version-id YOUR_VERSION_ID \
+  q1-old.pdf \
+  --profile filone
+```
+
+```python
+s3.download_file(
+    "my-bucket",
+    "reports/q1.pdf",
+    "q1-old.pdf",
+    ExtraArgs={"VersionId": "YOUR_VERSION_ID"},
+)
+```
+
+## Going back to a previous version
+
+The Fil One dashboard has no restore, roll-back, or "make current" button — you
+can list, download, and delete prior versions there, but not promote one to
+current.
+
+Note: promoting a version to current with CopyObject is confirmed working in
+us-east-1. This has not yet been confirmed in eu-west-1 — use the
+download-and-reupload method there instead.
+
+In us-east-1, copy the version onto the current key. Use CopyObject with
+x-amz-copy-source-version-id to promote an older version to current in place:
+
+```bash
+aws s3api copy-object \
+  --bucket my-bucket \
+  --key reports/q1.pdf \
+  --copy-source "my-bucket/reports/q1.pdf?versionId=OLD_VERSION_ID" \
+  --profile filone
+```
+
+```python
+s3.copy_object(
+    Bucket="my-bucket",
+    Key="reports/q1.pdf",
+    CopySource={
+        "Bucket": "my-bucket",
+        "Key": "reports/q1.pdf",
+        "VersionId": "OLD_VERSION_ID",
+    },
+)
+```
+
+This creates a new current version with the old content; the version copied from
+stays intact.
+
+In eu-west-1, or as a universal fallback, download and re-upload. The re-upload
+becomes a new current version, and the version copied from stays intact:
+
+```bash
+aws s3api get-object \
+  --bucket my-bucket \
+  --key reports/q1.pdf \
+  --version-id OLD_VERSION_ID \
+  q1-restored.pdf \
+  --profile filone
+
+aws s3api put-object \
+  --bucket my-bucket \
+  --key reports/q1.pdf \
+  --body q1-restored.pdf \
+  --profile filone
+```
+
+```python
+old = s3.get_object(
+    Bucket="my-bucket",
+    Key="reports/q1.pdf",
+    VersionId="OLD_VERSION_ID",
+)
+
+s3.put_object(
+    Bucket="my-bucket",
+    Key="reports/q1.pdf",
+    Body=old["Body"].read(),
+)
+```
+
+If the current version is a delete marker, the object can instead be made
+visible again by deleting that delete marker by its version ID.
+
+## Delete markers
+
+Deleting an object without specifying a version ID places a delete marker at the
+top of the version stack. The object appears deleted in standard listings and
+GetObject returns NoSuchKey. Previous versions remain intact and retrievable by
+version ID. To permanently delete a specific version (including a delete
+marker), specify the version ID:
+
+```bash
+# Delete a specific version permanently
+aws s3api delete-object \
+  --bucket my-bucket \
+  --key reports/q1.pdf \
+  --version-id YOUR_VERSION_ID \
+  --profile filone
+
+# Remove a delete marker (restores the object to visible)
+aws s3api delete-object \
+  --bucket my-bucket \
+  --key reports/q1.pdf \
+  --version-id DELETE_MARKER_VERSION_ID \
+  --profile filone
+```
+
+```python
+s3.delete_object(
+    Bucket="my-bucket",
+    Key="reports/q1.pdf",
+    VersionId="YOUR_VERSION_ID",
+)
+```
+
+Note: permanently deleting a version cannot be undone. If the version has an
+active Object Lock Compliance retention, the delete request is rejected.
+
+## Versioning and Object Lock
+
+Object Lock is configured on the bucket, when the bucket is created, and
+requires versioning on the same bucket. Neither can be turned on later.
+Retention is then tracked per version: the bucket's default retention is applied
+to each new object version as it is uploaded, and each version carries its own
+retention independently. In practice:
+
+- A version under active Compliance retention cannot be deleted, regardless of
+  whether a delete marker exists above it.
+- A delete marker is not itself protected by retention, so an object can appear
+  deleted while its underlying versions remain locked and intact.
+- Because retention comes from the bucket default, a bucket with a long default
+  retention accumulates locked versions on every overwrite. Each is billed as
+  stored storage and cannot be removed until its retention expires.
+
+
+---
+
+# Object Lock
+
+Source: https://docs.fil.one/storage/object-lock
+
+Object Lock enforces Write-Once-Read-Many (WORM) protection. Depending on the
+mode, a locked object cannot be deleted or overwritten until its retention
+period expires — in Compliance mode, not even by the account owner. Whether it
+satisfies a specific regulation is for your own compliance review to decide.
+
+## Key concepts
+
+- Retention period — a duration during which an object version cannot be deleted
+  or overwritten.
+- Compliance mode — the strictest protection. No user, including the account
+  owner, can shorten the retention period or delete a locked object before it
+  expires.
+- Governance mode — a softer protection. In standard S3, a caller holding a
+  special bypass permission can override Governance retention and delete objects
+  early. Fil One does NOT currently expose a grantable bypass permission, so in
+  practice a Governance-locked object is protected for its retention period the
+  same way a Compliance one is; the difference is that Governance is not
+  positioned as an absolute, unbypassable guarantee at the platform level.
+- Versioning — Object Lock requires versioning, so both are enabled when
+  creating the bucket. Versioning cannot be suspended once set.
+
+## Enabling Object Lock
+
+Object Lock is opt-in and must be enabled at bucket creation time. It cannot be
+added to an existing bucket, and once enabled it cannot be disabled.
+
+1. From the dashboard, click **New bucket**, then **Create bucket**.
+2. Enter a bucket name.
+3. Enable **Versioning**.
+4. Enable **Object Lock**.
+5. Select a retention mode: **Governance** (the default) or **Compliance**.
+6. Set a default retention duration — from 1 day up to 100 years (36,500 days).
+7. Click **Create bucket**.
+
+## Retention modes
+
+| Mode | Can it be overridden early? | Typical use |
+|------|-----------------------------|-------------|
+| Governance (default) | Not through any Fil One-granted permission today | Internal-policy retention, audit-friendly workflows |
+| Compliance | No — not by anyone, including account owners | Strict, long-term immutable record-keeping |
+
+In Compliance mode the retention period is absolute; no action can shorten or
+remove it once set. In Governance mode, standard S3 allows a caller with the
+bypass permission to delete locked objects early, but Fil One does not currently
+expose that permission, so today a Governance lock behaves like a firm retention
+lock rather than a routinely-overridable one.
+
+Note: choose the retention mode carefully at bucket creation — it is fixed for
+the life of the bucket. There is no update-bucket operation, so a Governance
+bucket cannot be converted into a Compliance one later, or objects migrated
+between them without a full download and re-upload. Compliance retention
+periods, once set, cannot be shortened or removed.
+
+## Setting per-object retention
+
+The default retention period set at bucket creation is applied automatically to
+every object uploaded to that bucket.
+
+Note: PutObjectRetention is region-dependent. Setting or changing retention on
+an individual object version via PutObjectRetention is offered as a grantable
+access-key permission. It is confirmed working in us-east-1 — including
+extending a retention period and, using the standard S3
+bypass-governance-retention mechanism, shortening one (a protocol-level
+capability of the gateway, NOT a permission Fil One's own access keys can
+grant). It has not yet been confirmed in eu-west-1 — until then, rely on the
+bucket-level default set at creation for guaranteed retention there.
+
+Object Lock buckets are always versioned, so a retention call should target a
+specific version with --version-id; without it the call targets whatever the
+current version is (possibly a delete marker).
+
+```bash
+aws s3api put-object-retention \
+  --bucket my-compliance-bucket \
+  --key important-record.pdf \
+  --version-id YOUR_VERSION_ID \
+  --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
+  --endpoint-url https://us-east-1.s3.fil.one
+```
+
+```python
+s3.put_object_retention(
+    Bucket="my-compliance-bucket",
+    Key="important-record.pdf",
+    VersionId="YOUR_VERSION_ID",
+    Retention={
+        "Mode": "COMPLIANCE",
+        "RetainUntilDate": "2027-12-31T00:00:00Z",
+    },
+)
+```
+
+In standard S3, retention can be extended but never shortened: RetainUntilDate
+can move further into the future but not closer, and shortening a Compliance
+retention period is rejected with 403 AccessDenied. Fil One's us-east-1 gateway
+has been confirmed to follow this; eu-west-1 has not yet been independently
+verified.
+
+## Checking retention status
+
+The object detail page in the dashboard shows an object's retention status and
+displays a lock banner for Compliance-locked objects. GetObjectRetention is also
+available over the S3 API:
+
+```bash
+aws s3api get-object-retention \
+  --bucket my-compliance-bucket \
+  --key important-record.pdf \
+  --endpoint-url https://us-east-1.s3.fil.one
+```
+
+## Deleting locked objects
+
+Attempting to delete an object with active retention returns 403 AccessDenied.
+On a versioned bucket, a DELETE without a version ID places a delete marker: the
+object appears deleted to applications, but the underlying version remains
+protected and intact until retention expires.
+
+## Deleting buckets with locked objects
+
+Bucket deletion is currently restricted regardless of retention state. The
+dashboard delete button is disabled while the underlying storage layer completes
+support for this operation, and over the S3 API DeleteBucket is only available in
+us-east-1 (not eu-west-1). Active Compliance retention is one more reason a
+bucket cannot be removed, but it is not the only one — do not assume a bucket
+becomes freely deletable simply because its retention periods have expired.
+
+## Object Lock and API keys
+
+GetBucketVersioning and GetBucketObjectLockConfiguration are selectable
+permissions granted when creating a key — they are not included automatically.
+Beyond that:
+
+- A key with Delete permission can delete objects in Governance mode buckets
+  once retention has expired. Fil One does not expose a bypass permission for
+  deleting before expiry.
+- Compliance mode cannot be overridden by any key, regardless of permissions.
+- To set retention on an individual version, grant the PutObjectRetention
+  granular permission — confirmed in us-east-1, not yet confirmed in eu-west-1.
+
+## Object Lock during trial
+
+Object Lock is fully available during the free trial, with no trial-specific
+retention cap. Trial and paid accounts alike can set retention from 1 day to 100
+years (36,500 days).
+
+Note: a trial lock cannot be undone. Retention outlives the trial — a lock set
+during the trial still applies after it ends, and Compliance retention cannot be
+shortened once set. Because durations run up to 100 years, an object
+Compliance-locked while testing keeps occupying storage (and generating storage
+cost once on a paid plan) for the entire retention period, with no way to delete
+it early. Use short durations while evaluating.
+
+## Object Lock and the Filecoin storage model
+
+When an object is deleted after its retention period expires, it is immediately
+removed from the Fil One account and inaccessible via the API and dashboard.
+Because Filecoin stores data in sealed sectors, the underlying storage may
+persist for a bounded period until the sector naturally expires; the exact
+duration is set by the storage layer rather than measured by Fil One. That
+residual data stays encrypted, and key custody sits with the regional storage
+operator rather than with the customer or Fil One.
+
+## Common use cases
+
+Object Lock provides WORM-style retention. These describe the use case, not a
+claim that Fil One is certified for the named regulation:
+
+| Use case | Typical retention | What Object Lock provides |
+|----------|-------------------|---------------------------|
+| Financial records | 6-7 years | Immutable, non-rewritable storage for the retention period |
+| Healthcare records | 6-10 years | Prevents deletion or overwrite of records under retention |
+| Ransomware-resistant backup | 30-90 days | Backups cannot be encrypted-over or deleted while locked |
+| Legal preservation | Variable | Retention-based preservation of evidence, or S3 Legal Hold (confirmed in us-east-1, not yet confirmed in eu-west-1) |
+| Audit-log retention | Varies | Keeps logs unmodified for a fixed window |
+
+## On regulatory compliance
+
+Object Lock provides WORM-style retention, a building block many regulatory
+regimes call for. However:
+
+- Fil One holds NO third-party compliance attestation (for example, an SEC
+  17a-4 assessment) for this feature.
+- Retention enforcement at the storage gateway is confirmed in us-east-1 and NOT
+  yet independently verified in eu-west-1.
+- The product surfaces NO per-object cryptographic proof (no CID, deal ID, or
+  seal state) that could be presented to an auditor to demonstrate integrity.
+
+Treat the regulations named above as illustrative use cases, and evaluate
+whether Object Lock meets a specific obligation as part of your own compliance
+process.
+
+
+---
+
 # Authentication
 
 Source: https://docs.fil.one/security/authentication
