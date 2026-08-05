@@ -119,7 +119,7 @@ On a versioned bucket, a `DELETE` request without a version ID places a delete m
 
 ## Deleting buckets with locked objects
 
-Bucket deletion is currently restricted regardless of retention state. The dashboard delete button is disabled, the console's delete endpoint is not yet implemented, and over the S3 API `DeleteBucket` is only available in `us-east-1` (not `eu-west-1`). Active Compliance retention is one more reason a bucket cannot be removed, but it is not the only one — so do not assume a bucket becomes freely deletable simply because its retention periods have expired. See [Buckets](/storage/buckets).
+Bucket deletion is currently restricted regardless of retention state. The dashboard delete button is disabled while the underlying storage layer completes support for this operation, and over the S3 API `DeleteBucket` is only available in `us-east-1` (not `eu-west-1`). Active Compliance retention is one more reason a bucket cannot be removed, but it is not the only one — so do not assume a bucket becomes freely deletable simply because its retention periods have expired. See [Buckets](/storage/buckets).
 
 ## Object Lock and API keys
 
