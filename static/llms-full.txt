@@ -1269,25 +1269,27 @@ it is not available in eu-west-1.
 
 ## Deletion under Object Lock
 
-An object with active retention cannot be deleted — 403 AccessDenied. True
-regardless of key permissions in Compliance mode; in Governance mode Fil One
-exposes no grantable bypass permission, so a Governance-locked object is also
-protected until retention expires. A delete marker can still be placed over a
-locked object: it appears deleted while the underlying version stays protected.
+An object with active retention cannot be deleted — 403 AccessDenied. In
+Compliance mode this holds for every caller including the account owner,
+regardless of key permissions. In Governance mode — which standard S3 lets a
+caller override with a special bypass permission — Fil One does not hand out
+that bypass, so Governance-locked objects are equally protected for their full
+retention period. A delete marker can still be placed over a locked object: it
+appears deleted while the underlying version stays protected.
 
 ## Closing an account
 
 When a trial expires (after its grace period) or a paid subscription is
-cancelled and its grace period ends, the account is DISABLED.
+cancelled and its grace period ends, the account is DISABLED: data becomes
+unreachable through the API and dashboard, and access keys stop working.
 
-Disabling makes data unreachable through the API and dashboard and stops access
-keys working. Fil One does NOT run an automatic purge at that point — data is
-retained until removal is requested. Contact support to restore access or
-request removal.
+Closing an account revokes access; erasing data is a separate, explicit step.
+Two paths: to regain access, contact support — a disabled account can be
+restored; to have data erased, request removal, which is handled by support
+rather than as a self-service dashboard action.
 
-"Account closed" means access revoked, NOT data destroyed. Do not treat account
-closure as a deletion event. Account-level deletion is handled by support rather
-than as a self-service dashboard flow.
+For a retention or privacy review, record account closure as access revocation,
+with erasure available on request.
 
 ## Residual data on the Filecoin network
 
@@ -1299,12 +1301,8 @@ custody with the regional storage operator) and is not reachable through Fil One
 from the moment of deletion. This is a property of the underlying network, not a
 Fil One retention policy.
 
-## Open questions
-
-Not currently documented; contact support if material to an evaluation:
-- Proof obligations after deletion — what happens to a provider's obligation to
-  keep proving it holds data that has been deleted.
-- Replica count — how many replicas exist and what deletion means across them.
+For questions about how the underlying network handles deleted data —
+replication, or the proof cycle storage providers run — contact support.
 
 ## What Fil One does not claim
 
@@ -1360,7 +1358,7 @@ The two caps are enforcement thresholds, not soft allowances, and behave differe
 | Grace period | 31-37 | Read-only. Download your data and upgrade. |
 | Expired | 38+ | Account disabled. No access to data, uploads, or API keys. |
 
-You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; Fil One does not run an automatic purge at that point, so contact support to restore access or request removal of your data.
+You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; a disabled account can be restored, and erasure is available on request — contact support either way.
 
 ## Paid plan pricing
 
@@ -2252,8 +2250,9 @@ bounded period until the sector naturally expires (duration set by the storage
 layer), but the data is inaccessible from the moment of deletion. That residual
 data stays encrypted, and key custody sits with the regional storage operator
 rather than with you or Fil One. Note: account
-closure does NOT purge data — the account is disabled and access blocked, and
-no automatic purge runs; contact support to request removal.
+closure revokes access rather than erasing data — the account is disabled and
+access blocked; erasure is a separate request via support. See the Data Deletion
+page for the full picture.
 
 **Can multiple users access the same account?**
 Currently accounts are single-user. Multi-user organization accounts with RBAC

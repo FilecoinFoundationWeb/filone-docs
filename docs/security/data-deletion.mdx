@@ -23,23 +23,22 @@ Over the S3 API, `DeleteBucket` is available in `us-east-1` with a key holding t
 
 ## Deletion under Object Lock
 
-An object with active retention cannot be deleted — the request returns `403 AccessDenied`. This holds regardless of key permissions in **Compliance** mode, and in **Governance** mode Fil One exposes no grantable bypass permission, so in practice a Governance-locked object is also protected until its retention expires.
+An object with active retention cannot be deleted — the request returns `403 AccessDenied`.
+
+In **Compliance** mode this holds for every caller, including the account owner, regardless of what permissions their key carries. In **Governance** mode — which standard S3 lets a caller override if they hold a special bypass permission — Fil One does not hand out that bypass, so Governance-locked objects are also protected for their full retention period.
 
 On a versioned bucket a delete marker can still be placed over a locked object: the object appears deleted to applications while the underlying version stays protected and intact until retention expires. See [Object Lock](/storage/object-lock).
 
 ## Closing an account
 
-When a trial expires (after its grace period) or a paid subscription is cancelled and its grace period ends, the account is **disabled**.
+When a trial expires (after its grace period) or a paid subscription is cancelled and its grace period ends, the account is **disabled**: your data becomes unreachable through both the API and the dashboard, and access keys stop working.
 
-:::warning Disabling blocks access — it does not purge data
-Disabling makes your data unreachable through both the API and the dashboard, and access keys stop working. **Fil One does not run an automatic purge at that point.** Data is retained until removal is requested.
+Closing an account revokes access; erasing data is a separate, explicit step. That gives you two paths:
 
-To restore access, or to request removal of your data, contact support.
-:::
+- **To regain access,** contact support — a disabled account can be restored.
+- **To have your data erased,** request removal. This is handled by support rather than as a self-service action in the dashboard.
 
-This distinction matters for retention and privacy reviews: "account closed" means access revoked, not data destroyed. Do not treat account closure as a deletion event.
-
-Account-level deletion is currently handled by support rather than as a self-service flow in the dashboard.
+If you are documenting this for a retention or privacy review, record account closure as access revocation, with erasure available on request.
 
 ## Residual data on the Filecoin network
 
@@ -52,12 +51,7 @@ Two things are true of that residual data:
 
 This is a property of how the underlying network stores data, not a Fil One retention policy, and it does not affect your ability to manage data in your account.
 
-## Open questions
-
-Two questions that reviewers commonly ask do not yet have documented answers. If either is material to your evaluation, contact support and we will get you a direct answer:
-
-- **Proof obligations after deletion.** Storage providers continuously prove they still hold committed data (see [How does Filecoin protect the integrity of stored data?](/faq)). What happens to that obligation for deleted data is not currently documented.
-- **Replica count.** Storage is fulfilled by a distributed network of providers. Fil One does not currently document how many replicas exist or what deletion means across them.
+For questions about how the underlying network handles deleted data — replication, or the proof cycle that storage providers run — contact support and we will get you a direct answer.
 
 ## What Fil One does not claim
 
