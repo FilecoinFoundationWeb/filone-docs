@@ -297,6 +297,139 @@ aws s3 ls --profile filone
 
 ---
 
+# Quickstart - SDK
+
+Source: https://docs.fil.one/quickstart/sdk
+
+Each example uploads a file and verifies it. Create the bucket first in the
+dashboard — CreateBucket over the S3 API is not available in eu-west-1, the
+default region these examples use.
+
+Note: the endpoint depends on your bucket's region. These examples use
+eu-west-1, the default. For a bucket in us-east-1, use
+https://us-east-1.s3.fil.one and region us-east-1. The endpoint, the region, and
+your access key must all refer to the same region.
+
+## Python
+
+```bash
+pip install boto3
+```
+
+```python
+import boto3
+from botocore.config import Config
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url="https://eu-west-1.s3.fil.one",
+    aws_access_key_id="YOUR_ACCESS_KEY",
+    aws_secret_access_key="YOUR_SECRET_KEY",
+    region_name="eu-west-1",
+    config=Config(s3={"addressing_style": "path"}),
+)
+
+# Upload a file (create the bucket first in the dashboard)
+s3.upload_file("my-file.txt", "my-sdk-bucket", "my-file.txt")
+
+# Verify
+response = s3.list_objects_v2(Bucket="my-sdk-bucket")
+for obj in response.get("Contents", []):
+    print(f"{obj['Key']}  ({obj['Size']} bytes)")
+```
+
+## JavaScript
+
+```bash
+npm install @aws-sdk/client-s3
+```
+
+```javascript
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { readFileSync } from "fs";
+
+const client = new S3Client({
+  endpoint: "https://eu-west-1.s3.fil.one",
+  region: "eu-west-1",
+  forcePathStyle: true,
+  credentials: {
+    accessKeyId: "YOUR_ACCESS_KEY",
+    secretAccessKey: "YOUR_SECRET_KEY",
+  },
+});
+
+// Upload a file (create the bucket first in the dashboard)
+await client.send(new PutObjectCommand({
+  Bucket: "my-sdk-bucket",
+  Key: "my-file.txt",
+  Body: readFileSync("my-file.txt"),
+}));
+
+// Verify
+const { Contents } = await client.send(
+  new ListObjectsV2Command({ Bucket: "my-sdk-bucket" })
+);
+Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
+```
+
+## Go
+
+```bash
+go get github.com/aws/aws-sdk-go-v2/service/s3
+go get github.com/aws/aws-sdk-go-v2/credentials
+```
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    "strings"
+
+    "github.com/aws/aws-sdk-go-v2/aws"
+    "github.com/aws/aws-sdk-go-v2/credentials"
+    "github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+func main() {
+    client := s3.New(s3.Options{
+        BaseEndpoint:  aws.String("https://eu-west-1.s3.fil.one"),
+        Region:        "eu-west-1",
+        UsePathStyle:  true,
+        Credentials: credentials.NewStaticCredentialsProvider(
+            os.Getenv("FIL_ACCESS_KEY"),
+            os.Getenv("FIL_SECRET_KEY"),
+            "",
+        ),
+    })
+
+    ctx := context.Background()
+
+    // Upload (create the bucket first in the dashboard)
+    client.PutObject(ctx, &s3.PutObjectInput{
+        Bucket: aws.String("my-sdk-bucket"),
+        Key:    aws.String("hello.txt"),
+        Body:   strings.NewReader("Hello from Go!"),
+    })
+
+    // List
+    out, _ := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+        Bucket: aws.String("my-sdk-bucket"),
+    })
+    for _, obj := range out.Contents {
+        fmt.Printf("%s (%d bytes)\n", *obj.Key, *obj.Size)
+    }
+}
+```
+
+For more detailed examples including multipart uploads and presigned URLs, see
+the dedicated SDK pages for Python, JavaScript, and Go.
+
+
+---
+
 # Buckets
 
 Source: https://docs.fil.one/storage/buckets
@@ -1160,6 +1293,138 @@ Billed on average daily usage, with a $4.99 / month minimum. If you store less t
 
 ---
 
+# Usage
+
+Source: https://docs.fil.one/billing/usage
+
+The Billing page in the dashboard shows current usage for the active billing
+period.
+
+## What is measured
+
+| Metric | How it's measured |
+|--------|------------------|
+| Storage | Average daily storage across the billing period, in GB or TB |
+| Egress bandwidth | Total data downloaded from Fil One in the billing period |
+
+Storage is measured as an average rather than a peak — storing 2 TB for half the
+month and 1 TB for the other half bills 1.5 TB. Fil One counts storage in
+decimal units: 1 TB is 1,000 GB, and 1 GB is 1,000,000,000 bytes.
+
+On a paid plan, egress is NOT charged — there are no egress fees. During the
+trial, egress is capped.
+
+## Trial limits
+
+During the free trial, usage is capped at:
+
+- Storage — 1 TB (1,000 GB): reaching this limit WRITE-LOCKS the account. Reads
+  and downloads still work; new uploads are rejected.
+- Egress — 2 TB (2,000 GB), cumulative over the whole trial: reaching this limit
+  DISABLES the account entirely — no read or write access — the same state as
+  trial expiry. This is a single budget for the full 30 days, not a monthly
+  amount that resets.
+
+These caps are enforced by a usage job that runs twice a day (around 07:00 and
+19:00 UTC), so a cap may be exceeded for a few hours before the account state
+changes — there is no real-time block at the exact moment it is crossed.
+Upgrading to a paid plan removes both caps immediately.
+
+## Versioning and storage costs
+
+If versioning is enabled on a bucket, every version of an object counts as
+stored storage. Overwriting a 1 GB file 10 times results in 10 GB of stored
+versions.
+
+## Billing period
+
+Paid accounts are billed monthly. The billing period resets on the same day each
+month (the date of the first upgrade from trial). Usage resets at the start of
+each new billing period.
+
+
+---
+
+# Using the Dashboard
+
+Source: https://docs.fil.one/app/overview
+
+The Fil One dashboard at app.fil.one is the primary interface for managing
+storage without writing code: create buckets, upload files, manage API keys, and
+monitor usage from the browser.
+
+## Signing in
+
+Fil One supports passkeys (positioned as the primary method), Google, GitHub,
+and email + password. No credit card is required to start the 30-day free trial.
+
+Verify your email first. A new account must confirm its email address before the
+dashboard opens — until then, every page redirects to a verification screen.
+
+## Creating a bucket
+
+1. From the dashboard home, click **New bucket** to open your buckets, then
+   click **Create bucket**.
+2. Enter a bucket name — 3-63 characters, lowercase letters, numbers, and
+   hyphens only (no dots, unlike AWS S3), unique within Fil One.
+3. Choose a region — eu-west-1 Europe (France), the default, or us-east-1 US
+   East (Michigan). The region is permanent and determines the endpoint.
+4. Optionally enable Versioning, then Object Lock, then Retention — each nests
+   inside the previous one. Like the region, all three are fixed at creation and
+   cannot be changed afterward.
+5. Click **Create bucket**.
+
+Encryption is enabled automatically on every bucket and cannot be disabled.
+
+## Uploading files
+
+1. Click on a bucket to open it.
+2. Click **Upload object**.
+3. Select one or more files, or drag in a whole folder. Optionally set a prefix
+   to upload into a subpath.
+4. Click **Upload** to start the transfer — selecting files does not upload them
+   on its own.
+5. The objects appear in the object list once the upload completes.
+
+For very large objects, use the AWS CLI or an SDK with multipart upload support —
+the dashboard uploads with a single request.
+
+## Downloading files
+
+Click the download icon on the object's row, or click the file name to open its
+detail page and use the **Download** button in the header.
+
+Generating a shareable link for an object is a paid-plan feature and is disabled
+during the trial.
+
+## Deleting objects
+
+Click the trash icon on an object's row, then confirm in the dialog. The console
+deletes one object at a time — there are no checkboxes or bulk delete.
+
+## Managing API keys
+
+1. Go to **API Keys** in the left sidebar.
+2. Click **Create new key** — this opens a dedicated page.
+3. Configure the key name, its region (required — it locks the key to that
+   region, and a key used against another region's endpoint returns 403),
+   permissions (Read / Write / List / Delete), bucket scope, and optional
+   expiration.
+4. Copy the Secret Access Key immediately — it is shown only once.
+
+To revoke a key, open its ⋯ action menu and choose **Delete**. Revocation is
+forwarded to the storage operator and takes effect shortly after.
+
+## Billing and usage
+
+Go to **Billing** in the left sidebar to add or update a payment method, view
+current usage (storage and bandwidth), upgrade from trial to a paid plan, and
+download invoices — available once on a paid plan; invoice history is hidden
+during the trial.
+
+
+---
+
 # API Reference Overview
 
 Source: https://docs.fil.one/reference/overview
@@ -1670,6 +1935,167 @@ downloadReq, _ := presigner.PresignGetObject(ctx, &s3.GetObjectInput{
 uploadReq, _ := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
     Bucket: aws.String("my-bucket"), Key: aws.String("uploads/new-file.txt"),
 }, s3.WithPresignExpires(15*time.Minute))
+```
+
+
+---
+
+# AWS CLI
+
+Source: https://docs.fil.one/sdk/cli
+
+The AWS CLI works with Fil One out of the box. Install it, configure
+credentials, and use --endpoint-url https://<region>.s3.fil.one on every command
+— or set it as a profile default.
+
+Note: the endpoint depends on your bucket's region. Examples here use
+eu-west-1, the default. For a bucket in us-east-1, use
+https://us-east-1.s3.fil.one and region us-east-1. The endpoint, the region, and
+your access key must all refer to the same region — set up one profile per
+region if you use both.
+
+## Installation
+
+Use AWS CLI v2. Version 1 (`pip install awscli`) does NOT read endpoint_url from
+~/.aws/config, so the profile setup below silently won't work — install v2:
+
+```bash
+brew install awscli
+# or follow the official installer for your platform
+
+aws --version   # should print aws-cli/2.x
+```
+
+## Configuration
+
+### Option 1: Named profile (recommended)
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://eu-west-1.s3.fil.one
+region = eu-west-1
+s3 =
+    addressing_style = path
+```
+
+The `addressing_style = path` line is REQUIRED: Fil One only supports path-style
+URLs, and the CLI defaults to virtual-hosted style even with a custom endpoint,
+which fails with a DNS or 404-shaped error.
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+Then use --profile filone (or AWS_PROFILE=filone) on every command:
+
+```bash
+aws s3 ls --profile filone
+
+# Or set it for the shell session
+export AWS_PROFILE=filone
+aws s3 ls
+```
+
+### Option 2: Default profile with env vars
+
+```bash
+export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+export AWS_DEFAULT_REGION=eu-west-1
+```
+
+There is no environment variable for addressing style, so set path-style once in
+config (it applies to the `default` profile):
+
+```bash
+aws configure set default.s3.addressing_style path
+```
+
+Then pass --endpoint-url on each command:
+
+```bash
+aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+```
+
+## Core operations
+
+### Create a bucket
+
+CreateBucket is region-dependent. It is NOT available in eu-west-1 — use the
+dashboard there, via Buckets → Create bucket. In us-east-1, with a key that has
+the CreateBucket permission:
+
+```bash
+aws s3 mb s3://my-bucket --profile filone
+```
+
+Versioning and Object Lock can only be set when the bucket is created, and only
+from the dashboard.
+
+### Upload, list, download, delete
+
+```bash
+# Upload a file
+aws s3 cp report.pdf s3://my-bucket/reports/report.pdf --profile filone
+
+# Upload a directory
+aws s3 sync ./local-folder s3://my-bucket/folder/ --profile filone
+
+# List objects
+aws s3 ls s3://my-bucket/ --profile filone
+aws s3 ls s3://my-bucket/ --recursive --human-readable --profile filone
+
+# Download a file
+aws s3 cp s3://my-bucket/reports/report.pdf ./report.pdf --profile filone
+
+# Download a directory
+aws s3 sync s3://my-bucket/folder/ ./local-folder --profile filone
+
+# Delete an object
+aws s3 rm s3://my-bucket/reports/report.pdf --profile filone
+```
+
+### Delete a bucket
+
+DeleteBucket support depends on the region. In us-east-1, an empty bucket can be
+removed with a key that has the DeleteBucket permission:
+
+```bash
+aws s3 rb s3://my-bucket --profile filone
+```
+
+In eu-west-1 the operation is not available, and dashboard deletion is not yet
+enabled either.
+
+## Multipart uploads
+
+The AWS CLI handles multipart uploads automatically. The threshold is
+configurable:
+
+```bash
+# Set multipart threshold to 100 MB (default is 8 MB)
+# Note: use the bare "s3." key with --profile; the "default." prefix is only
+# for the default profile
+aws configure set s3.multipart_threshold 100MB --profile filone
+aws configure set s3.multipart_chunksize 50MB --profile filone
+```
+
+## Cleanup incomplete multipart uploads
+
+```bash
+# List incomplete uploads
+aws s3api list-multipart-uploads --bucket my-bucket --profile filone
+
+# Abort a specific incomplete upload
+aws s3api abort-multipart-upload \
+  --bucket my-bucket \
+  --key large-file.zip \
+  --upload-id YOUR_UPLOAD_ID \
+  --profile filone
 ```
 
 
