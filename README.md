@@ -2,6 +2,8 @@
 
 User-facing documentation for [docs.fil.one](https://docs.fil.one). Built with [Docusaurus](https://docusaurus.io/) and deployed to [Vercel](https://vercel.com/).
 
+Before editing content, read [`AGENTS.md`](./AGENTS.md) — guidelines for anyone (human or AI agent) changing this repo, including the rule that `static/llms.txt` and `static/llms-full.txt` must be updated alongside any factual change to `docs/**`.
+
 ## Local development
 
 ```bash
@@ -50,6 +52,7 @@ Every push to `main` triggers a production deploy. Pull requests get preview dep
 ## Project structure
 
 ```
+AGENTS.md                # Guidelines for anyone (human or AI agent) editing this repo
 docs/                    # All documentation pages (MDX)
   quickstart/            # Getting started guides
   storage/               # Buckets, objects, versioning, object lock, multipart
@@ -78,8 +81,6 @@ vercel.json              # Vercel deployment config
 
 1. Create a branch.
 2. Edit or add `.mdx` files in `docs/`.
-3. **Mirror any factual change into the LLM files.** `static/llms.txt` and `static/llms-full.txt` are hand-maintained copies of the site with no generation script — a fix applied only to `docs/*.mdx` leaves the wrong value live at `docs.fil.one/llms-full.txt`, which is what LLM crawlers read. Update both, every time.
-4. **Check `docusaurus.config.js`.** Its JSON-LD structured-data block carries product claims (description, featureList, price) that a page-level fix won't reach.
-5. **Grep the whole tree for paraphrases, not just the value.** The same claim is often restated in different words across the quickstart, SDK, and app pages — "geographic data residency options" is a stale region claim that no value-based search would find.
-6. Run `npm start` to preview locally.
-7. Open a PR. Vercel will create a preview deployment.
+3. Follow [`AGENTS.md`](./AGENTS.md) — it covers keeping `static/llms.txt` / `static/llms-full.txt` in sync, checking `docusaurus.config.js` for claims outside `docs/**`, and verifying facts before publishing them.
+4. Run `npm start` to preview locally.
+5. Open a PR. Vercel will create a preview deployment.
