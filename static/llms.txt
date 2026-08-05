@@ -24,7 +24,9 @@ Critical integration notes for developers:
   regional storage gateway and keys are held by the regional operator, NOT by Fil
   One and NOT customer-managed. Do not name a specific cipher or SSE mode
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
-- Deletion is permanent and immediate — no recycle bin or soft-delete
+- Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
+  On versioned buckets a plain delete places a delete marker and prior versions
+  are retained and still billed
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). Not yet confirmed in eu-west-1; download and re-upload as a

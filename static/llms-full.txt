@@ -33,6 +33,14 @@ Critical integration notes for developers:
   fallback there. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
+- Paid past_due status is READ-ONLY immediately: writes are blocked from the
+  moment a payment fails, not after a later deadline; the ~30-day window is
+  retrieval-only before the account is disabled
+- Trial caps are enforcement thresholds, not allowances: storage reaching 1 TB
+  WRITE-LOCKS the account; egress reaching 2 TB DISABLES it entirely. Trial
+  egress is a single cumulative budget over the 30 days. Enforced by a
+  twice-daily job (~07:00/19:00 UTC), not in real time
+- Storage is DECIMAL: 1 TB = 1,000 GB, 1 GB = 1,000,000,000 bytes
 - Governance Object Lock has NO grantable bypass permission in the product
 - PutObjectRetention (per-object retention) is offered as a key permission and
   is confirmed working in us-east-1 (including Governance-mode bypass); not
@@ -40,6 +48,9 @@ Critical integration notes for developers:
 - Legal Hold (GetObjectLegalHold/PutObjectLegalHold) is confirmed working in
   us-east-1, incl. blocking delete while a hold is active; not yet confirmed
   in eu-west-1
+- Object/part size limits (5 TB object, 5 GB single-PUT, 10,000 parts, 5 MB min
+  part) are standard AWS S3 values, NOT independently confirmed for Fil One
+- Bucket names forbid dots (unlike AWS S3); object key max is 1,024 bytes
 - Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
 
 
