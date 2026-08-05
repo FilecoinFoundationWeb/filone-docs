@@ -10,11 +10,11 @@ description: Service limits, quotas, and constraints.
 | Storage | 1 TB (1,000 GB) | No limit |
 | Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
 | API operations | Unlimited | Unlimited |
-| Buckets per account | 100 | 100 |
+| Buckets per account | — | 100 in `eu-west-1`, 300 in `us-east-1` |
 
 During the trial these two caps behave differently: reaching the **storage** cap **write-locks** the account (reads still work), while reaching the **egress** cap **disables** it entirely. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. See [Trial & Billing](/billing/trial).
 
-The bucket limit is set per account rather than fixed by plan. In `eu-west-1` it is 100 buckets per account; the limit in `us-east-1` has not been separately confirmed. Contact support if you need a higher limit.
+The bucket limit is provisioned per account rather than fixed by plan, and it differs by region. On a **paid** plan it is **100 buckets in `eu-west-1`** and **300 in `us-east-1`**. Contact support if you need a higher limit.
 
 The trial lasts 30 days. After it ends, your account enters a 7-day read-only grace period. If you do not upgrade before the grace period ends, the account is disabled and access is blocked. See [Trial & Billing](/billing/trial) for the full timeline and email schedule.
 
