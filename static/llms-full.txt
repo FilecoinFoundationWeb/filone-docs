@@ -1244,46 +1244,50 @@ Source: https://docs.fil.one/security/compliance
 
 ## Certification status
 
-Fil One does NOT hold SOC 2 Type II or ISO 27001 certification today. Both are
-actively being pursued. Fil One holds NO third-party compliance attestation for
-any feature — including SEC 17a-4 assessments of the Object Lock / WORM
-capability. Contact security@fil.one if a certification is a hard requirement.
+SOC 2 Type II and ISO 27001 are actively being pursued. Fil One does not hold
+either certification today, and holds no third-party compliance attestation for
+any feature, including the SEC 17a-4 assessments often asked about for WORM
+retention workloads. Contact security@fil.one for where that work stands.
+
+## Controls in place today
+
+| Area | What is in place |
+|------|------------------|
+| Authentication | Passkeys (primary method), Google, GitHub, email with password. |
+| Multi-factor | Opt-in per user: authenticator apps (TOTP), WebAuthn security keys, device biometrics. SMS deliberately not offered. |
+| Access control | Access keys scoped to a single region and to specific permissions (Read, Write, List, Delete), optionally restricted to named buckets, with optional expiry. |
+| Encryption | Always on, at rest and in transit. TLS enforced, HTTP rejected, cannot be disabled. |
+| Retention (WORM) | Object Lock in Governance and Compliance modes, 1 day to 100 years. A Compliance-mode lock binds every caller including the account owner. |
 
 ## Shared responsibility
 
 | Layer | Operated by | Responsible for |
 |-------|-------------|-----------------|
-| Console, API, identity, billing | Fil One | Authentication, access-key issuance and scoping, MFA, dashboard, request authorization, subscription state |
-| Regional S3 storage gateway | Regional storage operator | Accepting/serving object data, server-side encryption at rest, CUSTODY OF ENCRYPTION KEYS |
-| Underlying storage network | Filecoin storage providers | Physically holding data, producing the network's proof-of-storage |
+| Console, API, identity, billing | Fil One | Authentication, access-key issuance and scoping, multi-factor enrolment, dashboard, request authorization, subscription state |
+| Regional S3 storage gateway | Regional storage operator | Serving object data, applying server-side encryption at rest, custody of encryption keys |
+| Underlying storage network | Filecoin storage providers | Holding data and producing the network's proof-of-storage |
 
-Consequences: encryption key custody sits with the regional storage operator,
-not Fil One and not the customer (no customer-managed keys, no SSE-C); and the
-specific cipher / SSE mode is set by the regional operator and is not published.
+Practical consequence: encryption at rest is applied and keyed by the regional
+storage operator, so there is no customer-managed-key or SSE-C option and the
+cipher in use is set by that operator. Questions turning on the exact scheme or
+on key custody for a region go to support, who route them to the operator.
 
-## Available to a procurement team today
+## Who to ask
 
-Security contact: security@fil.one. Customer-verifiable controls: passkey /
-Google / GitHub / email-password auth with opt-in MFA (TOTP, WebAuthn security
-keys, device biometrics — SMS intentionally not offered); region-scoped,
-permission-scoped, optionally bucket-scoped and expiring access keys; always-on
-encryption in transit (TLS, HTTP rejected) and at rest; WORM retention via
-Object Lock in Governance and Compliance modes. Questions about Fil One's own
-controls go to security@fil.one; questions about the gateway's encryption
-implementation or key custody are answered by the regional operator via support.
+Fil One's own controls (authentication, access keys, the console):
+security@fil.one. The storage gateway's encryption implementation or key
+custody: contact support, who route to the regional operator.
 
-## What Fil One explicitly does not claim
+## Scope of what Fil One claims
 
-- No third-party attestation or certification of any kind, for any feature.
-- No auditor-presentable per-object proof — no CID, deal ID, or seal state is
-  surfaced, so there is nothing to hand an auditor as evidence a specific object
-  was stored intact or destroyed. Filecoin's network-level proof cycle is real
-  but is a property of the network and is not exposed per object.
-- No determination that any feature satisfies a specific regulation. Regulations
-  named anywhere in these docs are illustrative use cases, not certification
-  claims.
-- No published cipher or key-management scheme for encryption at rest.
-
+- Proof-of-storage is a NETWORK property. Filecoin providers continuously prove
+  they still hold committed data, but Fil One does not surface per-object content
+  identifiers, deal IDs, or seal state, so there is no per-object artefact to
+  hand an auditor.
+- Named regulations describe USE CASES, not certifications. Where these docs
+  mention SEC 17a-4, FINRA, HIPAA or similar, they describe a scenario the
+  underlying capability supports. Whether a feature satisfies a specific
+  obligation is a determination for your own compliance review.
 
 ---
 

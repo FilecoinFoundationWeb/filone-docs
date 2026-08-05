@@ -1,51 +1,57 @@
 ---
 title: Compliance & Certifications
-description: Current certification status, the shared-responsibility split, and what a procurement team can request today.
+description: Certification status, the shared-responsibility model, and what a procurement team can request today.
 ---
 
-This page states Fil One's certification status plainly, so a procurement or security reviewer does not have to infer it from feature documentation.
+This page is the current reference for Fil One's compliance posture: where certification stands, which controls are live in the product today, and how responsibility divides between Fil One and the storage operators behind it.
 
 ## Certification status
 
-**Fil One does not hold SOC 2 Type II or ISO 27001 certification today.** Both are actively being pursued. This page is the current-status reference — if you were sent here from elsewhere on the site, this is the answer.
+**SOC 2 Type II and ISO 27001 are actively being pursued.** Fil One does not hold either certification today, and holds no third-party compliance attestation for any feature, including the SEC 17a-4 assessments often asked about for WORM retention workloads.
 
-We hold **no third-party compliance attestation** for any Fil One feature. That includes SEC 17a-4 assessments of the Object Lock / WORM capability, which is the attestation most often asked about for retention workloads.
+For where that work currently stands, contact [security@fil.one](mailto:security@fil.one).
 
-If a certification is a hard requirement for your evaluation, contact [security@fil.one](mailto:security@fil.one) so we can tell you where the work currently stands rather than leaving you to guess from this page's revision date.
+## Controls in place today
+
+These are live in the product and open to your own review:
+
+| Area | What is in place |
+|------|------------------|
+| **Authentication** | Passkeys (the primary method), Google, GitHub, and email with password. |
+| **Multi-factor** | Opt-in per user: authenticator apps (TOTP), WebAuthn security keys, and device biometrics. SMS is deliberately not offered. |
+| **Access control** | Access keys scoped to a single region and to specific permissions (Read, Write, List, Delete), optionally restricted to named buckets, with optional expiry dates. |
+| **Encryption** | Always on, at rest and in transit. TLS is enforced and HTTP is rejected. It cannot be disabled. |
+| **Retention (WORM)** | Object Lock in Governance and Compliance modes, from 1 day to 100 years. A Compliance-mode lock binds every caller, including the account owner. |
+
+Detail on each: [API Keys](/security/api-keys), [Encryption](/security/encryption), [Object Lock](/storage/object-lock).
 
 ## Shared responsibility
 
-Fil One is not the sole party in the storage path, and this determines what any future certification could actually cover.
+Storage is fulfilled by regional operators on the Filecoin network, so a review needs to know which layer owns what:
 
 | Layer | Operated by | Responsible for |
 |-------|-------------|-----------------|
-| Console, API, identity, billing | **Fil One** | Authentication, access-key issuance and scoping, MFA, the dashboard, request authorization, subscription state |
-| Regional S3 storage gateway | **Regional storage operator** | Accepting and serving object data, server-side encryption at rest, **custody of encryption keys** |
-| Underlying storage network | **Filecoin storage providers** | Physically holding data and producing the network's proof-of-storage |
+| Console, API, identity, billing | **Fil One** | Authentication, access-key issuance and scoping, multi-factor enrolment, the dashboard, request authorization, subscription state |
+| Regional S3 storage gateway | **Regional storage operator** | Serving object data, applying server-side encryption at rest, custody of encryption keys |
+| Underlying storage network | **Filecoin storage providers** | Holding data and producing the network's proof-of-storage |
 
-Two consequences worth stating explicitly to a reviewer:
+The practical consequence for a security review: encryption at rest is applied and keyed by the regional storage operator, so there is no customer-managed-key or SSE-C option, and the cipher in use is set by that operator. If your requirements turn on the exact scheme, or on who holds key material for a given region, contact support and we will route the question to the operator for your region.
 
-- **Encryption key custody sits with the regional storage operator**, not with Fil One and not with you. There is no customer-managed-key option and no SSE-C. See [Encryption](/security/encryption).
-- **The specific cipher and SSE mode are set by the regional operator** and are not currently published. If your requirements depend on the exact scheme, contact support — see [Encryption](/security/encryption).
+## Who to ask
 
-## What is available to a procurement team today
+- **Fil One's own controls** (authentication, access keys, the console): [security@fil.one](mailto:security@fil.one).
+- **The storage gateway's encryption implementation or key custody:** contact support and we will route the question to the regional operator.
 
-- **Security contact:** [security@fil.one](mailto:security@fil.one)
-- **Controls you can verify yourself in the product:** passkey / Google / GitHub / email-password authentication with opt-in MFA (TOTP, WebAuthn security keys, device biometrics — SMS is intentionally not offered); region-scoped, permission-scoped, optionally bucket-scoped and expiring access keys; always-on encryption in transit (TLS, HTTP rejected) and at rest; WORM retention via Object Lock in Governance and Compliance modes.
-- **Documented behaviour relevant to retention and privacy reviews:** [Object Lock](/storage/object-lock) for WORM retention and its compliance caveats, [API Keys](/security/api-keys) for the access-control model, and the [FAQ](/faq) and [Trial & Billing](/billing/trial) for deletion and account-closure semantics.
-- **What to request from whom:** questions about Fil One's own controls (auth, access keys, the console) go to [security@fil.one](mailto:security@fil.one). Questions about the storage gateway's encryption implementation or key custody are answered by the regional operator; contact support and we will route them.
-
-## What Fil One explicitly does not claim
+## Scope of what Fil One claims
 
 Stated here so it does not have to be inferred:
 
-- **No third-party attestation or certification** of any kind, for any feature, today.
-- **No auditor-presentable per-object proof.** The product surfaces no CID, deal ID, or seal state for an object, so there is nothing to hand an auditor as evidence that a specific object was stored intact or destroyed. Filecoin's network-level proof cycle is real, but it is a property of the network and is not exposed per object — see [How does Filecoin protect the integrity of stored data?](/faq).
-- **No determination that any feature satisfies a specific regulation.** Object Lock provides WORM-style retention, which many regimes call for as a building block; whether it meets a named obligation is for your own compliance review to decide. The regulations named anywhere in these docs are illustrative use cases, not certification claims.
-- **No published cipher or key-management scheme** for encryption at rest (see above).
+- **Proof-of-storage is a network property.** Filecoin storage providers continuously prove they still hold the data they committed to store. Fil One does not surface per-object content identifiers, deal IDs, or seal state, so there is no per-object artefact to hand an auditor. See [How does Filecoin protect the integrity of stored data?](/faq).
+- **Named regulations describe use cases, not certifications.** Where these docs mention SEC 17a-4, FINRA, HIPAA or similar, they describe a scenario the underlying capability supports. Whether a given feature satisfies a specific obligation is a determination for your own compliance review.
 
 ## Related
 
-- [Encryption](/security/encryption) — at-rest and in-transit encryption, key custody
-- [Object Lock](/storage/object-lock) — WORM retention and its compliance caveats
-- [API Keys](/security/api-keys) — permissions, region scoping, expiration
+- [Encryption](/security/encryption): at-rest and in-transit encryption, key custody
+- [Object Lock](/storage/object-lock): WORM retention and its compliance caveats
+- [API Keys](/security/api-keys): permissions, region scoping, expiration
+- [FAQ](/faq) and [Trial & Billing](/billing/trial): deletion and account-closure behaviour

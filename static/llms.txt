@@ -103,13 +103,18 @@ Critical integration notes for developers:
   the regional operator (no customer-managed keys, cipher unconfirmed).
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
-- [Compliance & Certifications](https://docs.fil.one/security/compliance): Fil
-  One holds NO SOC 2 Type II, NO ISO 27001, and NO third-party attestation of
-  any kind today (both actively pursued). Shared-responsibility split: Fil One
-  owns console/API/identity; the regional storage operator owns the gateway and
-  encryption key custody; Filecoin providers hold the data. Security contact
-  security@fil.one. No auditor-presentable per-object proof, no published
-  cipher, no claim any feature satisfies a named regulation
+- [Compliance & Certifications](https://docs.fil.one/security/compliance): SOC 2
+  Type II and ISO 27001 are actively being pursued; neither is held today, and
+  there is no third-party attestation for any feature. Controls live today:
+  passkey/Google/GitHub/email auth, opt-in MFA (TOTP, WebAuthn, biometrics, no
+  SMS), region- and permission-scoped expiring access keys, always-on
+  encryption, Object Lock WORM. Shared responsibility: Fil One owns
+  console/API/identity; the regional storage operator owns the gateway and
+  encryption key custody (so no customer-managed keys, no SSE-C, and the cipher
+  is the operator's); Filecoin providers hold the data. Security contact
+  security@fil.one. Proof-of-storage is a network property, so there is no
+  per-object artefact for an auditor; named regulations are use cases, not
+  certifications
 
 ## Billing
 
