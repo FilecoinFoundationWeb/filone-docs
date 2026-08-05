@@ -72,7 +72,7 @@ Specific size and count limits quoted in this table (5 TB max object, 5 GB singl
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
 | `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. Not yet confirmed in `eu-west-1` — download and re-upload as a fallback there. |
 | `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
-| `PutObjectRetention` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — set, extend, or (with the bypass permission) shorten a version's retention. Not yet confirmed in `eu-west-1`. |
+| `PutObjectRetention` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — set, extend, or (via S3's bypass-governance-retention mechanism) shorten a version's retention. Not yet confirmed in `eu-west-1`. |
 | `GetObjectLegalHold` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — requires the matching access-key permission. Not yet confirmed in `eu-west-1`. |
 | `PutObjectLegalHold` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including blocking delete while a hold is active — requires the matching access-key permission. Not yet confirmed in `eu-west-1`. |
 | `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. |
@@ -121,7 +121,7 @@ Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy. |
 | `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention (Governance or Compliance mode, 1 day – 100 years). |
 | `GetObjectRetention` | ✅ Supported | Returns the retention setting for a specific object version. |
-| `PutObjectRetention` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including extending, shortening (correctly rejected without the bypass permission), and Governance-mode bypass. Not yet confirmed in `eu-west-1`. |
+| `PutObjectRetention` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including extending, shortening (correctly rejected without it), and Governance-mode bypass via S3's bypass-governance-retention mechanism. Not yet confirmed in `eu-west-1`. |
 | `GetObjectLegalHold` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — requires the matching access-key permission. Not yet confirmed in `eu-west-1`. |
 | `PutObjectLegalHold` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including blocking delete while a hold is active — requires the matching access-key permission. Not yet confirmed in `eu-west-1`. |
 

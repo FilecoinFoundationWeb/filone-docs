@@ -56,7 +56,7 @@ Choose your retention mode carefully **at bucket creation** — it is fixed for 
 The default retention period set at bucket creation is applied automatically to every object uploaded to that bucket.
 
 :::info `PutObjectRetention` is region-dependent
-Setting or changing retention on an *individual* object version via `PutObjectRetention` is offered as a grantable access-key permission. It is **confirmed working in `us-east-1`** — including extending a retention period and, with the bypass permission, shortening one. It has **not yet been confirmed in `eu-west-1`** — until then, rely on the bucket-level default set at creation for guaranteed retention there.
+Setting or changing retention on an *individual* object version via `PutObjectRetention` is offered as a grantable access-key permission. It is **confirmed working in `us-east-1`** — including extending a retention period and, using the standard S3 bypass-governance-retention mechanism, shortening one (this is a protocol-level capability of the gateway, not a permission Fil One's own access keys can grant — see [Key concepts](#key-concepts)). It has **not yet been confirmed in `eu-west-1`** — until then, rely on the bucket-level default set at creation for guaranteed retention there.
 :::
 
 Object Lock buckets are always versioned, so a retention call should target a specific version with `--version-id`; without it the call targets whatever the current version is (possibly a delete marker).
@@ -97,7 +97,7 @@ The object detail page in the dashboard shows an object's retention status, and 
 aws s3api get-object-retention \
   --bucket my-compliance-bucket \
   --key important-record.pdf \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://us-east-1.s3.fil.one
 ```
 
 Returns:
