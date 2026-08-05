@@ -104,7 +104,7 @@ Critical integration notes for developers:
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
 - [Data Deletion](https://docs.fil.one/security/data-deletion): single reference
-  for deletion semantics — object delete (immediate on non-versioned, delete
+  for deletion semantics: object delete (immediate on non-versioned, delete
   marker on versioned), bucket delete, deletion under Object Lock (Compliance
   binds every caller; Governance has no bypass so it is equally protected),
   account closure (revokes access; erasure is a separate request via support),
