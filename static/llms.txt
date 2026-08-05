@@ -22,7 +22,9 @@ Critical integration notes for developers:
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode
+  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  SSE-KMS is rejected in us-east-1 (InvalidRequest) and SSE-C is unsupported —
+  send no encryption headers at all
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets a plain delete places a delete marker and prior versions

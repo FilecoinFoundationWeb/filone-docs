@@ -78,7 +78,13 @@ The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimit
 <summary>Can I use Fil One for backups?</summary>
 <div>
 
-Yes. Fil One works with any backup tool that supports S3-compatible storage, including Veeam, Commvault, Restic, and Duplicati.
+Fil One exposes an S3-compatible API, so backup software that targets S3 generally works — but check your tool's requirements first. We have not verified specific backup products, and three of the documented gaps are ones backup tools commonly depend on:
+
+- **No server-side copy in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1` but not in `eu-west-1`; some tools use it for renames, moves, and deduplication.
+- **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the dashboard first.
+- **No lifecycle rules.** Retention-based pruning has to be handled by the tool itself.
+
+Path-style addressing is also required, and bucket names cannot contain dots. Check your tool against the [S3 Compatibility Reference](/reference/s3-compatibility) before committing to it.
 
 </div>
 </details>

@@ -47,7 +47,7 @@ Access keys are also scoped to a single region, so a key issued for `eu-west-1` 
 
 ## Third-party tools
 
-Any S3-compatible tool works with Fil One. Community-tested tools include:
+Most S3-compatible tools work with Fil One, subject to the same constraints as any S3 client — path-style addressing is required, and the gaps in the [S3 Compatibility Reference](/reference/s3-compatibility) apply. These have specific setup notes:
 
 - **rclone** -- Sync files between local storage and Fil One. Configure with `rclone config` using the S3 provider type.
 - **Cyberduck** -- GUI file browser for macOS and Windows. Add a new S3 connection with the Fil One endpoint.

@@ -22,7 +22,9 @@ Critical integration notes for developers:
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode
+  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  SSE-KMS is rejected in us-east-1 (InvalidRequest) and SSE-C is unsupported —
+  send no encryption headers at all
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets a plain delete places a delete marker and prior versions
@@ -1547,8 +1549,10 @@ Presigned GetObject and PutObject are both supported.
 
 Always on for every bucket, nothing to configure, cannot be disabled. Keys
 are held by the regional storage operator — not by Fil One, not
-customer-managed. No SSE-C. Encryption in transit (TLS) is always on; HTTP is
-rejected.
+customer-managed. No SSE-C. No SSE-KMS either: uploads specifying
+ServerSideEncryption: aws:kms are REJECTED in us-east-1 with InvalidRequest
+(not yet tested in eu-west-1) — omit encryption headers entirely, encryption is
+applied regardless. Encryption in transit (TLS) is always on; HTTP is rejected.
 
 ### Not yet supported
 
@@ -1654,6 +1658,10 @@ Fil One works with any tool or library that supports the S3 API.
 | Cyberduck | macOS/Windows GUI | cyberduck.io |
 
 ## Third-party tools
+
+Most S3-compatible tools work, subject to the same constraints as any S3 client
+(path-style required, plus the documented compatibility gaps). These have
+specific setup notes:
 
 - **rclone**: Sync files with `rclone config` using S3 provider type.
 - **Cyberduck**: Add S3 connection with the Fil One endpoint.
@@ -2139,7 +2147,14 @@ the exception: it includes 2 TB of egress rather than unlimited.
 card required.
 
 **Can I use Fil One for backups?**
-Yes. Works with Veeam, Commvault, Restic, Duplicati, and any S3-compatible backup tool.
+Fil One exposes an S3-compatible API, so backup software that targets S3
+generally works, but specific backup products have NOT been verified. Three
+documented gaps are ones backup tools commonly depend on: no server-side copy
+(CopyObject) in eu-west-1 (used by some tools for renames, moves, dedupe); no
+CreateBucket over the API in eu-west-1 (a tool that provisions its own
+repository bucket needs it created in the dashboard first); and no lifecycle
+rules (retention-based pruning must be handled by the tool). Path-style
+addressing is required and bucket names cannot contain dots.
 
 **How does Filecoin protect the integrity of stored data?**
 Built on Filecoin, where storage providers must continuously submit cryptographic
