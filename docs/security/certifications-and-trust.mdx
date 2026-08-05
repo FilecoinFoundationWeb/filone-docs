@@ -1,9 +1,13 @@
 ---
-title: Compliance & Certifications
+title: Certifications & Trust
 description: Certification status, the shared-responsibility model, and what a procurement team can request today.
 ---
 
-This page is the current reference for Fil One's compliance posture: where certification stands, which controls are live in the product today, and how responsibility divides between Fil One and the storage operators behind it.
+This page is the current reference for Fil One's security and compliance posture: where certification stands, which controls are live in the product today, and how responsibility divides between Fil One and the storage operators behind it.
+
+:::note Looking for WORM immutability?
+"Compliance" also names a specific Object Lock retention mode in Fil One. If you are here for immutable storage, retention periods, or legal holds, see [Object Lock](/storage/object-lock). This page is about certification status and security posture.
+:::
 
 ## Certification status
 
@@ -24,6 +28,23 @@ These are live in the product and open to your own review:
 | **Retention (WORM)** | Object Lock in Governance and Compliance modes, from 1 day to 100 years. A Compliance-mode lock binds every caller, including the account owner. |
 
 Detail on each: [API Keys](/security/api-keys), [Encryption](/security/encryption), [Object Lock](/storage/object-lock).
+
+## Demonstrating a control is in force
+
+Auditors usually want evidence, not a statement that a feature exists. What you can produce yourself today:
+
+| To show | Call | Returns |
+|---------|------|---------|
+| A specific object version is under retention | `GetObjectRetention` | The retention mode (`GOVERNANCE` or `COMPLIANCE`) and its `RetainUntilDate` |
+| A bucket's default retention policy | `GetBucketObjectLockConfiguration` | The mode and duration applied to new object versions |
+| A legal hold is active on an object | `GetObjectLegalHold` | The hold status |
+| Versioning is enabled on a bucket | `GetBucketVersioning` | `Enabled` |
+
+`GetObjectRetention` and `GetBucketObjectLockConfiguration` work in both regions. `GetObjectLegalHold` is confirmed in `us-east-1` and not yet confirmed in `eu-west-1`. The reads require the matching access-key permissions, which are selectable when you create a key rather than granted by default: see [API Keys](/security/api-keys).
+
+A failed delete is also evidence in itself. Attempting to delete an object under active retention returns `403 AccessDenied`, which is reproducible on demand.
+
+What you **cannot** produce is a per-object cryptographic artefact (see [Scope of what Fil One claims](#scope-of-what-fil-one-claims)).
 
 ## Shared responsibility
 

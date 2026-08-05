@@ -1238,9 +1238,12 @@ applies automatically.
 
 ---
 
-# Compliance & Certifications
+# Certifications & Trust
 
-Source: https://docs.fil.one/security/compliance
+Source: https://docs.fil.one/security/certifications-and-trust
+
+Certification status and security posture. NOT the Object Lock "Compliance"
+retention mode, which is a separate feature (see Object Lock).
 
 ## Certification status
 
@@ -1258,6 +1261,25 @@ retention workloads. Contact security@fil.one for where that work stands.
 | Access control | Access keys scoped to a single region and to specific permissions (Read, Write, List, Delete), optionally restricted to named buckets, with optional expiry. |
 | Encryption | Always on, at rest and in transit. TLS enforced, HTTP rejected, cannot be disabled. |
 | Retention (WORM) | Object Lock in Governance and Compliance modes, 1 day to 100 years. A Compliance-mode lock binds every caller including the account owner. |
+
+## Demonstrating a control is in force
+
+Auditors want evidence, not a statement that a feature exists. Producible by the
+customer today:
+
+| To show | Call | Returns |
+|---------|------|---------|
+| An object version is under retention | GetObjectRetention | Mode (GOVERNANCE/COMPLIANCE) and RetainUntilDate |
+| A bucket's default retention policy | GetBucketObjectLockConfiguration | Mode and duration applied to new versions |
+| A legal hold is active | GetObjectLegalHold | Hold status |
+| Versioning is enabled | GetBucketVersioning | Enabled |
+
+GetObjectRetention and GetBucketObjectLockConfiguration work in both regions.
+GetObjectLegalHold is confirmed in us-east-1, not yet confirmed in eu-west-1.
+These reads need the matching access-key permissions, which are selectable at
+key creation rather than granted by default. A failed delete is also evidence:
+deleting an object under active retention returns 403 AccessDenied, reproducible
+on demand. What CANNOT be produced is a per-object cryptographic artefact.
 
 ## Shared responsibility
 
