@@ -9,6 +9,10 @@ import TabItem from '@theme/TabItem';
 
 All API requests to Fil One must be authenticated using AWS Signature Version 4 (SigV4). This is the same authentication method used by AWS S3, so any S3-compatible SDK or tool handles it automatically.
 
+:::note Looking for account sign-in?
+This page is about signing **API requests**. For the account you log into the dashboard with, including two-factor authentication, passkeys, and recovery codes, see [Account Security](/security/account-security).
+:::
+
 :::note Keys and endpoints are region-specific
 Every access key belongs to a **single region**, chosen when you create it, and it only authenticates requests to that region's endpoint. Examples below use `eu-west-1`, the default region — for `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. If you store data in both regions you need a key for each.
 :::

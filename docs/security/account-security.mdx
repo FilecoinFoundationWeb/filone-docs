@@ -1,0 +1,63 @@
+---
+title: Account Security
+description: Sign-in methods, two-factor authentication, passkeys, and recovery codes for your Fil One account.
+---
+
+This page covers securing the account you sign in with. For authenticating **API requests**, which is a separate mechanism, see [Authentication](/security/authentication) and [API Keys](/security/api-keys).
+
+## Signing in
+
+Fil One supports four sign-in methods:
+
+- **Passkeys**, the primary method
+- **Google**
+- **GitHub**
+- **Email with password**
+
+A new account must verify its email address before the dashboard opens. Until you do, every page redirects to a verification screen.
+
+## Two-factor authentication
+
+Two-factor authentication is opt-in per user and managed from **Settings**, under **Security**. Three factor types are supported:
+
+| Factor | Shown in the dashboard as | What it is |
+|--------|---------------------------|------------|
+| Authenticator app | **Authenticator app (OTP)** | A time-based one-time code from an app such as 1Password, Authy, or Google Authenticator |
+| Security key | **Security key** | A roaming WebAuthn authenticator, for example a YubiKey |
+| Device biometrics | **Device biometrics** | A platform WebAuthn authenticator: Face ID, Touch ID, or Windows Hello |
+
+**SMS and email codes are deliberately not offered.** Both are vulnerable to SIM-swap and mailbox-compromise attacks, so Fil One only supports factors bound to a device or an app.
+
+You can enrol more than one factor and remove individual ones from Settings.
+
+## Passkeys
+
+Passkeys are listed separately from two-factor methods in Settings, under **Passkeys**. If you have none enrolled, the dashboard prompts you to add one on your next sign-in.
+
+You can hold up to **20 passkeys** on one account, which is enough to cover several devices without having to retire an old one to add a new one.
+
+## Recovery codes
+
+A recovery code is a single-use code for signing in if you lose access to your authenticator. Generate or replace one from **Settings** → **Security** → **Recovery code** → **Regenerate**.
+
+Generating a new code invalidates the previous one, so store the new value somewhere durable before you close the dialog.
+
+## Changes to security settings require re-authentication
+
+Four actions are gated behind a fresh two-factor check, even inside an already signed-in session:
+
+- Removing a two-factor method
+- Removing all two-factor methods
+- Removing a passkey
+- Regenerating a recovery code
+
+If your current session was not established with a strong factor, the dashboard sends you back through sign-in to step up before the action proceeds. This means someone who gains access to an open session still cannot quietly strip the account's protections.
+
+## Changing your password
+
+Change your account password from **Settings** → **Security** → **Password** → **Change**. This sends a password-reset email to your registered address.
+
+## Related
+
+- [Authentication](/security/authentication): signing API requests with SigV4
+- [API Keys](/security/api-keys): creating and scoping keys for programmatic access

@@ -91,6 +91,15 @@ Critical integration notes for developers:
 
 ## Security
 
+- [Account Security](https://docs.fil.one/security/account-security): securing
+  the account you sign in with (distinct from API request auth). Sign-in via
+  passkeys (primary), Google, GitHub, or email with password; email
+  verification is mandatory before the dashboard opens. Opt-in two-factor with
+  three factor types: authenticator app (OTP), security key (WebAuthn roaming),
+  device biometrics (WebAuthn platform). SMS and email codes are deliberately
+  NOT offered. Up to 20 passkeys per account. Single-use recovery codes.
+  Removing a factor or passkey, removing all factors, and regenerating a
+  recovery code all require a fresh two-factor check (step-up)
 - [Authentication](https://docs.fil.one/security/authentication): SigV4 auth
   setup for AWS CLI, Python (boto3), JavaScript (AWS SDK v3), and Go; credential
   best practices including environment variable usage

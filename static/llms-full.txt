@@ -1047,6 +1047,61 @@ process.
 
 ---
 
+# Account Security
+
+Source: https://docs.fil.one/security/account-security
+
+Covers securing the account you sign in with. API request authentication is a
+separate mechanism (see Authentication / API Keys).
+
+## Signing in
+
+Four methods: passkeys (the primary method), Google, GitHub, and email with
+password. A new account must verify its email address before the dashboard
+opens; until then every page redirects to a verification screen.
+
+## Two-factor authentication
+
+Opt-in per user, managed from Settings > Security. Three factor types:
+
+| Factor | Dashboard label | What it is |
+|--------|-----------------|------------|
+| Authenticator app | Authenticator app (OTP) | Time-based one-time code from an app (1Password, Authy, Google Authenticator) |
+| Security key | Security key | Roaming WebAuthn authenticator, e.g. a YubiKey |
+| Device biometrics | Device biometrics | Platform WebAuthn authenticator: Face ID, Touch ID, Windows Hello |
+
+SMS and email codes are DELIBERATELY NOT OFFERED (SIM-swap and
+mailbox-compromise risk). Only device- or app-bound factors are supported. More
+than one factor can be enrolled, and individual ones removed.
+
+## Passkeys
+
+Listed separately from two-factor methods, under Settings > Passkeys. With none
+enrolled, the dashboard prompts to add one on next sign-in. Limit is 20 passkeys
+per account.
+
+## Recovery codes
+
+A single-use code for signing in after losing access to an authenticator.
+Generate or replace from Settings > Security > Recovery code > Regenerate.
+Generating a new code invalidates the previous one.
+
+## Step-up re-authentication
+
+Four actions require a fresh two-factor check even within a signed-in session:
+removing a two-factor method, removing all two-factor methods, removing a
+passkey, and regenerating a recovery code. A session not established with a
+strong factor is sent back through sign-in first, so someone with access to an
+open session cannot quietly strip the account's protections.
+
+## Changing your password
+
+Settings > Security > Password > Change sends a password-reset email to the
+registered address.
+
+
+---
+
 # Authentication
 
 Source: https://docs.fil.one/security/authentication
