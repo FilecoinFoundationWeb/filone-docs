@@ -38,15 +38,13 @@ Closing an account revokes access; erasing data is a separate, explicit step. Th
 - **To regain access,** contact support. A disabled account can be restored.
 - **To request erasure,** contact support. Erasure is not a self-service action and does not happen automatically when an account closes.
 
-:::caution What an erasure request can guarantee is region-dependent and being confirmed
-Fil One has no automated purge. Closing an account disables it and blocks access; it does not delete stored data.
+:::note Closure is not erasure
+Closing an account disables it and blocks access. It does not delete your stored data, and no erasure happens automatically.
 
-Erasure is handled as a support request, and **what that request can currently achieve at the storage layer differs by region**. We are confirming with both regional storage operators what happens to encryption keys when an account is removed, and in `eu-west-1` account-level removal at the storage layer is not available today.
-
-If you have a hard erasure requirement, especially one with a regulatory deadline, raise it with support and get the specifics for your region **before** you rely on it in a compliance process.
+If you have a specific erasure requirement, particularly one with a regulatory deadline, contact support to confirm what applies to your account before relying on it in a compliance process.
 :::
 
-If you are documenting this for a retention or privacy review, record account closure as **access revocation rather than erasure**, and treat erasure as a manual request whose storage-layer scope is still being confirmed.
+If you are documenting this for a retention or privacy review, record account closure as **access revocation rather than erasure**, with erasure handled as a separate support request.
 
 ## Residual data on the Filecoin network
 
@@ -56,16 +54,6 @@ Two things are true of that residual data:
 
 - **It stays encrypted, and the key is held by the regional storage operator** rather than by you or Fil One (see [Encryption](/security/encryption)).
 - **It is not reachable through Fil One.** There is no API or dashboard path to it from the moment of deletion.
-
-Be precise about what the first point does and does not mean. Encryption protects those residual bytes from a third party who obtains the raw sector. It is **not** the same as the data being unrecoverable, because the operator holding the residual sector is also the operator holding the key.
-
-:::info Whether deletion destroys the encryption key is being confirmed
-The stronger guarantee, sometimes called **crypto shredding**, is that deleting data also destroys the key that decrypts it, so the plaintext cannot be recovered by anyone. We are confirming with both regional storage operators whether and when that happens.
-
-One structural limit is already clear: **where an encryption key covers a whole bucket rather than an individual object, deleting a single object cannot destroy that key**, because the bucket's remaining objects still need it. Key destruction is therefore realistic at the bucket or account level rather than per object.
-
-Until this is confirmed, do not treat deletion in Fil One as cryptographic destruction. Treat it as immediate loss of access, with the residual bytes encrypted under a key the operator still holds.
-:::
 
 This is a property of how the underlying network stores data, not a Fil One retention policy, and it does not affect your ability to manage data in your account.
 
@@ -84,7 +72,7 @@ If you are making an erasure request, say explicitly whether it covers **only st
 ## Limits of these guarantees
 
 - **No cryptographic proof of deletion.** Fil One surfaces no per-object CID, deal ID, or seal state, so there is nothing you can present to an auditor to demonstrate that a specific object was destroyed.
-- **No confirmed key destruction.** Whether deletion destroys the encryption key, rather than only removing access, is still being confirmed with both regional storage operators. See the note above.
+- **No guaranteed key destruction.** Deleting data removes your access to it. Fil One does not guarantee that the encryption key is destroyed as part of that, so treat deletion as loss of access rather than as cryptographic destruction. If your compliance process depends on key destruction, contact support.
 - **No guaranteed destruction timeline.** The bounded sealed-sector persistence above is set by the storage layer, and Fil One does not publish a maximum.
-- **No automated erasure on account closure.** Closure disables access. Erasure is a separate manual request, and in `eu-west-1` account-level removal at the storage layer is not available today.
+- **No automated erasure on account closure.** Closure disables access. Erasure is a separate request handled by support.
 - **No determination of regulatory sufficiency.** Whether this deletion behaviour satisfies a specific obligation (GDPR erasure, a retention schedule, a DSAR deadline) is a question for your own compliance review.
