@@ -1737,12 +1737,10 @@ Source: https://docs.fil.one/app/ai-agent-toolkit
 
 Under the "AI Tools" sidebar group, next to Bucket Intelligence.
 
-NOT RELEASED. The page is marked "Coming Soon" and describes what the toolkit is
-intended to offer, alongside a "Join the waitlist" form. THERE IS NOTHING TO
-ENABLE OR CONFIGURE, and no setting on the page changes account behaviour. Unlike
-Bucket Intelligence it is NOT gated per account, so every signed-in user sees the
-same page. Stated as free during early access, with standard storage rates on the
-data itself.
+NOT RELEASED. The page is marked "Coming Soon": it introduces what the toolkit
+will offer and collects waitlist interest, so THERE IS NOTHING TO SET UP on it
+yet. Stated as free during early access, with standard storage rates on the data
+itself.
 
 Waitlist form: which tools you are connecting (Claude, Cursor, Continue, ChatGPT,
 Zapier, n8n, Make.com, or your own answer), timeline, team size, notes.
@@ -1759,13 +1757,7 @@ connect this way, and a single-bucket key keeps an agent in its own workspace.
 For question-answering over a bucket's contents, that exists today as Bucket
 Intelligence, a separate early-access feature with its own query API.
 
-## What the toolkit will add
-
-The page describes a hosted connection layer (pick an integration, paste a config
-block, expose chosen buckets to an AI client) plus automations reacting to bucket
-events. NONE OF THAT IS AVAILABLE YET, and no MCP server, OAuth connector,
-outbound webhook or Zapier/n8n/Make integration exists behind the page. Treat the
-access-key route above as the supported way to connect.
+Treat the access-key route above as the supported way to connect AI tools today.
 
 
 ---
@@ -2802,9 +2794,8 @@ The dashboard also has an "Ask a question" box in the per-bucket drawer.
 
 ## Not available yet
 
-- MCP endpoint / MCP server for Claude, Cursor, etc: NOT built, and no longer
-  listed in the dashboard. A hosted connection layer for AI clients is what the
-  AI Agent Toolkit is intended to provide, and that is not released either.
+- MCP endpoint / MCP server for Claude, Cursor, etc: NOT built. Connecting AI
+  clients is what the AI Agent Toolkit will cover.
 - Bring-your-own LLM keys or custom embedding models — not implemented.
 - API key expiry and rotation — not implemented.
 - Upload-triggered or near-real-time indexing — not implemented.

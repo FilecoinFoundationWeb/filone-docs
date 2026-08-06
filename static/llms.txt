@@ -193,12 +193,10 @@ Security, Billing) hold the concepts and code samples.
   already-indexed buckets only. "Last used" counts key calls, so console
   questions do not move it
 - [App - AI Agent Toolkit](https://docs.fil.one/app/ai-agent-toolkit): NOT
-  RELEASED. A "Coming Soon" page plus a waitlist form, ungated so every user sees
-  it; nothing to enable or configure, and no MCP server, OAuth connector,
-  outbound webhook or Zapier/n8n/Make integration exists behind it. What DOES
-  work today: ordinary S3 access keys scoped to a bucket, which is how LangChain,
-  LlamaIndex, Vercel AI SDK and CrewAI connect. For Q&A over a bucket, that is
-  Bucket Intelligence
+  RELEASED. A "Coming Soon" page introducing the toolkit plus a waitlist form, so
+  there is nothing to set up on it yet. What DOES work today: ordinary S3 access
+  keys scoped to a bucket, which is how LangChain, LlamaIndex, Vercel AI SDK and
+  CrewAI connect. For Q&A over a bucket, that is Bucket Intelligence
 - [App - Billing](https://docs.fil.one/app/billing): Plan card, current usage,
   payment method, invoice history, pricing panel. A FAILED PAYMENT APPEARS IN THE
   TOP BANNER, NOT THE BADGE (still "Active"), and the account is read-only from
