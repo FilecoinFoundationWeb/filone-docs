@@ -23,16 +23,19 @@ Critical integration notes for developers:
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
   One and NOT customer-managed. Do not name a specific cipher or SSE mode.
-  SSE-KMS is rejected in us-east-1 (InvalidRequest) and SSE-C is unsupported —
-  send no encryption headers at all
+  SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
+  or InvalidRequest in eu-west-1) and SSE-C is unsupported — send no encryption
+  headers at all. In eu-west-1, Get/PutBucketEncryption also return AccessDenied,
+  so no encryption configuration can be read or written there
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets a plain delete places a delete marker and prior versions
   are retained and still billed
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
-  restore). Not yet confirmed in eu-west-1; download and re-upload as a
-  fallback there. The dashboard has no restore/roll-back button either way
+  restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is UNVERIFIED
+  (the harness cannot configure versioning over the API there); download and
+  re-upload is the fallback. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
 - Paid past_due status is READ-ONLY immediately: writes are blocked from the
@@ -53,6 +56,24 @@ Critical integration notes for developers:
 - Object/part size limits (5 TB object, 5 GB single-PUT, 10,000 parts, 5 MB min
   part) are standard AWS S3 values, NOT independently confirmed for Fil One
 - Bucket names forbid dots (unlike AWS S3); object key max is 1,024 bytes
+- In eu-west-1, UNIMPLEMENTED OPERATIONS RETURN AccessDenied (403), NOT
+  NotImplemented (501), and a bucket/key you cannot see returns 403 instead of
+  404. A 403 from PutBucketVersioning, PutBucketPolicy, PutBucketAcl,
+  PutBucketEncryption, PutBucketLifecycleConfiguration or the tagging operations
+  means the FEATURE IS ABSENT, not that the key lacks a permission
+- ACL requests fail two different ways in eu-west-1: a canned-ACL HEADER on an
+  upload (--acl public-read) is SILENTLY IGNORED and the upload SUCCEEDS, while a
+  DEDICATED call (Put/GetBucketAcl, Put/GetObjectAcl) is REJECTED with
+  AccessDenied. Neither makes an object public
+- Error CODES deviate from AWS in eu-west-1 even though the XML format is
+  standard: BadDigest->InvalidArgument, InvalidRange->InvalidArgument,
+  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou. Some
+  invalid requests are also ACCEPTED where AWS returns 400
+- Open eu-west-1 client-affecting bugs: ListObjects NextMarker can carry an
+  internal suffix (use ListObjectsV2 + ContinuationToken instead);
+  EncodingType=url encodes a space as "+" not "%20"; additional-checksum
+  operations are unreliable (ChecksumType may be missing from
+  CompleteMultipartUpload responses)
 
 ## Getting Started
 
@@ -131,10 +152,13 @@ Critical integration notes for developers:
 - [S3 Compatibility](https://docs.fil.one/reference/s3-compatibility): Full table
   of supported vs. unsupported S3 operations (GetObject, PutObject, DeleteObject,
   ListObjectsV2, multipart, presigned URLs all supported; bucket policies, lifecycle
-  rules, IAM not yet supported); differences from AWS S3
+  rules, IAM not yet supported); how unsupported operations respond in eu-west-1
+  (AccessDenied, not NotImplemented); known error-code deviations and known
+  behavioral issues in eu-west-1; differences from AWS S3
 - [Error Reference](https://docs.fil.one/reference/errors): Standard S3 XML error
-  format, full table of 4xx and 5xx error codes, and troubleshooting for the most
-  common errors (SignatureDoesNotMatch, ServiceUnavailable)
+  format, full table of 4xx and 5xx error codes, the ways codes deviate from AWS,
+  and troubleshooting for the most common errors (SignatureDoesNotMatch,
+  AccessDenied, ServiceUnavailable)
 
 ## SDKs & Tools
 

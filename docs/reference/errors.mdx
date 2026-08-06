@@ -3,7 +3,7 @@ title: Error Reference
 description: S3 error codes returned by Fil One.
 ---
 
-Fil One returns standard S3 error responses in XML format. If your application already handles S3 errors, no changes are needed.
+Fil One returns standard S3 error responses in XML format. The format is standard, but the specific code returned for a given condition does not always match AWS S3, so an application that branches on error codes needs review. See [known error-code deviations](/reference/s3-compatibility#known-error-code-deviations-in-eu-west-1).
 
 ## Error response format
 
@@ -27,8 +27,8 @@ Fil One returns standard S3-style error XML. The specific codes and HTTP statuse
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| `AccessDenied` | 403 | You do not have permission. |
-| `BucketAlreadyExists` | 409 | The bucket name is already taken. |
+| `AccessDenied` | 403 | You do not have permission **or** the operation is not implemented. In `eu-west-1`, unimplemented operations return this instead of `NotImplemented` (501), and a hidden bucket or key returns it instead of a 404. Check the [compatibility matrix](/reference/s3-compatibility) before assuming a key-scope problem. |
+| `BucketAlreadyExists` | 409 | The bucket name is already taken. If the bucket is one you already own, `eu-west-1` returns `BucketAlreadyOwnedByYou` instead. |
 | `BucketNotEmpty` | 409 | The bucket is not empty and cannot be deleted. |
 | `InvalidAccessKeyId` | 403 | The access key does not exist or has been revoked. |
 | `InvalidBucketName` | 400 | The bucket name does not meet naming requirements. |
@@ -51,6 +51,8 @@ Fil One returns standard S3-style error XML. The specific codes and HTTP statuse
 **`SignatureDoesNotMatch`** -- The most common auth error. Check that:
 1. Your secret key is correct (re-copy from the dashboard if unsure).
 2. Your system clock is accurate (SigV4 requires clocks within 15 minutes of server time).
-3. You are using the correct region (`eu-west-1`).
+3. You are using the region that matches your key and endpoint (`eu-west-1` or `us-east-1`). A key is scoped to one region and is rejected against the other.
+
+**`AccessDenied` (403)** -- Not always a permissions problem. In `eu-west-1` this is also what an unimplemented operation returns, and what you get instead of a 404 for a bucket or key you cannot see. Confirm the operation is supported in your region in the [compatibility matrix](/reference/s3-compatibility) before auditing your access-key scopes.
 
 **`ServiceUnavailable` (503)** -- Transient. Retry with exponential backoff. If persistent, check [status.fil.one](https://status.fil.one).
