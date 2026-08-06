@@ -1011,7 +1011,7 @@ Beyond that:
   deleting before expiry.
 - Compliance mode cannot be overridden by any key, regardless of permissions.
 - To set retention on an individual version, grant the PutObjectRetention
-  granular permission — confirmed in us-east-1, not yet confirmed in eu-west-1.
+  granular permission — available in BOTH REGIONS, never granted automatically.
 
 ## Object Lock during trial
 
@@ -1046,7 +1046,7 @@ claim that Fil One is certified for the named regulation:
 | Financial records | 6-7 years | Immutable, non-rewritable storage for the retention period |
 | Healthcare records | 6-10 years | Prevents deletion or overwrite of records under retention |
 | Ransomware-resistant backup | 30-90 days | Backups cannot be encrypted-over or deleted while locked |
-| Legal preservation | Variable | Retention-based preservation of evidence, or S3 Legal Hold (confirmed in us-east-1, not yet confirmed in eu-west-1) |
+| Legal preservation | Variable | Retention-based preservation of evidence, or S3 Legal Hold |
 | Audit-log retention | Varies | Keeps logs unmodified for a fixed window |
 
 ## On regulatory compliance
@@ -1599,8 +1599,8 @@ gracefully must treat 403 on these operations the same way.
 | ListObjectVersions | Supported | Returns all versions and delete markers. |
 | CopyObject | Region-dependent | Confirmed working in us-east-1, including copying a specific VersionId onto the current key (version restore — promotes an older version to current). In eu-west-1 PLAIN COPY WORKS (most copy tests pass a compatibility run) but the VERSION-ID FORM IS UNVERIFIED there, because the harness cannot configure versioning over the API. Verify before relying on it; download and re-upload is the fallback. |
 | GetObjectRetention | Supported | Returns the Object Lock retention for a specific version. |
-| PutObjectRetention | Region-dependent | Confirmed working in us-east-1: set, extend, or shorten a version's retention (shortening uses S3's standard bypass-governance-retention mechanism, which is a protocol feature of the gateway, NOT a Fil One access-key permission). Not yet confirmed in eu-west-1. |
-| GetObjectLegalHold / PutObjectLegalHold | Region-dependent | Confirmed working in us-east-1, including blocking delete while a hold is active — requires the matching access-key permission. Not yet confirmed in eu-west-1. |
+| PutObjectRetention | Supported | Both regions. Set, extend, or shorten a version's retention (shortening uses S3's standard bypass-governance-retention mechanism, which is a protocol feature of the gateway, NOT a Fil One access-key permission). Requires the matching granular access-key permission. |
+| GetObjectLegalHold / PutObjectLegalHold | Supported | Both regions, including blocking delete while a hold is active — requires the matching access-key permission. |
 | GetObjectAttributes | Not supported | AccessDenied in eu-west-1. Use HeadObject for size, ETag and metadata. |
 | Object ACLs, object tagging | Not supported | Dedicated calls (GetObjectAcl, PutObjectAcl, GetObjectTagging, PutObjectTagging) return AccessDenied in eu-west-1. A canned-ACL HEADER on an upload is a different case: it is SILENTLY IGNORED and the upload SUCCEEDS. See ACLs below. |
 | RestoreObject | Not applicable | Single storage class — no archival tiers to restore from. |
@@ -1624,12 +1624,13 @@ but the version-id form is unverified, so test it before relying on it.
 ### Object Lock
 
 WORM protection; requires versioning; both Governance (default) and
-Compliance modes supported, set at bucket creation only. ⚠️ THE PER-OBJECT OBJECT
-LOCK OPERATIONS ARE CONFIRMED AGAINST us-east-1 ONLY. A compatibility run against
-eu-west-1 could not exercise them because it was unable to create an
-Object-Lock-enabled bucket in that region to test against — a COVERAGE GAP, not a
-known failure. Tell compliance-motivated customers in eu-west-1 to validate on
-their own bucket first. In standard S3,
+Compliance modes supported, set at bucket creation only. OBJECT LOCK, RETENTION AND
+LEGAL HOLD WORK IN BOTH REGIONS. The evidence differs by region: us-east-1 is
+covered by the automated compatibility suite (39/39 object-lock tests), eu-west-1
+was verified by ENGINEERING TESTING rather than that suite, because the harness
+could not create an Object-Lock-enabled bucket there to test against (a limitation
+of the test setup, NOT a product gap). Do not describe Object Lock as unverified or
+risky in eu-west-1. In standard S3,
 Governance retention can be overridden by a caller with the bypass
 permission, but Fil One does not currently expose a grantable bypass
 permission, so treat Governance objects as protected for their retention
@@ -1726,7 +1727,7 @@ storage classes, additional regions beyond eu-west-1 and us-east-1.
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected and never make an object public. |
 | Error codes for missing features | NotImplemented (501). | AccessDenied (403) in eu-west-1. A 403 on a bucket-configuration call means the feature is absent, not that the key lacks permission. |
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
-| Object Lock modes | Compliance and Governance. | Compliance and Governance. Legal Hold confirmed working in us-east-1; not yet confirmed in eu-west-1. |
+| Object Lock modes | Compliance and Governance. | Compliance and Governance, in both regions, with Legal Hold. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
 | Regions | 30+ globally. | Two: eu-west-1 and us-east-1. Additional regions planned. |
 | Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage may persist for a bounded period until the sealed sector naturally expires. That residual data stays encrypted. |

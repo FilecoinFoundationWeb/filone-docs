@@ -47,12 +47,12 @@ Critical integration notes for developers:
   twice-daily job (~07:00/19:00 UTC), not in real time
 - Storage is DECIMAL: 1 TB = 1,000 GB, 1 GB = 1,000,000,000 bytes
 - Governance Object Lock has NO grantable bypass permission in the product
-- PutObjectRetention (per-object retention) is offered as a key permission and
-  is confirmed working in us-east-1 (including Governance-mode bypass); not
-  yet confirmed in eu-west-1 — use the bucket-level default retention there
-- Legal Hold (GetObjectLegalHold/PutObjectLegalHold) is confirmed working in
-  us-east-1, incl. blocking delete while a hold is active; not yet confirmed
-  in eu-west-1
+- PutObjectRetention (per-object retention) and Legal Hold
+  (Get/PutObjectLegalHold) work in BOTH REGIONS, including Governance-mode bypass
+  and blocking delete while a hold is active. Both need the matching granular key
+  permission, which is never granted automatically. Evidence differs by region:
+  us-east-1 from the automated compatibility suite, eu-west-1 from engineering
+  testing (the suite could not create a lock-enabled bucket there)
 - Object/part size limits (5 TB object, 5 GB single-PUT, 10,000 parts, 5 MB min
   part) are standard AWS S3 values, NOT independently confirmed for Fil One
 - Bucket names forbid dots (unlike AWS S3); object key max is 1,024 bytes
@@ -100,8 +100,8 @@ Critical integration notes for developers:
   Opt-in at bucket creation, Governance (default) and Compliance modes, 1 day to
   100 years, no trial-specific cap. NO third-party compliance attestation, NO
   grantable Governance bypass permission in the product. Per-object
-  PutObjectRetention and Legal Hold are confirmed working in us-east-1; not yet
-  confirmed in eu-west-1. Regulations (SEC 17a-4, FINRA, HIPAA) are illustrative
+  PutObjectRetention and Legal Hold work in both regions.
+  Regulations (SEC 17a-4, FINRA, HIPAA) are illustrative
   use cases, not a certification claim
 - [Bucket Intelligence](https://docs.fil.one/bucket-intelligence): EARLY ACCESS,
   allowlisted, free during early access. Turn a bucket into a queryable
