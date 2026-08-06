@@ -1655,6 +1655,122 @@ bucket contents.
 
 ---
 
+# App: Bucket Intelligence
+
+Source: https://docs.fil.one/app/bucket-intelligence
+
+Console-specific, under the "AI Tools" sidebar group. Indexing mechanics, file
+types, models and the query API live on Bucket Intelligence.
+
+EARLY ACCESS, ENABLED PER ACCOUNT. Without access the menu item opens a "Coming
+Soon" page describing the feature plus a "Join the waitlist" form (use case,
+timeline, team size). The nav item itself is always visible.
+
+## Overview strip and tabs
+
+Three tiles: "Files indexed" (with the bucket count they span), "Index size",
+"API keys". A tile reads "Unavailable" if the figures fail to load, which does
+not affect indexing or querying. Two tabs: "Buckets" and "API Keys".
+
+## Indexing a bucket
+
+Per-row "Index" button (label becomes "Starting…" in flight), then a confirm
+dialog stating "Ready in" up to 6 hours (scheduled, NOT on upload) and what is
+indexed (PDF, Word, PowerPoint, Markdown, HTML, plain text; other files skipped
+and left untouched). Confirm with "Start indexing".
+
+To stop: the bucket's actions menu, "Stop indexing". FILES AND THE EXISTING INDEX
+ARE KEPT, so indexing can be started again later.
+
+Five status states:
+
+| Status | Meaning |
+|--------|---------|
+| Not indexed | Indexing not turned on for this bucket |
+| Indexing | First pass running; row adds "Up to 6 hours until the first results" |
+| Indexing | Later pass running, checking for new and changed files |
+| Failed | Last run did not complete; the row shows the reason |
+| Ready | Queryable, with file count, index size and last sync time |
+
+A FAILED RUN DOES NOT TURN INDEXING OFF or discard what is already indexed; the
+next scheduled pass picks the bucket up again and the console keeps refreshing.
+
+## Asking a question
+
+A "Ready" bucket's button reads "Ask questions" and opens a panel with an "Ask a
+question" box. Before the first pass it reads "View details" and the box is
+DISABLED, with a note that questions become available after the first pass.
+
+Answers list the objects they drew on, each linking to that object. ONE BUCKET
+PER QUERY; query each bucket in turn to cover several.
+
+A "Query from code" block in the same panel holds a ready-made curl call with the
+bucket and region already filled in; create a key and export it as
+FILONE_RAG_KEY.
+
+## API keys tab
+
+Bearer tokens that authorize the QUERY ENDPOINT ONLY and cannot read or write
+bucket contents; separate from S3 access keys. "Create API key" takes a "Name"
+and a "Scope" of "All buckets" or "Specific buckets", where the bucket list
+offers ALREADY-INDEXED buckets only (index one first if it is empty).
+
+The token appears once in a "Save your API key" dialog (only a hash is stored),
+with copy, "Download .env" and "Download .csv". Table columns: Name, Prefix,
+Scope, Created, Last used. Deleting takes effect immediately.
+
+"LAST USED" COUNTS KEY CALLS ONLY. Asking questions in the console uses the
+signed-in session rather than a key, so console exploration does not move it.
+
+## Reference block
+
+Below the keys table: the query endpoint with placeholders, the models in use
+(Titan Text Embeddings V2 for indexing, Claude Opus 4.8 for answers, both marked
+"Managed"), and a link to these docs. Bring-your-own-model is marked coming soon.
+
+
+---
+
+# App: AI Agent Toolkit
+
+Source: https://docs.fil.one/app/ai-agent-toolkit
+
+Under the "AI Tools" sidebar group, next to Bucket Intelligence.
+
+NOT RELEASED. The page is marked "Coming Soon" and describes what the toolkit is
+intended to offer, alongside a "Join the waitlist" form. THERE IS NOTHING TO
+ENABLE OR CONFIGURE, and no setting on the page changes account behaviour. Unlike
+Bucket Intelligence it is NOT gated per account, so every signed-in user sees the
+same page. Stated as free during early access, with standard storage rates on the
+data itself.
+
+Waitlist form: which tools you are connecting (Claude, Cursor, Continue, ChatGPT,
+Zapier, n8n, Make.com, or your own answer), timeline, team size, notes.
+
+## Connecting AI tools today (this part is real)
+
+The toolkit is NOT required to use Fil One from an AI application. Fil One is
+S3-compatible, so anything that speaks S3 works now with an ordinary access key:
+create a key scoped to the buckets the application should reach, then point the
+tool at the region's endpoint with path-style addressing. Frameworks that read
+and write object storage directly (LangChain, LlamaIndex, Vercel AI SDK, CrewAI)
+connect this way, and a single-bucket key keeps an agent in its own workspace.
+
+For question-answering over a bucket's contents, that exists today as Bucket
+Intelligence, a separate early-access feature with its own query API.
+
+## What the toolkit will add
+
+The page describes a hosted connection layer (pick an integration, paste a config
+block, expose chosen buckets to an AI client) plus automations reacting to bucket
+events. NONE OF THAT IS AVAILABLE YET, and no MCP server, OAuth connector,
+outbound webhook or Zapier/n8n/Make integration exists behind the page. Treat the
+access-key route above as the supported way to connect.
+
+
+---
+
+
 # App: Billing
 
 Source: https://docs.fil.one/app/billing
@@ -2637,8 +2753,9 @@ Turn a storage bucket into a queryable knowledge base: a background indexer keep
 each enabled bucket's index in sync, and a query endpoint answers questions
 grounded in the bucket's objects, citing the source objects.
 
-Enable per bucket from the Bucket Intelligence page in the dashboard (Buckets
-tab). Available in eu-west-1 and us-east-1.
+Enable per bucket from the Bucket Intelligence page in the dashboard: Buckets
+tab, per-row "Index" button, confirm with "Start indexing" (see App: Bucket
+Intelligence for the console walkthrough). Available in eu-west-1 and us-east-1.
 
 ## Indexing
 
@@ -2685,7 +2802,9 @@ The dashboard also has an "Ask a question" box in the per-bucket drawer.
 
 ## Not available yet
 
-- MCP endpoint / MCP server for Claude, Cursor, etc. — NOT built.
+- MCP endpoint / MCP server for Claude, Cursor, etc: NOT built, and no longer
+  listed in the dashboard. A hosted connection layer for AI clients is what the
+  AI Agent Toolkit is intended to provide, and that is not released either.
 - Bring-your-own LLM keys or custom embedding models — not implemented.
 - API key expiry and rotation — not implemented.
 - Upload-triggered or near-real-time indexing — not implemented.

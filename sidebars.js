@@ -50,6 +50,8 @@ const sidebars = {
         "app/dashboard",
         "app/buckets",
         "app/api-keys",
+        "app/bucket-intelligence",
+        "app/ai-agent-toolkit",
         "app/billing",
         "app/settings",
         "app/support",

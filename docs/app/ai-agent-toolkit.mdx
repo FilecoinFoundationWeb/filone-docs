@@ -1,0 +1,35 @@
+---
+title: AI Agent Toolkit
+description: What the AI Agent Toolkit page in the console is today, and how to connect AI tools to Fil One in the meantime.
+---
+
+**AI Agent Toolkit** sits under **AI Tools** in the left sidebar, next to Bucket Intelligence.
+
+:::warning Coming soon
+The AI Agent Toolkit has not been released. The page is marked **Coming Soon** and describes what the toolkit is intended to offer, alongside a **Join the waitlist** form. There is nothing to enable or configure yet, and no setting on this page changes how your account behaves.
+
+Unlike Bucket Intelligence, it is not gated per account, so every signed-in user sees the same page.
+:::
+
+## Joining the waitlist
+
+The form asks which tools you are looking to connect (Claude, Cursor, Continue, ChatGPT, Zapier, n8n, Make.com, or your own answer), your timeline, your team size, and any notes. The team uses it to prioritise the first wave of invitations, so naming your actual tools is more useful than picking the closest option.
+
+The page states that the toolkit will be free during early access, with standard Fil One storage rates applying to the data itself.
+
+## Connecting AI tools today
+
+You do not need the toolkit to use Fil One from an AI application. Fil One presents an S3-compatible API, so anything that speaks S3 works now with an ordinary access key:
+
+1. Create an access key scoped to the buckets you want the application to reach. See [API Keys](/app/api-keys).
+2. Point the tool at your region's endpoint with path-style addressing enabled. See [SDKs & Tools](/sdk/overview).
+
+Frameworks that read and write object storage directly, such as LangChain, LlamaIndex, the Vercel AI SDK, and CrewAI, connect this way, and scoping the key to a single bucket keeps an agent inside its own workspace.
+
+If what you want is question-answering over the contents of a bucket, that exists today as [Bucket Intelligence](/bucket-intelligence), which is a separate early-access feature with its own query API.
+
+## What the toolkit will add
+
+The console page describes a hosted connection layer: picking an integration, pasting a config block, and exposing chosen buckets to an AI client without wiring up credentials yourself, plus automations that react to bucket events.
+
+None of that is available yet, and this documentation will cover the setup once it ships. Until then, treat the access-key route above as the supported way to connect, and use the waitlist to tell the team which integration you need first.
