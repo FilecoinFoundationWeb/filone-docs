@@ -1,0 +1,68 @@
+---
+title: Dashboard
+description: What the Fil One dashboard home page shows, and how to read its usage figures.
+---
+
+The dashboard at [app.fil.one](https://app.fil.one) is the home page of the console, reached from **Dashboard** at the top of the left sidebar. It summarises your plan, usage, and recent activity.
+
+For sign-in methods, email verification, two-factor authentication, and passkeys, see [Account Security](/security/account-security).
+
+## Quick setup
+
+Until you have created a bucket, uploaded an object, and generated an API key, a **QUICK SETUP** card tracks your progress as *n* of 3. Each step turns green when it is done:
+
+| Step | Takes you to |
+|------|--------------|
+| **Create a bucket** | Your bucket list |
+| **Upload an object** | Your bucket list, where you open a bucket and upload into it |
+| **Generate API key** | The API keys page |
+
+The card disappears once all three are complete.
+
+## Plan, storage, and egress
+
+Three cards sit below the header:
+
+- **PLAN** shows your plan name and a status badge (**Active**, **Past Due**, **Grace Period**, **Canceled**, or **No plan**). During the trial the badge counts down as *n* **days left**, and hovering it shows the exact expiry time. The footer link goes to Billing.
+- **STORAGE** shows how much you are storing. On the trial it adds a **/ 1 TB** suffix and a progress bar. On a paid plan it instead shows an **Est. monthly cost** row.
+- **EGRESS** shows your egress. On the trial it adds a **/ 2 TB** suffix and a progress bar. On a paid plan it reads **No egress fees · unlimited**.
+
+Below those, a strip shows your **BUCKETS**, **OBJECTS**, and **API KEYS** totals, with **View all** links for buckets and API keys.
+
+:::info How to read these numbers
+**Sizes are decimal.** 1 GB means 1,000,000,000 bytes and 1 TB means 1,000 GB, matching how your usage is billed. See [Usage](/billing/usage).
+
+**Storage is the most recent reading**, sampled periodically rather than live, so a change you just made may take a little while to appear.
+
+**Egress is a rolling 30-day total** rather than a calendar-month figure, so it moves with the trailing month instead of resetting on the 1st.
+
+**Est. monthly cost is a guide.** It applies $4.99/TB to your latest storage reading, with your monthly minimum as the floor. Your invoice is calculated from your average storage across the month, so expect the two to differ. See [Pricing](/billing/pricing).
+:::
+
+## Usage Trends
+
+**Usage Trends** charts your history over a **7 days** or **30 days** window, defaulting to 7. Storage is an area chart and objects is a bar chart.
+
+Each point is a daily reading. Days without a reading are plotted as zero, so a gap in the data appears as a dip to zero.
+
+:::note Which object number to use
+The figure above the **OBJECTS** chart is the sum of the daily readings across the window, so it runs higher than your current object count. For the number of objects you hold right now, use the **OBJECTS** total in the summary strip, and read the chart for the trend.
+:::
+
+## Recent Activity
+
+**Recent Activity** lists your five most recent events, each with a relative timestamp such as `5m ago` or `2d ago`.
+
+The feed currently covers bucket and key creation, shown as **bucket created** and **key created**. Object-level events are not included yet, so open a bucket to confirm an upload rather than looking for it here. With no activity yet the card reads **No activity yet** and offers a **Create bucket** button.
+
+## Account state banners
+
+When your account is restricted, a banner appears above the page on every screen, not just the dashboard:
+
+| Situation | What the banner says |
+|-----------|----------------------|
+| Trial storage cap reached | **Storage limit exceeded. Uploads are disabled. Delete files or upgrade to resume.** |
+| Trial expired, in grace period | That the trial has expired, with the days left to upgrade or download your data |
+| Account disabled | **Account disabled. Visit billing to restore access.** |
+
+Reads keep working while writes are paused, so your data stays available to download throughout. See [Trial & Billing](/billing/trial) for the full lifecycle and [Usage](/billing/usage) for how the caps are applied.

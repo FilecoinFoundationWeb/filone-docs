@@ -1,0 +1,73 @@
+---
+title: Bucket Intelligence
+description: Indexing a bucket, asking questions, and managing query keys from the Fil One console.
+---
+
+**Bucket Intelligence** sits under **AI Tools** in the left sidebar.
+
+This page covers the console specifically. For how indexing works, the supported file types, the models, and the query API, see [Bucket Intelligence](/bucket-intelligence).
+
+:::warning Early access
+Bucket Intelligence is enabled per account. If your account has not been enabled, the menu item opens a **Coming Soon** page describing the feature, with a **Join the waitlist** form that asks about your use case, timeline, and team size. Everything below applies once your account has access.
+:::
+
+## The overview strip
+
+Three tiles sit above the tabs: **Files indexed** (with the number of buckets they span), **Index size**, and **API keys**. A tile reads **Unavailable** if the figures cannot be loaded, which does not affect indexing or querying.
+
+Two tabs follow: **Buckets** and **API Keys**.
+
+## Indexing a bucket
+
+On the **Buckets** tab, click **Index** on the bucket you want to make queryable. A dialog confirms what you are about to do and states two things worth reading:
+
+- **Ready in** up to 6 hours, because indexing runs on a schedule rather than on upload.
+- **Indexes** PDF, Word, PowerPoint, Markdown, HTML, and plain text. Other files are skipped and left untouched.
+
+Confirm with **Start indexing**. The button shows **Starting…** while the request is in flight.
+
+To stop, open the bucket's actions menu and choose **Stop indexing**. Your files and the index built from them are kept, so you can start again later.
+
+### Bucket status
+
+Each bucket shows one of five states:
+
+| Status | What it means |
+|--------|---------------|
+| **Not indexed** | Indexing has not been turned on for this bucket |
+| **Indexing** | The first pass is running. The row adds "Up to 6 hours until the first results" |
+| **Indexing** | A later pass is running, checking for new and changed files |
+| **Failed** | The last run did not complete. The row shows the reason |
+| **Ready** | Queryable, with the file count, index size, and when it last synced |
+
+A **Failed** run does not turn indexing off or discard what has already been indexed. The next scheduled pass picks the bucket up again, and the console keeps refreshing the row in the meantime.
+
+## Asking a question
+
+Once a bucket is **Ready**, its button reads **Ask questions** and opens a panel with an **Ask a question** box. Before the first pass completes the button reads **View details** and the box is disabled, with a note explaining that questions become available after the first indexing pass.
+
+Ask in plain language and the answer appears with the objects it drew on listed underneath. Each source is a link straight to that object, so you can open the file the answer came from.
+
+Each query covers one bucket. To search across several, query each in turn.
+
+### Query from code
+
+The same panel has a **Query from code** block containing a ready-made `curl` call with your bucket and region already filled in. Create a key on the **API Keys** tab and export it as `FILONE_RAG_KEY` to use it as-is. See [Bucket Intelligence](/bucket-intelligence#querying-a-bucket) for the full request and response format.
+
+## API keys
+
+The **API Keys** tab manages the bearer tokens that let apps and agents query your indexed buckets. These are separate from your S3 access keys and authorize the query endpoint only, so they cannot read or write bucket contents. See [Bucket Intelligence](/bucket-intelligence#rag-api-keys) for the details.
+
+Click **Create API key** and give it a **Name** and a **Scope** of either **All buckets** or **Specific buckets**. The bucket list offers the buckets you have already indexed, so index a bucket first if the list is empty.
+
+The token appears once, in a **Save your API key** dialog, and Fil One stores only a hash of it. Copy it, or use **Download .env** or **Download .csv**, before you close the dialog.
+
+The table lists each key's **Name**, **Prefix**, **Scope**, **Created**, and **Last used**. Deleting a key takes effect immediately, and any application using it loses access.
+
+:::note What "Last used" counts
+**Last used** records calls made with the key itself. Asking questions in the console uses your signed-in session rather than a key, so exploring a bucket here does not change the figure. A key you query with daily from your own code will show a recent timestamp.
+:::
+
+## Reference block
+
+Below the keys table, a **Reference** section repeats the query endpoint with placeholders, names the models in use (**Titan Text Embeddings V2** for indexing and **Claude Opus 4.8** for answers, both marked **Managed**), and links back to these docs. Bring-your-own-model support is marked as coming soon.

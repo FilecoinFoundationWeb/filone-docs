@@ -19,8 +19,10 @@ There are two parts: a background **indexer** that keeps each enabled bucket's i
 ## Enabling it on a bucket
 
 1. Go to **Bucket Intelligence** in the left menu of the dashboard.
-2. On the **Buckets** tab, toggle on the bucket you want to index.
-3. Wait for the first indexing pass to complete. The tab shows a sync badge for each bucket, along with the number of files indexed, the index size, and when it last synced.
+2. On the **Buckets** tab, click **Index** on the bucket you want, then confirm with **Start indexing**.
+3. Wait for the first indexing pass to complete. Each bucket shows a status of **Not indexed**, **Indexing**, **Failed**, or **Ready**, and a **Ready** bucket also shows the number of files indexed, the index size, and when it last synced.
+
+See [Bucket Intelligence in the console](/app/bucket-intelligence) for the full walkthrough of the dashboard, including asking questions and managing keys there.
 
 Available in `eu-west-1` and `us-east-1`.
 
@@ -150,7 +152,7 @@ If nothing relevant is found, the answer says so and `sources` is empty. Request
 
 | Feature | Status |
 |---------|--------|
-| MCP endpoint / MCP server for Claude, Cursor, and other clients | Not built. The dashboard marks it "Coming later." |
+| MCP endpoint / MCP server for Claude, Cursor, and other clients | Not built. Connecting AI clients is what the [AI Agent Toolkit](/app/ai-agent-toolkit) will cover. |
 | Bring-your-own LLM keys or custom embedding models | Not implemented. |
 | API key expiry and rotation | Not implemented. Keys are long-lived until deleted. |
 | Upload-triggered or near-real-time indexing | Not implemented. Indexing is on the 6-hourly schedule described above. |

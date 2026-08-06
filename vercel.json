@@ -9,7 +9,9 @@
     { "source": "/billing", "destination": "/billing/trial", "permanent": true },
     { "source": "/sdks", "destination": "/sdk/overview", "permanent": true },
     { "source": "/sdks/:path*", "destination": "/sdk/:path*", "permanent": true },
-    { "source": "/app/managing-buckets", "destination": "/app/overview", "permanent": true },
-    { "source": "/app/uploading-files", "destination": "/app/overview", "permanent": true }
+    { "source": "/app", "destination": "/app/dashboard", "permanent": true },
+    { "source": "/app/overview", "destination": "/app/dashboard", "permanent": true },
+    { "source": "/app/managing-buckets", "destination": "/app/buckets", "permanent": true },
+    { "source": "/app/uploading-files", "destination": "/app/buckets", "permanent": true }
   ]
 }

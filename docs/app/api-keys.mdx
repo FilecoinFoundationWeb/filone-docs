@@ -1,0 +1,88 @@
+---
+title: API Keys
+description: Creating, scoping, and revoking S3 access keys from the Fil One console.
+---
+
+**API Keys** in the left sidebar is where you create the S3 credentials your tools and code use.
+
+This page covers the console specifically. For what each permission allows, how signing works, and security guidance, see [API Keys](/security/api-keys) and [Authentication](/security/authentication).
+
+## The key list
+
+The page has two tabs, **API keys** and **Connection details**. The table shows:
+
+| Column | What it holds |
+|--------|---------------|
+| **Name** | The key name, with the Access Key ID underneath and a copy button |
+| **Buckets** | **All Buckets**, or one badge per bucket the key is scoped to |
+| **Permissions** | Badges for the object permissions, with the finer-grained ones grouped into **Data protection**, **Bucket management**, and **Bucket info** |
+| **Status** | **Active** |
+| **Last Used** | **Never** |
+
+With no keys yet the page reads **No API keys yet** and offers **Create your first key**.
+
+:::note Keep your own record of each key
+**Last Used** and **Status** are placeholders for now: every key reads **Never** and **Active**, and the expiry date you set is not shown in this list. Note down what each key is for and when it expires, and give keys descriptive names so the **Name** column carries that context for you.
+:::
+
+## Creating a key
+
+Click **Create new key**, which opens a dedicated page.
+
+**Key name.** Up to 64 characters, using letters, numbers, spaces, underscores, hyphens, and periods. Names must be unique within a region.
+
+**Region.** Required. A key is scoped to the region you pick, and each region has its own endpoint, so the endpoint, the region, and the key all need to agree. If you store data in both regions, create a key for each.
+
+**What can this key do?** Object permissions are:
+
+| Permission | Allows |
+|------------|--------|
+| **Read** | Download and retrieve objects |
+| **Write** | Upload and overwrite objects |
+| **List** | Browse and list objects |
+| **Delete** | Permanently remove objects |
+
+**Read**, **Write**, and **List** are pre-selected. **Delete** is not.
+
+Checking one of those reveals finer-grained permissions nested underneath it. These are granted individually, so tick the ones you need:
+
+- Under **Read**: **Read object versions**, **Read retention settings**, **Read legal hold status**
+- Under **Write**: **Set retention**, **Set legal hold**
+- Under **List**: **List object versions**
+- Under **Delete**: **Delete object versions**
+
+A key with **Write** therefore needs **Set retention** ticked as well before it can apply a retention policy. Unchecking a parent clears whatever was nested under it.
+
+**Bucket management** is a separate section:
+
+- **List all buckets** is always on.
+- **Read bucket versioning** and **Read object lock configuration** are available in every region, and both are pre-selected.
+- **Create bucket** and **Delete bucket** are available in the regions that support bucket management over the S3 API. In `eu-west-1`, the default region, they are disabled with the tooltip **Not supported in Europe (France)**, and you create buckets in the console instead.
+
+**Which buckets can this key access?** Defaults to **All buckets**, meaning every bucket in the key's region. Choose **Specific buckets** to pick from a list, filtered to the region you selected.
+
+**When should it expire?** **Never expires** (the default), **30 days**, or **Custom** with a date picker.
+
+## Saving the secret
+
+On success a **Save your credentials** dialog shows the **Access Key ID** and the **Secret Access Key**, with the secret masked until you reveal it. You can copy either, or download the pair as a `.csv` or `.env` file.
+
+:::warning The secret is shown once
+Fil One never stores your secret, which is why it appears only at creation. Copy or download it before closing the dialog. If you lose it, delete the key and create a replacement.
+:::
+
+## Revoking a key
+
+Open the **⋯** menu on the key's row and choose **Delete**. The dialog warns that the key will be permanently revoked and that any application using it loses access immediately.
+
+Deleting a key is how you revoke it. To rotate credentials, create the replacement first, move your applications onto it, then delete the old key.
+
+Revocation is confirmed with the storage operator before the key leaves your list, so a key that is still listed is a key that is still live. That ordering means the list stays a truthful picture of what has access.
+
+:::note Keys for a bucket
+A bucket's **API Keys** tab shows the keys that can reach that bucket, which is a quicker way to audit access for one bucket than reading down the full list.
+:::
+
+## Keys for Bucket Intelligence
+
+Keys for querying an indexed bucket are a different credential and are not managed here. They are bearer tokens that only authorize the query endpoint and cannot read or write bucket contents. See [Bucket Intelligence](/bucket-intelligence).

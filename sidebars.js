@@ -47,7 +47,14 @@ const sidebars = {
       type: "category",
       label: "App",
       items: [
-        "app/overview",
+        "app/dashboard",
+        "app/buckets",
+        "app/api-keys",
+        "app/bucket-intelligence",
+        "app/ai-agent-toolkit",
+        "app/billing",
+        "app/settings",
+        "app/support",
       ],
     },
     {
