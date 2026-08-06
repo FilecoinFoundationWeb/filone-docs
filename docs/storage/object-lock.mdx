@@ -55,8 +55,8 @@ Choose your retention mode carefully **at bucket creation** — it is fixed for 
 
 The default retention period set at bucket creation is applied automatically to every object uploaded to that bucket.
 
-:::info `PutObjectRetention` is region-dependent
-Setting or changing retention on an *individual* object version via `PutObjectRetention` is offered as a grantable access-key permission. It is **confirmed working in `us-east-1`** — including extending a retention period and, using the standard S3 bypass-governance-retention mechanism, shortening one (this is a protocol-level capability of the gateway, not a permission Fil One's own access keys can grant — see [Key concepts](#key-concepts)). It has **not yet been confirmed in `eu-west-1`** — until then, rely on the bucket-level default set at creation for guaranteed retention there.
+:::info `PutObjectRetention` needs a granted permission
+Setting or changing retention on an *individual* object version via `PutObjectRetention` works in **both regions**, but only with the matching granular access-key permission, which is never granted automatically. Extending a retention period is straightforward. Shortening one uses the standard S3 bypass-governance-retention mechanism, which is a protocol-level capability of the gateway and not a permission Fil One's own access keys can grant — see [Key concepts](#key-concepts).
 :::
 
 Object Lock buckets are always versioned, so a retention call should target a specific version with `--version-id`; without it the call targets whatever the current version is (possibly a delete marker).
@@ -127,7 +127,7 @@ Bucket deletion is currently restricted regardless of retention state. The dashb
 
 - A key with **Delete** permission can delete objects in **Governance** mode buckets once retention has expired. Fil One does not expose a bypass permission for deleting *before* expiry.
 - **Compliance** mode cannot be overridden by any key, regardless of permissions.
-- To set retention on an individual version you would grant the `PutObjectRetention` granular permission — see the [region-dependent note above](#setting-per-object-retention): confirmed in `us-east-1`, not yet confirmed in `eu-west-1`.
+- To set retention on an individual version, grant the `PutObjectRetention` granular permission — see the [note above](#setting-per-object-retention). It is available in both regions and is never granted automatically.
 
 ## Object Lock during trial
 
@@ -150,7 +150,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 | Financial records | 6–7 years | Immutable, non-rewritable storage for the retention period |
 | Healthcare records | 6–10 years | Prevents deletion or overwrite of records under retention |
 | Ransomware-resistant backup | 30–90 days | Backups cannot be encrypted-over or deleted while locked |
-| Legal preservation | Variable | Retention-based preservation of evidence, or S3 *Legal Hold* (confirmed in `us-east-1`, not yet confirmed in `eu-west-1`) |
+| Legal preservation | Variable | Retention-based preservation of evidence, or S3 *Legal Hold* |
 | Audit-log retention | Varies | Keeps logs unmodified for a fixed window |
 
 ## On regulatory compliance
@@ -158,7 +158,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement at the storage gateway is **confirmed in `us-east-1`** and **not yet independently verified in `eu-west-1`** (see the note under [Setting per-object retention](#setting-per-object-retention)).
+- Retention enforcement at the storage gateway is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
