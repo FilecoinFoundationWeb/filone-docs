@@ -1,0 +1,105 @@
+---
+title: Buckets
+description: Creating buckets, browsing objects, uploading, downloading, and sharing from the Fil One console.
+---
+
+**Buckets** in the left sidebar is where you create buckets and work with their contents without writing code.
+
+This page covers the console specifically. For the concepts, the S3 API equivalents, and code samples, see [Buckets](/storage/buckets), [Objects](/storage/objects), [Versioning](/storage/versioning), and [Object Lock](/storage/object-lock).
+
+## The bucket list
+
+The table shows **Name**, **Region** (both the label and the region ID, such as Europe (France) and `eu-west-1`), **Created**, **Visibility**, and **Features**, where **Versioned** and **Object Lock** badges appear if you enabled them.
+
+All of your buckets are listed together, in the order the API returns them. With no buckets yet the page reads **No buckets yet** and offers **Create bucket**.
+
+:::note Deleting a bucket
+Bucket deletion runs through the S3 API rather than the console for now, so the trash icon on each row is disabled with the tooltip **Deleting buckets is not available yet**. See [Buckets](/storage/buckets#deleting-a-bucket) for the API route and which regions support it.
+:::
+
+## Creating a bucket
+
+Click **Create bucket** and fill in:
+
+1. **Bucket name.** 3 to 63 characters, lowercase letters, numbers, and hyphens only, starting and ending with a letter or number. No dots, unlike AWS S3. Must be globally unique.
+2. **Region.** Europe (France) `eu-west-1`, the default, or US East (Michigan) `us-east-1`. This sets the endpoint you connect to.
+3. **Object settings**, three switches that nest inside one another, all off by default:
+   - **Versioning** keeps multiple versions of an object.
+   - **Object Lock** requires Versioning to be on, and stays greyed out until it is.
+   - **Retention** requires Object Lock, and stays greyed out until it is. Turning it on reveals a **Default Retention Policy** with **Governance** or **Compliance** mode (Governance by default) and a **Lock period** in **Days** or **Years**, defaulting to 15 days. The maximum is 100 years.
+
+Turning a parent switch back off resets the ones nested inside it.
+
+You can also expand **Create new key** to generate an access key alongside the bucket. It is pre-scoped to the bucket you are creating and to that bucket's region, and the submit button changes to **Create bucket and API key**. The secret is shown once, in a dialog, before you return to the list.
+
+A panel headed **Included by default** confirms two things you do not configure: all data is encrypted at rest, and every bucket is private, so access requires an API key.
+
+:::warning These choices are permanent
+Name, region, versioning, Object Lock, and the default retention policy are all fixed when the bucket is created, in the console and over the API alike. Decide on them up front, and create a new bucket if you later need a different configuration.
+:::
+
+## Inside a bucket
+
+Opening a bucket shows its region, storage used, and creation time, then property cards for **Versioning**, **Object Lock**, **Encryption** (always **Enabled**), and **Default Retention** when one is set.
+
+Two tabs follow:
+
+- **Objects (N)** is the object browser.
+- **API Keys (N)** lists the keys that can reach this bucket, plus an **Access endpoints** block with the copyable **S3 Endpoint**, **S3 Path**, and **Region** you need to configure a client.
+
+### Browsing objects
+
+The object table shows **Name**, **Size**, and **Last Modified**, plus **Version** and **Status** columns when versioning is enabled. Keys containing `/` are grouped into folder rows you can click into, with a breadcrumb to walk back out.
+
+On a versioned bucket, a key with more than one version gets an expander and an *n* **versions** pill. Expanding shows the older versions, badged **Latest** for the current one and **Delete marker** where a delete marker sits on top.
+
+Per-row icon buttons download or delete a single object, one at a time.
+
+:::note Large buckets
+The browser shows the first page of results, around 1,000 entries. The count on the **Objects (N)** tab is drawn from your bucket analytics and stays accurate, so on a large bucket expect that count to be higher than the number of rows in view. Use the AWS CLI or an SDK to page through a full listing. See [Objects](/storage/objects).
+:::
+
+## Uploading
+
+Open a bucket and click **Upload object**. You can drag files or whole folders onto the drop zone, or use **Select files** and **Select folder**.
+
+An optional **Prefix** field puts your files under a path such as `images/`. Two details are worth knowing:
+
+- The prefix field appears when you select individual files. Files picked as a folder keep their own relative paths, which take the place of the prefix.
+- The prefix starts empty each time rather than carrying over from the folder you were browsing, so set it on every upload where you want one.
+
+Selecting files does not upload them. Click **Upload** *n* **file(s)** to start, and a per-run progress bar tracks the batch. If any file fails, a **Retry** *n* **failed** button retries just those rather than the whole set.
+
+:::note Object size
+The console uploads each file in a single request, which the S3 single-PUT ceiling caps at 5 GB. For objects above that, use the AWS CLI or an SDK with multipart support. See [Multipart Uploads](/storage/multipart-uploads).
+:::
+
+## The object detail page
+
+Clicking an object shows its **Name**, **Size**, **Bucket**, **S3 Path**, **ETag**, and, where they apply, **Version ID**, **Retention**, **Description**, and **Tags**. When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+
+A **Version history** card appears when the object has more than one version, listing each **Version ID** with its **Status**, **Size**, and **Last Modified**, and marking the one you are viewing. Clicking another row opens that version.
+
+:::note Working with versions
+Version history is drawn from the object list you arrived through, so open the bucket first if you have followed a direct link to an object and the card is not showing.
+
+To bring an earlier version back as the current one, download it and upload it again. See [Versioning](/storage/versioning).
+:::
+
+## Downloading and sharing
+
+**Download** is available on each row in the object list and in the object detail header. It works on any plan, including the trial.
+
+**Share object** generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
+
+Sharing is a paid-plan feature. During the trial the button is disabled, with a tooltip pointing to an upgrade.
+
+## Deleting objects
+
+Click the trash icon on a row, or **Delete object** on the detail page, and confirm. Objects are deleted one at a time.
+
+Deletion is permanent on a non-versioned bucket. On a versioned bucket, deleting the current object writes a delete marker and keeps the earlier versions, which continue to be billed. Deleting a specific version removes just that version.
+
+An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](/storage/object-lock).
+
+While an account is past due or in a grace period, access is read-only and uploads and deletions resume once the payment succeeds. See [Trial & Billing](/billing/trial).

@@ -1402,89 +1402,333 @@ each new billing period.
 
 ---
 
-# Using the Dashboard
+# App: Dashboard
 
-Source: https://docs.fil.one/app/overview
+Source: https://docs.fil.one/app/dashboard
 
-The Fil One dashboard at app.fil.one is the primary interface for managing
-storage without writing code: create buckets, upload files, manage API keys, and
-monitor usage from the browser.
+The console home page, reached from "Dashboard" at the top of the left sidebar.
+Sign-in, email verification, MFA and passkeys are covered on Account Security.
 
-## Signing in
+## Quick setup
 
-Fil One supports passkeys (positioned as the primary method), Google, GitHub,
-and email + password. No credit card is required to start the 30-day free trial.
+Until all three are done, a "QUICK SETUP" card tracks progress as "n of 3":
+Create a bucket, Upload an object, Generate API key. It disappears when complete.
 
-Verify your email first. A new account must confirm its email address before the
-dashboard opens — until then, every page redirects to a verification screen.
+## Plan, storage and egress cards
+
+- PLAN: plan name plus status badge (Active / Past Due / Grace Period /
+  Canceled / No plan). On trial the badge counts down "n days left" and hovering
+  shows the exact expiry. Footer link goes to Billing.
+- STORAGE: usage; on trial adds "/ 1 TB" and a progress bar, on paid shows an
+  "Est. monthly cost" row instead.
+- EGRESS: usage; on trial adds "/ 2 TB" and a progress bar, on paid reads
+  "No egress fees · unlimited".
+- A strip below shows BUCKETS / OBJECTS / API KEYS totals, with "View all" links
+  for buckets and API keys.
+
+How to read the numbers:
+- SIZES ARE DECIMAL. 1 GB = 1,000,000,000 bytes, 1 TB = 1,000 GB.
+- STORAGE IS A PERIODIC POINT-IN-TIME READING, not live, so a very recent upload
+  or delete may not be reflected yet.
+- EGRESS IS A ROLLING 30-DAY TOTAL, not a calendar month, so it does not reset on
+  the 1st.
+- "Est. monthly cost" applies $4.99/TB to the latest storage reading, with the
+  account's monthly minimum as the floor. THE INVOICE IS CALCULATED FROM AVERAGE
+  STORAGE over the month, so the two figures differ. The estimate excludes egress
+  (free on paid plans).
+
+## Usage Trends
+
+Charts a 7-day (default) or 30-day window: storage as an area chart, objects as a
+bar chart. Each point is a daily reading, and days without a reading are plotted
+as zero, so a data gap appears as a dip to zero.
+
+NOTE: the figure above the OBJECTS chart is the SUM of the daily readings across
+the window, so it runs higher than the current object count. The OBJECTS total in
+the summary strip is the current count; the chart shows the trend.
+
+## Recent Activity
+
+The five most recent events with relative timestamps ("5m ago", "2d ago").
+The feed currently covers bucket-created and key-created events, shown as
+"bucket created" and "key created". OBJECT-LEVEL EVENTS ARE NOT INCLUDED YET, so
+confirm an upload by opening the bucket rather than by reading this feed. Empty
+state: "No activity yet" plus a "Create bucket" button.
+
+## Account state banners (app-wide, not just the dashboard)
+
+- Trial storage cap reached: "Storage limit exceeded. Uploads are disabled.
+  Delete files or upgrade to resume."
+- Trial expired, in grace: says the trial expired with days left to upgrade or
+  download data.
+- Account disabled: "Account disabled. Visit billing to restore access."
+
+Reads keep working while writes are paused, so data stays available to download.
+
+
+---
+
+# App: Buckets
+
+Source: https://docs.fil.one/app/buckets
+
+Console-specific. Concepts, S3 equivalents and code samples live on Buckets,
+Objects, Versioning and Object Lock.
+
+## Bucket list
+
+Columns: Name, Region (label plus region id), Created, Visibility, Features
+(Versioned / Object Lock badges). All buckets are listed together in API order;
+there is no search, filter or sort control. Empty state: "No buckets yet" plus
+"Create bucket".
+
+BUCKET DELETION RUNS THROUGH THE S3 API, NOT THE CONSOLE: the per-row trash icon
+is disabled with tooltip "Deleting buckets is not available yet". Over the API it
+works in us-east-1 (bucket must be empty); DeleteBucket is unavailable in
+eu-west-1.
 
 ## Creating a bucket
 
-1. From the dashboard home, click **New bucket** to open your buckets, then
-   click **Create bucket**.
-2. Enter a bucket name — 3-63 characters, lowercase letters, numbers, and
-   hyphens only (no dots, unlike AWS S3), unique within Fil One.
-3. Choose a region — eu-west-1 Europe (France), the default, or us-east-1 US
-   East (Michigan). The region is permanent and determines the endpoint.
-4. Optionally enable Versioning, then Object Lock, then Retention — each nests
-   inside the previous one. Like the region, all three are fixed at creation and
-   cannot be changed afterward.
-5. Click **Create bucket**.
+1. Bucket name: 3-63 chars, lowercase letters/numbers/hyphens, must start and end
+   alphanumeric, NO DOTS (unlike AWS S3), globally unique.
+2. Region: eu-west-1 Europe (France) default, or us-east-1 US East (Michigan).
+3. Object settings, three switches nested in order, ALL OFF BY DEFAULT:
+   Versioning, then Object Lock (available once Versioning is on), then Retention
+   (available once Object Lock is on). Turning a parent off resets what nests
+   inside it. Retention reveals a "Default Retention Policy": Governance
+   (default) or Compliance, plus a "Lock period" in Days or Years, DEFAULT 15
+   DAYS, maximum 100 years.
 
-Encryption is enabled automatically on every bucket and cannot be disabled.
+An optional "Create new key" section creates an access key alongside the bucket,
+pre-scoped to that bucket and region; the submit button becomes "Create bucket
+and API key" and the secret is shown once in a dialog.
 
-## Uploading files
+An "Included by default" panel states: all data encrypted at rest, and every
+bucket private (access requires an API key).
 
-1. Click on a bucket to open it.
-2. Click **Upload object**.
-3. Select one or more files, or drag in a whole folder. Optionally set a prefix
-   to upload into a subpath.
-4. Click **Upload** to start the transfer — selecting files does not upload them
-   on its own.
-5. The objects appear in the object list once the upload completes.
+PERMANENT AT CREATION: name, region, versioning, Object Lock and default
+retention, in the console and over the API alike (no update-bucket operation).
+Create a new bucket for a different configuration.
 
-For very large objects, use the AWS CLI or an SDK with multipart upload support —
-the dashboard uploads with a single request.
+## Inside a bucket
 
-## Downloading files
+Header shows region, storage used, creation time. Property cards: Versioning,
+Object Lock, Encryption (always "Enabled"), and Default Retention when set.
+Tabs: "Objects (N)" and "API Keys (N)". The API Keys tab includes an "Access
+endpoints" block with copyable S3 Endpoint, S3 Path and Region.
 
-Click the download icon on the object's row, or click the file name to open its
-detail page and use the **Download** button in the header.
+Object table columns: Name, Size, Last Modified, plus Version and Status when
+versioning is on. Keys containing "/" group into clickable folder rows with a
+breadcrumb. On versioned buckets a key with >1 version gets an expander and an
+"n versions" pill; badges are "Latest" and "Delete marker". Per-row icon buttons
+download or delete one object at a time; there are no bulk/multi-select actions.
 
-Generating a shareable link for an object is a paid-plan feature and is disabled
-during the trial.
+LARGE BUCKETS: the browser shows the FIRST PAGE of results (~1,000 entries). The
+"Objects (N)" tab count comes from bucket analytics and stays accurate, so on a
+large bucket that count is higher than the rows in view. Page through a full
+listing with the CLI or an SDK.
+
+## Uploading
+
+"Upload object" on the bucket. Drag files OR whole folders, or use "Select files"
+/ "Select folder".
+
+Prefix behaviour: the optional "Prefix" field appears when INDIVIDUAL FILES are
+selected. Folder-selected files keep their own relative paths, which take the
+place of the prefix. The prefix starts empty each time rather than carrying over
+from the folder being browsed.
+
+Selecting files does not upload them; click "Upload n file(s)". A failure gives a
+"Retry n failed" button that retries only those files.
+
+SINGLE-PUT, NOT MULTIPART: one request per file, capped by the S3 5 GB single-PUT
+ceiling. Use the CLI or an SDK with multipart support above that.
+
+## Object detail page
+
+Shows Name, Size, Bucket, S3 Path, ETag, and where applicable Version ID,
+Retention, Description and Tags. Compliance-mode retention adds a "Compliance
+retention lock" notice with the date before which deletion is not permitted.
+
+A "Version history" card appears when the object has more than one version,
+listing Version ID / Status / Size / Last Modified and marking the one in view.
+It is populated from the object listing already fetched, so arrive via the
+bucket's object list rather than a direct object link to see it.
+
+NO RESTORE / PROMOTE / MAKE-CURRENT ACTION: to make an earlier version current,
+download it and upload it again.
+
+## Downloading and sharing
+
+Download works on any plan INCLUDING TRIAL, from the row or the detail header.
+
+"Share object" generates a link needing no API key, with expiry options 1 hour /
+24 hours (default) / 3 days / 7 days, then "Generate link". SHARING IS A
+PAID-PLAN FEATURE: on trial the button is disabled with an upgrade tooltip.
 
 ## Deleting objects
 
-Click the trash icon on an object's row, then confirm in the dialog. The console
-deletes one object at a time — there are no checkboxes or bulk delete.
+Trash icon on a row, or "Delete object" on the detail page, then confirm. ONE
+OBJECT AT A TIME. Permanent on non-versioned buckets. On versioned buckets a
+plain delete writes a delete marker and prior versions are retained and still
+billed; deleting a specific version removes only that version.
 
-## Managing API keys
+An object under active retention or a legal hold is protected, and a delete
+attempt returns that protection as an error. While an account is past due or in a
+grace period, access is read-only and writes resume once payment succeeds.
 
-1. Go to **API Keys** in the left sidebar.
-2. Click **Create new key** — this opens a dedicated page.
-3. Configure the key name, its region (required — it locks the key to that
-   region, and a key used against another region's endpoint returns 403),
-   permissions (Read / Write / List / Delete), bucket scope, and optional
-   expiration.
-4. Copy the Secret Access Key immediately — it is shown only once.
 
-To revoke a key, open its ⋯ action menu and choose **Delete**. Revocation is
-forwarded to the storage operator and takes effect shortly after.
+---
 
-## Billing and usage
+# App: API Keys
 
-Go to **Billing** in the left sidebar to add or update a payment method, view
-current usage (storage and bandwidth), upgrade from trial to a paid plan, and
-download invoices — available once on a paid plan; invoice history is hidden
-during the trial.
+Source: https://docs.fil.one/app/api-keys
 
-## Settings
+Console-specific. Permission meanings, signing and security guidance live on API
+Keys and Authentication.
 
-**Settings** sits at the bottom of the left sidebar: profile, notification
-preferences, and account security.
+## Key list
 
-### Profile
+Tabs "API keys" and "Connection details". Columns: Name (with Access Key ID and a
+copy button), Buckets ("All Buckets" or per-bucket badges), Permissions (badges,
+with finer-grained ones grouped as "Data protection" / "Bucket management" /
+"Bucket info"), Status, Last Used. Empty state: "No API keys yet" plus "Create
+your first key".
+
+PLACEHOLDER COLUMNS: "Last Used" reads "Never" and "Status" reads "Active" for
+every key, and the expiry date set at creation is not shown in this list. Do not
+infer from these columns whether a key is in use or still valid; advise keeping
+an external record and using descriptive key names.
+
+## Creating a key
+
+Dedicated page via "Create new key".
+
+- Key name: up to 64 chars, letters/numbers/spaces/underscores/hyphens/periods,
+  unique within a region.
+- Region: REQUIRED. A key is scoped to its region, and each region has its own
+  endpoint, so endpoint + region + key must agree. Storing in both regions needs
+  one key per region.
+- Object permissions: Read (download/retrieve), Write (upload/overwrite), List
+  (browse/list), Delete (permanently remove). READ, WRITE AND LIST ARE
+  PRE-SELECTED; DELETE IS NOT.
+- Finer-grained permissions nest under a checked parent and are granted
+  INDIVIDUALLY: under Read = Read object versions, Read retention settings, Read
+  legal hold status; under Write = Set retention, Set legal hold; under List =
+  List object versions; under Delete = Delete object versions. A key with Write
+  therefore also needs "Set retention" ticked before it can apply a retention
+  policy. Unchecking a parent clears what nested under it.
+- Bucket management: "List all buckets" is always on. "Read bucket versioning"
+  and "Read object lock configuration" are available in every region and are
+  PRE-SELECTED. "Create bucket" / "Delete bucket" are available only in regions
+  supporting bucket management over the S3 API; in eu-west-1 they are disabled
+  with tooltip "Not supported in Europe (France)", where buckets are created in
+  the console instead.
+- Bucket scope: "All buckets" (default, meaning all buckets in the key's region)
+  or "Specific buckets", listed filtered to the selected region.
+- Expiration: "Never expires" (default), "30 days", or "Custom" date. Enforced by
+  the storage layer.
+
+## The secret
+
+A "Save your credentials" dialog shows the Access Key ID and the Secret Access
+Key (masked until revealed), with copy buttons and .csv / .env downloads.
+FIL ONE NEVER STORES THE SECRET, which is why it appears only at creation and
+cannot be retrieved later. Lose it and the key is deleted and replaced.
+
+## Revoking
+
+Row "⋯" menu, then "Delete": the key is permanently revoked and applications
+using it lose access immediately. Deletion IS the revocation; to rotate, create
+the replacement, migrate, then delete the old key. Revocation is confirmed with
+the storage operator BEFORE the key leaves the list, so a listed key is a live
+key and the list stays a truthful picture of access.
+
+A bucket's "API Keys" tab lists the keys that can reach that one bucket.
+
+## Bucket Intelligence keys are separate
+
+Keys for querying an indexed bucket are a different credential, not managed here:
+bearer tokens that authorize only the query endpoint and cannot read or write
+bucket contents.
+
+
+---
+
+# App: Billing
+
+Source: https://docs.fil.one/app/billing
+
+Console-specific. Trial lifecycle, pricing model and measurement live on Trial &
+Billing, Pricing and Usage.
+
+## Plan card
+
+| Status | Badge | Card text |
+|--------|-------|-----------|
+| Trial | Active | "Free Trial", days remaining, 1 TB included |
+| Paid | Active | "Pay-as-you-go", billed for what you use, monthly minimum in brackets |
+| Payment failed | Active | "Pay-as-you-go"; the notice is in the top banner |
+| Grace period | Grace Period | "Read-only access", days remaining |
+| Canceled | Canceled | "Subscription inactive" |
+| No plan | No plan | "Choose a plan to start storing data" |
+
+A FAILED PAYMENT APPEARS IN THE TOP BANNER, NOT THE BADGE, which continues to
+read "Active". The account becomes READ-ONLY from the moment payment fails, so
+writes stop; they resume once payment succeeds.
+
+Button is "Upgrade" on trial, "Manage plan" on paid, "Reactivate" once lapsed.
+
+## Current usage
+
+"Storage used" always shows; against the 1 TB cap with a progress bar on trial,
+figure alone on paid (no cap). "Egress used" is shown against the 2 TB cap ON
+TRIAL ONLY; paid plans have no egress fees and no egress figure on this page.
+"Estimated monthly cost" appears on paid plans only.
+
+THE ESTIMATE IS A GUIDE, NOT THE INVOICE: it applies $4.99/TB to the most recent
+storage reading with the monthly minimum as the floor, while the invoice uses
+AVERAGE storage across the month, metered twice daily. The estimate excludes
+egress. Sizes are decimal (1 TB = 1,000 GB).
+
+## Payment method
+
+Shows last four digits and expiry with "Update", or "No payment method added"
+with "Add". "Update" and "Manage plan" both open the STRIPE CUSTOMER PORTAL,
+where card details are entered and stored; FIL ONE DOES NOT HOLD THE CARD NUMBER.
+First-time setup goes through "Choose your plan": "Pay-as-you-go" is
+self-service, "Business plan" routes to a sales contact form.
+
+CANCELLATION IS HANDLED IN THE STRIPE PORTAL, via "Manage plan".
+
+## Invoice history
+
+Date, status, amount and a "PDF" link per invoice. The card appears once on a
+paid plan (nothing to show during trial), and lists THE THREE MOST RECENT PAID
+INVOICES. Full history, including anything open or in draft, is in the Stripe
+portal.
+
+## Pricing panel
+
+$4.99 per TB per month, the monthly minimum where one applies, no egress fees, no
+API request fees. "Need more?" links to a Business-plan sales form.
+
+THE MONTHLY MINIMUM IS NOT UNIVERSAL: accounts predating it stay on per-unit
+pricing with no minimum, and the plan card and pricing panel reflect that. The
+upgrade dialog shows the standard "$4.99/month minimum" wording regardless, so
+the plan card and pricing panel are authoritative per account.
+
+
+---
+
+# App: Settings
+
+Source: https://docs.fil.one/app/settings
+
+Bottom of the left sidebar next to Billing: profile, notification preferences and
+account security.
+
+## Profile
 
 | Field | Rules |
 |-------|-------|
@@ -1492,37 +1736,74 @@ preferences, and account security.
 | Company name | 2 to 100 characters, letters, numbers, spaces, hyphens, periods only |
 | Email | Must be a valid address; disposable addresses are rejected |
 
-**Save changes** is disabled until a field is edited, and a note beside it lists
+"Save changes" is disabled until a field is edited, and a note beside it lists
 what will be saved.
 
 CHANGING THE EMAIL ADDRESS RESETS VERIFICATION. Saving a new address marks the
-account unverified, sends a verification email to the new address, and lands the
-user on the verification screen; every page redirects there until it is
-confirmed, as for a new account. The address can be edited again while
-unverified, so a typo is recoverable.
+account unverified, sends a verification email to the new address, and lands on
+the verification screen; every page redirects there until it is confirmed, as for
+a new account. The address can be edited again while unverified, so a typo is
+recoverable.
 
-GOOGLE AND GITHUB ACCOUNTS CANNOT CHANGE NAME OR EMAIL IN FIL ONE. Both fields
-are read-only for social sign-ins, labelled "Managed by Google" / "Managed by
-GitHub" with a link to that provider's profile page; change them at the
-provider. Company name stays editable on every account type.
+GOOGLE AND GITHUB SIGN-INS MANAGE NAME AND EMAIL AT THE PROVIDER. Both fields are
+read-only in Fil One, labelled "Managed by Google" / "Managed by GitHub" with a
+link to that provider's profile page. COMPANY NAME STAYS EDITABLE on every
+account type.
 
-### Notifications
+## Notifications
 
-Marketing emails ("Receive updates about new features") is a working toggle. It
+"Marketing emails" ("Receive updates about new features") is a working toggle: it
 reflects the current subscription status, is off until turned on, and saves on
 flip with no Save button.
 
-Email notifications ("Get notified about your uploads and when approaching
-storage limits") is visible but DISABLED and marked "Coming soon". NOT AVAILABLE
-YET, so do not rely on Fil One emailing as a storage limit approaches.
+"EMAIL NOTIFICATIONS" IS MARKED COMING SOON AND IS NOT ACTIVE YET. The row ("Get
+notified about your uploads and when approaching storage limits") is visible but
+disabled, and these emails are NOT SENT TODAY, including as a trial cap
+approaches. Direct users to the Dashboard usage cards to track storage and egress
+against the caps.
 
-### Security
+## Security
 
 Two-factor authentication, passkeys, recovery codes and password changes are all
 under Settings > Security (see Account Security). Password is managed by the
 provider on Google and GitHub accounts, so no Change button appears.
 
-Account deletion is not self-service: email support@fil.one.
+## Deleting your account
+
+Handled by the team: email support@fil.one. Not self-service in the console.
+
+
+---
+
+# App: Support
+
+Source: https://docs.fil.one/app/support
+
+Reached from the "Help" menu at the bottom of the left sidebar, which offers
+"Documentation" and "Talk to an expert". The latter opens the support form.
+
+## The form
+
+Headed "Talk to an expert", stating a typical response within one business day.
+All fields required: First name, Last name, Company name, Email (the reply
+address), Category, Message. Category options: "Product Issue", "Billing Issue",
+"General Inquiry", "Feature Request".
+
+The form starts empty rather than pre-filling from the signed-in account, so the
+email entered is where the reply goes. Submitting clears the form and confirms a
+reply within one business day.
+
+REPLIES ARRIVE BY EMAIL. The message creates a ticket for the support team; the
+console does not show a ticket list or status view.
+
+## Other routes
+
+- "Documentation" in the same Help menu opens the docs in a new tab.
+- The sidebar links to the Fil One status page, the quickest check for whether an
+  issue is already known.
+- Account deletion is handled by email at support@fil.one.
+- Volume pricing, SLAs and the Business plan go through "Contact sales" on the
+  Billing page.
 
 
 ---

@@ -152,13 +152,53 @@ Critical integration notes for developers:
 
 ## Optional
 
-- [Using the Dashboard](https://docs.fil.one/app/overview): Browser-based UI at
-  app.fil.one for bucket creation, file upload/download, API key management,
-  billing, and Settings (profile fields, notification preferences). No code
-  required. Changing your email in Settings resets verification and re-triggers
-  the verification-screen redirect; Google/GitHub accounts cannot change name or
-  email in Fil One; the "Email notifications" toggle is not available yet
-  ("Coming soon"), so no upload or storage-limit emails are sent
+The browser console at app.fil.one, one page per console screen. No code
+required. Each page below is console-specific; the capability pages (Storage,
+Security, Billing) hold the concepts and code samples.
+
+- [App - Dashboard](https://docs.fil.one/app/dashboard): Console home. Quick
+  setup checklist, PLAN/STORAGE/EGRESS cards, Usage Trends, Recent Activity.
+  Storage is a periodic point-in-time reading (a very recent change may not show
+  yet) and egress is a rolling 30-day total, not a calendar month. "Est. monthly
+  cost" applies $4.99/TB to the latest reading with the monthly minimum as the
+  floor, while the invoice uses AVERAGE storage, so they differ. Recent Activity
+  covers bucket-created and key-created; object-level events are not included yet
+- [App - Buckets](https://docs.fil.one/app/buckets): Bucket list, create form,
+  object browser, upload, object detail, download/share. BUCKET DELETION RUNS
+  THROUGH THE S3 API, not the console (trash icon disabled). Name, region,
+  versioning, Object Lock and default retention are PERMANENT at creation (no
+  update-bucket op). Upload is single-PUT (5 GB ceiling); the Prefix field applies
+  to individually-selected files, and folder uploads use their own relative paths
+  instead. One object at a time (no bulk actions); the browser shows the first
+  ~1,000 entries while the tab count stays accurate; no version restore/promote
+  (download and re-upload). Download works on trial; SHARING IS A PAID-PLAN
+  FEATURE
+- [App - API Keys](https://docs.fil.one/app/api-keys): Key list and create flow.
+  Region is REQUIRED and a key is scoped to its own region's endpoint.
+  Read/Write/List pre-selected, Delete NOT; finer-grained permissions (retention,
+  legal hold, versions) are granted INDIVIDUALLY, so Write alone cannot set
+  retention. "Create bucket"/"Delete bucket" unavailable in eu-west-1. Secret
+  shown ONCE and never stored. Deletion is the revocation (no disable/rotate).
+  "Last Used" and "Status" are placeholder columns reading "Never"/"Active" for
+  every key, and expiry is not shown after creation
+- [App - Billing](https://docs.fil.one/app/billing): Plan card, current usage,
+  payment method, invoice history, pricing panel. A FAILED PAYMENT APPEARS IN THE
+  TOP BANNER, NOT THE BADGE (still "Active"), and the account is read-only from
+  that moment. Invoice card appears once on a paid plan and lists the 3 most
+  recent PAID invoices. Egress figure on trial only. Card details live in the
+  Stripe portal, which is also where cancellation happens
+- [App - Settings](https://docs.fil.one/app/settings): Profile fields (name <= 200
+  chars; company name 2-100; valid email, disposable rejected), notification
+  preferences, pointer to Account Security. Changing your email RESETS
+  VERIFICATION and re-triggers the verification-screen redirect; Google/GitHub
+  sign-ins manage name and email at the provider (company name stays editable);
+  the "Email notifications" toggle is COMING SOON and not active yet, so upload
+  and storage-limit emails are not sent today. Account deletion is handled by the
+  team at support@fil.one
+- [App - Support](https://docs.fil.one/app/support): The "Talk to an expert" form
+  behind the sidebar Help menu. All fields required, starts empty, four
+  categories, ~1 business day response. Replies arrive by email; the console does
+  not show a ticket list
 - [FAQ](https://docs.fil.one/faq): Common questions on S3 compatibility,
   blockchain/crypto requirements, data residency, deletion behavior, migration
   from AWS S3, backups, durability, and Filecoin data integrity mechanics

@@ -1,0 +1,70 @@
+---
+title: Billing
+description: Reading the Fil One billing page, adding a payment method, and finding your invoices.
+---
+
+**Billing** sits at the bottom of the left sidebar, next to Settings.
+
+This page covers the console specifically. For the trial lifecycle, the pricing model, and how usage is measured, see [Trial & Billing](/billing/trial), [Pricing](/billing/pricing), and [Usage](/billing/usage).
+
+## Your plan
+
+The first card names your plan and carries a status badge:
+
+| Status | Badge | What the card says |
+|--------|-------|--------------------|
+| Trial | **Active** | **Free Trial**, with the days remaining and the 1 TB included |
+| Paid | **Active** | **Pay-as-you-go**, billed for what you use, with your monthly minimum in brackets |
+| Payment failed | **Active** | **Pay-as-you-go**. A banner at the top of the page carries the warning, not the badge |
+| Grace period | **Grace Period** | **Read-only access**, with the days remaining |
+| Canceled | **Canceled** | **Subscription inactive** |
+| No plan | **No plan** | **Choose a plan to start storing data** |
+
+:::note Where a failed payment shows up
+When a payment fails, the notice appears in the amber banner at the top of the page rather than in the plan badge, which continues to read **Active**. Your account becomes read-only at that point, so if uploads have stopped, check the banner and update your payment method to resume. See [Trial & Billing](/billing/trial).
+:::
+
+The button in this card is **Upgrade** on the trial, **Manage plan** on a paid plan, and **Reactivate** once the subscription has lapsed.
+
+## Current usage
+
+**Storage used** always appears. On the trial it is shown against the 1 TB cap with a progress bar; on a paid plan there is no cap, so you see the figure alone.
+
+**Egress used** is shown against the 2 TB cap during the trial only. Paid plans have no egress fees and no egress figure on this page.
+
+**Estimated monthly cost** appears once you are on a paid plan.
+
+:::info How the estimate is calculated
+The estimate applies $4.99/TB to your most recent storage reading, with your monthly minimum as the floor. Your invoice is calculated from your average storage across the month, metered twice a day, so treat the estimate as a guide to where you are heading rather than the final figure. Egress is not included, since it is free on paid plans.
+
+Sizes here are decimal: 1 TB means 1,000 GB. See [Usage](/billing/usage).
+:::
+
+## Payment method
+
+With a card on file this card shows the last four digits and the expiry, with an **Update** button. Without one it shows **No payment method added** and an **Add** button.
+
+**Update** and **Manage plan** both open the Stripe customer portal, where the card details are entered and stored. Fil One does not hold your card number.
+
+Adding a payment method for the first time goes through **Choose your plan**, where **Pay-as-you-go** is the self-service option and **Business plan** routes to a sales contact form for volume pricing and SLAs.
+
+:::note Cancelling
+Cancellation is handled in the Stripe portal, reached through **Manage plan**.
+:::
+
+## Invoice history
+
+The invoice list shows the date, status, amount, and a **PDF** link for each invoice.
+
+Two things to expect:
+
+- The card appears once you are on a paid plan, so there is nothing to show during the trial.
+- It lists your three most recent paid invoices. For your full billing history, including anything still open or in draft, open the Stripe portal through **Manage plan**.
+
+## Pricing panel
+
+The right-hand panel restates the plan: **$4.99** per TB per month, your monthly minimum where you have one, no egress fees, and no API request fees. **Need more?** links to a sales contact form for the Business plan.
+
+:::note If your account predates the monthly minimum
+Accounts created before the minimum was introduced stay on per-unit pricing with no minimum, and the plan card and pricing panel reflect that for you. The upgrade dialog shows the standard $4.99/month wording, so take the plan card and pricing panel as the guide to your own terms. See [Pricing](/billing/pricing).
+:::

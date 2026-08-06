@@ -1,0 +1,44 @@
+---
+title: Settings
+description: Profile fields, notification preferences, and account security in the Fil One console.
+---
+
+**Settings** sits at the bottom of the left sidebar, next to Billing. It holds your profile, your notification preferences, and your account security.
+
+## Profile
+
+| Field | Rules |
+|-------|-------|
+| **Full name** | Cannot be empty, up to 200 characters |
+| **Company name** | 2 to 100 characters, using letters, numbers, spaces, hyphens, and periods only |
+| **Email** | Must be a valid address. Disposable addresses are rejected |
+
+**Save changes** stays disabled until you edit one of the fields, and a note beside it lists what will be saved.
+
+:::warning Changing your email address sends you back through verification
+Saving a new address marks the account unverified, sends a verification email to the new address, and drops you straight onto the verification screen. Every page redirects there until you confirm, exactly as for a new account.
+
+You can edit the address again while unverified, so a typo is recoverable.
+:::
+
+**If you signed in with Google or GitHub, your name and email are managed there.** Both fields are read-only for social sign-ins, labelled *Managed by Google* or *Managed by GitHub* with a link straight to that provider's profile page, so you keep one source of truth for them. Company name stays editable on every account type.
+
+## Notifications
+
+**Marketing emails** ("Receive updates about new features") is a working toggle. It reflects your current subscription status, is off until you turn it on, and saves as soon as you flip it, with no **Save changes** button.
+
+:::note "Email notifications" is coming soon
+The **Email notifications** row ("Get notified about your uploads and when approaching storage limits") is marked *Coming soon* and is not active yet, so these emails are not sent today.
+
+Until it ships, keep an eye on the usage cards on the [Dashboard](/app/dashboard), which show your storage and egress against the trial caps. This is worth doing during the trial, where reaching a cap changes what the account can do. See [Usage](/billing/usage).
+:::
+
+## Security
+
+Two-factor authentication, passkeys, recovery codes, and password changes all live in Settings under **Security**. Password is managed by your provider on Google and GitHub accounts, so no **Change** button appears.
+
+See [Account Security](/security/account-security) for the full walkthrough.
+
+## Deleting your account
+
+Account deletion is handled by the team. Email [support@fil.one](mailto:support@fil.one) and they will take it from there.
