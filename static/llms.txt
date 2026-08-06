@@ -107,8 +107,13 @@ Critical integration notes for developers:
   for deletion semantics: object delete (immediate on non-versioned, delete
   marker on versioned), bucket delete, deletion under Object Lock (Compliance
   binds every caller; Governance has no bypass so it is equally protected),
-  account closure (revokes access; erasure is a separate request via support),
-  residual encrypted data in sealed sectors. No cryptographic proof of deletion
+  account closure (revokes ACCESS, NOT erasure; erasure is a separate manual
+  request whose storage-layer scope is region-dependent and being confirmed, and
+  eu-west-1 account-level storage removal is NOT available today), residual
+  encrypted data in sealed sectors (encrypted under a key the OPERATOR holds, so
+  not cryptographic destruction; crypto shredding unconfirmed), account records
+  beyond objects (different key custody; signed-not-encrypted session cookie).
+  No cryptographic proof of deletion
 
 ## Billing
 

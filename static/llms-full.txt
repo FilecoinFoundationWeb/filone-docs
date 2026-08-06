@@ -491,7 +491,9 @@ from your Fil One account. Because Filecoin stores data in sealed sectors, the
 underlying storage may persist for a bounded period until the sector naturally
 expires (duration set by the storage layer). That residual data stays encrypted,
 and key custody sits with the regional storage operator rather than with you or
-Fil One. This does not affect your ability to manage your data in Fil One.
+Fil One, so this is LOSS OF ACCESS rather than cryptographic destruction (crypto
+shredding is unconfirmed). This does not affect your ability to manage your data
+in Fil One.
 
 
 ---
@@ -1013,7 +1015,8 @@ Because Filecoin stores data in sealed sectors, the underlying storage may
 persist for a bounded period until the sector naturally expires; the exact
 duration is set by the storage layer rather than measured by Fil One. That
 residual data stays encrypted, and key custody sits with the regional storage
-operator rather than with the customer or Fil One.
+operator rather than with the customer or Fil One, which means LOSS OF ACCESS
+rather than cryptographic destruction (crypto shredding is unconfirmed).
 
 ## Common use cases
 
@@ -1285,11 +1288,19 @@ unreachable through the API and dashboard, and access keys stop working.
 
 Closing an account revokes access; erasing data is a separate, explicit step.
 Two paths: to regain access, contact support (a disabled account can be
-restored); to have data erased, request removal, which is handled by support
-rather than as a self-service dashboard action.
+restored); to request erasure, contact support (not self-service, and NOT
+automatic on closure).
 
-For a retention or privacy review, record account closure as access revocation,
-with erasure available on request.
+⚠️ WHAT AN ERASURE REQUEST CAN ACTUALLY ACHIEVE IS REGION-DEPENDENT AND UNDER
+CONFIRMATION. There is no automated purge. We are confirming with both regional
+storage operators what happens to encryption keys when an account is removed, and
+in eu-west-1 ACCOUNT-LEVEL REMOVAL AT THE STORAGE LAYER IS NOT AVAILABLE TODAY.
+Anyone with a hard erasure requirement, especially a regulatory deadline, must get
+region-specific confirmation from support BEFORE relying on it.
+
+For a retention or privacy review, record account closure as ACCESS REVOCATION
+RATHER THAN ERASURE, and treat erasure as a manual request whose storage-layer
+scope is still being confirmed.
 
 ## Residual data on the Filecoin network
 
@@ -1301,15 +1312,40 @@ custody with the regional storage operator) and is not reachable through Fil One
 from the moment of deletion. This is a property of the underlying network, not a
 Fil One retention policy.
 
+⚠️ "STAYS ENCRYPTED" IS NOT THE SAME AS "UNRECOVERABLE". The operator holding the
+residual sector also holds the key. The stronger guarantee (CRYPTO SHREDDING:
+deleting the data also destroys its key) is UNDER CONFIRMATION with both
+operators. One structural limit is already clear: WHERE A KEY COVERS A WHOLE
+BUCKET RATHER THAN AN INDIVIDUAL OBJECT, DELETING ONE OBJECT CANNOT DESTROY THAT
+KEY, because the bucket's other objects still need it, so key destruction is
+realistic at bucket or account level rather than per object. Until confirmed, do
+not present deletion as cryptographic destruction.
+
 For questions about how the underlying network handles deleted data, such as
 replication or the proof cycle storage providers run, contact support.
 
-## What Fil One does not claim
+## Account data beyond stored objects
+
+Account closure also involves records Fil One itself holds, which the statements
+above do NOT cover: profile, billing and access-key records (held in Fil One's own
+systems, under DIFFERENT encryption and key-custody arrangements than object
+data); operational logs, which can retain account identifiers for a period after
+closure; and the browser sign-in cookie, which holds a SIGNED (not encrypted)
+identity token, so its claims including the account email are readable by anyone
+holding the cookie. An erasure request should state explicitly whether it covers
+only stored objects or account records too, since they are handled separately.
+
+## Limits of these guarantees
 
 - No cryptographic proof of deletion: no per-object CID, deal ID, or seal state
   to present to an auditor.
+- No confirmed key destruction: whether deletion destroys the encryption key
+  rather than only removing access is still being confirmed with both operators.
 - No guaranteed destruction timeline: no published maximum for sealed-sector
   persistence.
+- No automated erasure on account closure: closure disables access, erasure is a
+  separate manual request, and eu-west-1 account-level storage removal is not
+  available today.
 - No determination of regulatory sufficiency (GDPR erasure, retention schedules,
   DSAR deadlines) is for your own compliance review.
 
@@ -1358,7 +1394,7 @@ The two caps are enforcement thresholds, not soft allowances, and behave differe
 | Grace period | 31-37 | Read-only. Download your data and upgrade. |
 | Expired | 38+ | Account disabled. No access to data, uploads, or API keys. |
 
-You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; a disabled account can be restored, and erasure is available on request — contact support either way.
+You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; a disabled account can be restored. Erasure is a SEPARATE MANUAL REQUEST, not something closure does automatically, and what it achieves at the storage layer is region-dependent and under confirmation. Contact support either way.
 
 ## Paid plan pricing
 
