@@ -512,9 +512,7 @@ from your Fil One account. Because Filecoin stores data in sealed sectors, the
 underlying storage may persist for a bounded period until the sector naturally
 expires (duration set by the storage layer). That residual data stays encrypted,
 and key custody sits with the regional storage operator rather than with you or
-Fil One, so this is LOSS OF ACCESS rather than cryptographic destruction (key
-destruction is not guaranteed). This does not affect your ability to manage your
-data in Fil One.
+Fil One. This does not affect your ability to manage your data in Fil One.
 
 
 ---
@@ -1036,8 +1034,7 @@ Because Filecoin stores data in sealed sectors, the underlying storage may
 persist for a bounded period until the sector naturally expires; the exact
 duration is set by the storage layer rather than measured by Fil One. That
 residual data stays encrypted, and key custody sits with the regional storage
-operator rather than with the customer or Fil One, which means LOSS OF ACCESS
-rather than cryptographic destruction (key destruction is not guaranteed).
+operator rather than with the customer or Fil One.
 
 ## Common use cases
 
@@ -1317,112 +1314,6 @@ applies automatically.
 
 ---
 
-# Data Deletion
-
-Source: https://docs.fil.one/security/data-deletion
-
-Single reference for what deletion means at the object, bucket, and account
-level. Short version: deletion removes your access immediately; because storage
-is fulfilled by the Filecoin network the underlying encrypted bytes may persist
-in a sealed sector for a bounded period afterward; and closing an account blocks
-access rather than purging data.
-
-## Deleting an object
-
-On a bucket WITHOUT versioning, deletion is immediate, with no recycle bin
-and no soft-delete.
-
-On a VERSIONED bucket, a delete without a version ID places a DELETE MARKER
-instead. The object stops appearing in listings and GetObject returns NoSuchKey,
-but prior versions remain intact, remain downloadable by version ID, and
-CONTINUE TO COUNT AS STORED STORAGE for billing. To remove a version
-permanently, delete it by its version ID. Deleting the delete marker makes the
-object visible again.
-
-## Deleting a bucket
-
-Dashboard bucket deletion is not yet available (button visible but disabled
-while the storage layer completes support). Over the S3 API, DeleteBucket works
-in us-east-1 with a key holding the DeleteBucket permission and an empty bucket;
-it is not available in eu-west-1.
-
-## Deletion under Object Lock
-
-An object with active retention cannot be deleted: 403 AccessDenied. In
-Compliance mode this holds for every caller including the account owner,
-regardless of key permissions. In Governance mode, which standard S3 lets a
-caller override with a special bypass permission, Fil One does not hand out
-that bypass, so Governance-locked objects are equally protected for their full
-retention period. A delete marker can still be placed over a locked object: it
-appears deleted while the underlying version stays protected.
-
-## Closing an account
-
-When a trial expires (after its grace period) or a paid subscription is
-cancelled and its grace period ends, the account is DISABLED: data becomes
-unreachable through the API and dashboard, and access keys stop working.
-
-Closing an account revokes access; erasing data is a separate, explicit step.
-Two paths: to regain access, contact support (a disabled account can be
-restored); to request erasure, contact support (not self-service, and NOT
-automatic on closure).
-
-⚠️ CLOSURE IS NOT ERASURE. There is no automated purge: closing an account
-disables it and blocks access, it does not delete stored data. Erasure is a
-separate SUPPORT REQUEST. Anyone with a specific erasure requirement, especially a
-regulatory deadline, should confirm with support what applies to their account
-before relying on it.
-
-For a retention or privacy review, record account closure as ACCESS REVOCATION
-RATHER THAN ERASURE, with erasure handled as a separate support request.
-
-## Residual data on the Filecoin network
-
-Filecoin stores data in sealed sectors. A deleted object becomes inaccessible
-through Fil One immediately, but bytes inside an already-sealed sector may
-persist until that sector naturally expires, with the duration set by the storage layer
-not measured or controlled by Fil One. That residual data stays encrypted (key
-custody with the regional storage operator) and is not reachable through Fil One
-from the moment of deletion. This is a property of the underlying network, not a
-Fil One retention policy.
-
-⚠️ "STAYS ENCRYPTED" IS NOT THE SAME AS "UNRECOVERABLE", since the operator
-holding the residual sector also holds the key. KEY DESTRUCTION IS NOT GUARANTEED,
-so present deletion as LOSS OF ACCESS rather than cryptographic destruction. Note
-also the structural limit: where a key covers a whole bucket rather than an
-individual object, deleting one object cannot destroy that key, because the
-bucket's other objects still need it.
-
-For questions about how the underlying network handles deleted data, such as
-replication or the proof cycle storage providers run, contact support.
-
-## Account data beyond stored objects
-
-Account closure also involves records Fil One itself holds, which the statements
-above do NOT cover: profile, billing and access-key records (held in Fil One's own
-systems, under DIFFERENT encryption and key-custody arrangements than object
-data); operational logs, which can retain account identifiers for a period after
-closure; and the browser sign-in cookie, which holds a SIGNED (not encrypted)
-identity token, so its claims including the account email are readable by anyone
-holding the cookie. An erasure request should state explicitly whether it covers
-only stored objects or account records too, since they are handled separately.
-
-## Limits of these guarantees
-
-- No cryptographic proof of deletion: no per-object CID, deal ID, or seal state
-  to present to an auditor.
-- No guaranteed key destruction: deletion removes access, and Fil One does not
-  guarantee the encryption key is destroyed as part of it.
-- No guaranteed destruction timeline: no published maximum for sealed-sector
-  persistence.
-- No automated erasure on account closure: closure disables access, and erasure is
-  a separate request handled by support.
-- No determination of regulatory sufficiency (GDPR erasure, retention schedules,
-  DSAR deadlines) is for your own compliance review.
-
-
----
-
 # Pricing
 
 Source: https://docs.fil.one/billing/pricing
@@ -1465,7 +1356,7 @@ The two caps are enforcement thresholds, not soft allowances, and behave differe
 | Grace period | 31-37 | Read-only. Download your data and upgrade. |
 | Expired | 38+ | Account disabled. No access to data, uploads, or API keys. |
 
-You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; a disabled account can be restored. Erasure is a SEPARATE SUPPORT REQUEST, not something closure does automatically. Contact support either way.
+You can upgrade to a paid plan at any time during the trial or grace period. Disabling blocks all access to the account; Fil One does not run an automatic purge at that point, so contact support to restore access or request removal of your data.
 
 ## Paid plan pricing
 
@@ -2879,9 +2770,8 @@ bounded period until the sector naturally expires (duration set by the storage
 layer), but the data is inaccessible from the moment of deletion. That residual
 data stays encrypted, and key custody sits with the regional storage operator
 rather than with you or Fil One. Note: account
-closure revokes access rather than erasing data — the account is disabled and
-access blocked; erasure is a separate request via support. See the Data Deletion
-page for the full picture.
+closure does NOT purge data — the account is disabled and access blocked, and
+no automatic purge runs; contact support to request removal.
 
 **Can multiple users access the same account?**
 Currently accounts are single-user. Multi-user organization accounts with RBAC
