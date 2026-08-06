@@ -11,7 +11,9 @@ All objects stored in Fil One are encrypted at rest. Encryption is applied autom
 
 Encryption is performed by the S3 storage gateway for the region your bucket lives in, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
 
-**Do not send encryption headers.** Fil One applies its own server-side encryption, and you cannot request a specific mode. Uploads specifying `ServerSideEncryption: aws:kms` (SSE-KMS) are **rejected** in `us-east-1` with `InvalidRequest`; this has not been tested in `eu-west-1`. Omit the header entirely — encryption is applied either way.
+**Do not send encryption headers.** Fil One applies its own server-side encryption, and you cannot request a specific mode. Uploads specifying `ServerSideEncryption: aws:kms` (SSE-KMS) are **rejected in both regions**: with `InvalidRequest` in `us-east-1`, and with `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation (`PutObject`, `CopyObject`, and `CreateMultipartUpload` are all affected). SSE-C headers are rejected in `eu-west-1` too. Omit the header entirely, encryption is applied either way.
+
+In `eu-west-1`, the bucket-level encryption operations (`GetBucketEncryption`, `PutBucketEncryption`, `DeleteBucketEncryption`) also return `AccessDenied`, so there is no encryption configuration to read or change there. Encryption is still always on.
 
 ## Encryption in transit
 

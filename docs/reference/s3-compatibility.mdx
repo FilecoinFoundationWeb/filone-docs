@@ -34,6 +34,12 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 Specific size and count limits quoted in this table (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](/limits).
 :::
 
+:::warning How unsupported operations respond in `eu-west-1`
+In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed by a compatibility test run against the region.
+
+A 403 from `PutBucketVersioning`, `PutBucketPolicy`, `PutBucketAcl`, `PutBucketEncryption`, `PutBucketLifecycleConfiguration`, or the tagging operations means *the feature is absent*, not that your key lacks a permission. Don't spend time auditing your access-key scopes for these. Code that branches on `NotImplemented` to degrade gracefully needs to treat 403 on these operations the same way.
+:::
+
 ### Bucket operations
 
 | Operation | Status | Notes |
@@ -43,21 +49,26 @@ Specific size and count limits quoted in this table (5 TB max object, 5 GB singl
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
 | `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets, `Suspended` is never returned. |
-| `PutBucketVersioning` | ⚠️ Partial | Accepted for SDK compatibility. Versioning cannot be suspended once enabled — suspend requests are rejected. |
+| `PutBucketVersioning` | ⚠️ Region-dependent | Rejected with `AccessDenied` in `eu-west-1`, for enable as well as suspend requests: versioning there is set at bucket creation and cannot be changed over the API at all. In `us-east-1`, accepted for SDK compatibility, but versioning still cannot be suspended once enabled. |
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
 | `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention policy in Governance or Compliance mode. |
-| `GetBucketEncryption` | ✅ Supported | Returns the bucket's default server-side encryption configuration. |
-| `PutBucketEncryption` | ⚠️ No-op | Encryption cannot be modified or disabled. Accepted for SDK compatibility but has no effect. |
-| `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. See [ACLs](#acls). |
-| `PutBucketAcl` | ❌ Not supported | ACL model is not implemented. |
+| `GetBucketEncryption` | ⚠️ Region-dependent | Returns `AccessDenied` in `eu-west-1` rather than an encryption configuration. Supported in `us-east-1`. Encryption is always on regardless of what this call returns. |
+| `PutBucketEncryption` | ⚠️ Region-dependent | Rejected with `AccessDenied` in `eu-west-1`, including a valid SSE-S3 default rule. In `us-east-1`, accepted for SDK compatibility but has no effect. Encryption cannot be modified or disabled in either region. |
+| `DeleteBucketEncryption` | ❌ Not supported | Rejected with `AccessDenied` in `eu-west-1`. Encryption cannot be disabled. |
+| `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`. See [ACLs](#acls). |
+| `PutBucketAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
 | `GetBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. |
-| `PutBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. |
+| `PutBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
 | `GetBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. |
-| `PutBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. |
+| `PutBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. Rejected with `AccessDenied` in `eu-west-1`. |
 | `GetBucketNotificationConfiguration` | ❌ Not supported | Event notifications are not supported. |
 | `PutBucketNotificationConfiguration` | ❌ Not supported | Event notifications are not supported. |
 | `GetBucketTagging` | ❌ Not supported | Bucket and object tagging are not implemented. |
 | `PutBucketTagging` | ❌ Not supported | Bucket and object tagging are not implemented. |
+| `GetBucketLogging` | ❌ Not supported | Server access logging is not implemented. |
+| `PutBucketLogging` | ❌ Not supported | Rejected in `eu-west-1` (`MalformedXML`, even for a well-formed configuration). |
+| `GetPublicAccessBlock` | ❌ Not supported | Public access is never permitted, so there is no block configuration to read. |
+| `PutPublicAccessBlock` | ❌ Not supported | Rejected in `eu-west-1` (`MalformedXML`, even for a well-formed configuration). All buckets are private unconditionally. |
 
 ### Object operations
 
@@ -70,15 +81,16 @@ Specific size and count limits quoted in this table (5 TB max object, 5 GB singl
 | `HeadObject` | ✅ Supported | |
 | `ListObjectsV2` | ✅ Supported | |
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
-| `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. Not yet confirmed in `eu-west-1` — download and re-upload as a fallback there. |
+| `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. In `eu-west-1`, most copy operations pass a compatibility run, so plain server-side copy works there, but **copying a specific `VersionId` is still unverified** in that region because the test harness cannot configure versioning over the API. Verify a version-promote copy against your own bucket before relying on it. |
 | `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
 | `PutObjectRetention` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — set, extend, or (via S3's bypass-governance-retention mechanism) shorten a version's retention. Not yet confirmed in `eu-west-1`. |
 | `GetObjectLegalHold` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — requires the matching access-key permission. Not yet confirmed in `eu-west-1`. |
 | `PutObjectLegalHold` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including blocking delete while a hold is active — requires the matching access-key permission. Not yet confirmed in `eu-west-1`. |
-| `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. |
-| `PutObjectAcl` | ❌ Not supported | ACL model is not implemented. |
-| `GetObjectTagging` | ❌ Not supported | Object tagging is not implemented. |
-| `PutObjectTagging` | ❌ Not supported | Object tagging is not implemented. |
+| `GetObjectAttributes` | ❌ Not supported | Returns `AccessDenied` in `eu-west-1`. Use `HeadObject` for size, ETag, and metadata instead. |
+| `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`, including on objects uploaded with a canned-ACL header. |
+| `PutObjectAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
+| `GetObjectTagging` | ❌ Not supported | Object tagging is not implemented. Returns `AccessDenied` in `eu-west-1`. |
+| `PutObjectTagging` | ❌ Not supported | Object tagging is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
 | `RestoreObject` | ❌ Not applicable | Fil One has a single storage class. There are no archival tiers to restore from. |
 | `SelectObjectContent` | ❌ Not planned | S3 Select is not planned. |
 
@@ -105,16 +117,20 @@ Versioning is **opt-in** and configured at bucket creation time. Once enabled on
 | `ListObjectVersions` | ✅ Supported | Lists all versions and delete markers in a bucket. |
 | `GetObject` with `VersionId` | ✅ Supported | Retrieves a specific historical version by ID. |
 | `DeleteObject` with `VersionId` | ✅ Supported | Permanently deletes a specific version, bypassing delete markers. |
-| `PutBucketVersioning` (suspend) | ❌ Rejected | Versioning cannot be suspended once enabled. Suspend requests return an error. |
-| `CopyObject` with `x-amz-copy-source-version-id` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — copy a specific version onto the current key to promote it. Not yet confirmed in `eu-west-1`. |
+| `PutBucketVersioning` (suspend) | ❌ Rejected | Versioning cannot be suspended once enabled. Suspend requests return an error. In `eu-west-1` that error is `AccessDenied`, and enable requests are rejected the same way. |
+| `CopyObject` with `x-amz-copy-source-version-id` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — copy a specific version onto the current key to promote it. Still unverified in `eu-west-1`: plain copy works there, but the version-id form could not be tested because versioning cannot be configured over the API in that region. |
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject` (see above); in `eu-west-1` this has not yet been confirmed, so download the version you want and upload it again as a new version instead.
+The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject` (see above). In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
 
 See [Versioning](/storage/versioning) for detailed usage and examples.
 
 ### Object Lock
 
 Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and Compliance mode are supported. Object Lock requires versioning, and both are set at bucket creation time.
+
+:::note Object Lock in `eu-west-1` is not yet independently verified
+The per-object Object Lock operations are confirmed against `us-east-1` only. A compatibility run against `eu-west-1` could not exercise them, because the run was unable to create an Object-Lock-enabled bucket in that region to test against. This is a **gap in test coverage, not a known failure**. If you are relying on Object Lock for a compliance requirement in `eu-west-1`, validate the behavior you need on your own bucket first.
+:::
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -149,10 +165,11 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 |---------|--------|-------|
 | Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
-| `GetBucketEncryption` | ✅ Supported | Returns the bucket's default server-side encryption configuration. |
-| `PutBucketEncryption` | ⚠️ No-op | Accepted for SDK compatibility. Encryption cannot be modified or disabled. |
-| SSE-KMS (`aws:kms`) | ❌ Not supported | Uploads specifying `ServerSideEncryption: aws:kms` are rejected in `us-east-1` with `InvalidRequest`. Not yet tested in `eu-west-1`. Omit encryption headers — server-side encryption is applied automatically. |
-| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. |
+| `GetBucketEncryption` | ⚠️ Region-dependent | Supported in `us-east-1`. Returns `AccessDenied` in `eu-west-1`, so you cannot read back a configuration there. Encryption is on either way. |
+| `PutBucketEncryption` | ⚠️ Region-dependent | Rejected with `AccessDenied` in `eu-west-1`, even for a valid SSE-S3 rule. Accepted but ineffective in `us-east-1`. Encryption cannot be modified or disabled. |
+| SSE-S3 (`AES256`) | ⚠️ Region-dependent | Accepted in `us-east-1`. In `eu-west-1` the bucket-level SSE-S3 configuration operations are rejected with `AccessDenied`. Encryption is applied automatically in both regions, so no header is needed. |
+| SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
+| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`. |
 | Client-side encryption | ✅ Optional | Encrypt data in your own application before upload. AWS's S3 Encryption Client exists only for some SDKs (Java, .NET, Go, Ruby) — not boto3, the CLI, or JS v3 — so with those you supply your own crypto. Server-side encryption is still applied on top. |
 
 See [Encryption](/security/encryption) for details.
@@ -161,7 +178,14 @@ See [Encryption](/security/encryption) for details.
 
 The S3 ACL model is **not supported**. Fil One does not implement bucket or object ACLs, bucket policies, or public access controls. All access requires SigV4 authentication.
 
-If your application passes ACL flags (e.g. `--acl public-read` in the AWS CLI, or `ACL: 'public-read'` in SDK calls), those flags are silently ignored — the request succeeds but no ACL is applied.
+How an ACL request fails depends on **how** you send it. Confirmed in `eu-west-1`:
+
+| What you send | Behavior |
+|---------------|----------|
+| A canned-ACL header on an upload (`--acl public-read` in the AWS CLI, `ACL: 'public-read'` on a `PutObject` SDK call) | The flag is silently ignored. The upload **succeeds** and the object is stored, but no ACL is applied and the object does not become public. |
+| A dedicated ACL call (`PutBucketAcl`, `PutObjectAcl`, `GetBucketAcl`, `GetObjectAcl`) | Rejected with `AccessDenied` (403). |
+
+So a tool that uploads with `--acl public-read` will appear to work, while a tool that sets ACLs as a separate step will fail outright. In neither case does the object become publicly readable. If you need unauthenticated access to an object, use a [presigned URL](#presigned-urls).
 
 Per-bucket access control via API key scoping is planned for a future release.
 
@@ -181,7 +205,7 @@ Per-bucket access control via API key scoping is planned for a future release.
 
 ## Error responses
 
-Fil One returns standard S3 error XML for all error conditions. If you're handling S3 errors in your application today, no changes are needed.
+Fil One returns standard S3 error XML, in the shape below, for all error conditions.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -193,7 +217,35 @@ Fil One returns standard S3 error XML for all error conditions. If you're handli
 </Error>
 ```
 
+The **format** is standard, but the specific code returned for a given condition does not always match AWS. If your application only surfaces error messages, no changes are needed. If it *branches* on error codes or HTTP statuses, review the deviations below.
+
 See the [Error Reference](/reference/errors) for a full list of error codes.
+
+### Known error-code deviations in `eu-west-1`
+
+Confirmed by a compatibility test run against the region.
+
+| Condition | AWS S3 returns | Fil One `eu-west-1` returns |
+|-----------|----------------|------------------------------|
+| Any unimplemented operation | `NotImplemented` (501) | `AccessDenied` (403) |
+| Reading a bucket or key you cannot see | `NoSuchBucket` / `NoSuchKey` (404) | `AccessDenied` (403) |
+| A checksum that does not match the body | `BadDigest` | `InvalidArgument` |
+| An unsatisfiable `Range` header | `InvalidRange` | `InvalidArgument` |
+| An invalid object tag | `InvalidTag` | `BadRequest` |
+| `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
+| A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
+
+Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Do not rely on the gateway to validate request parameters for you: validate on the client side where correctness matters.
+
+## Known behavioral issues in `eu-west-1`
+
+These are confirmed deviations that can affect a correctly written S3 client. They are open engineering issues, not intended behavior.
+
+| Area | Issue | Workaround |
+|------|-------|------------|
+| Pagination | `ListObjects` may return a `NextMarker` with an internal suffix appended to the key (for example `asdf[...]` instead of `asdf`). Feeding that value back as the next `Marker` will not resume where you left off. | Prefer `ListObjectsV2` with `ContinuationToken`, which is unaffected. If you must use `ListObjects`, do not trust `NextMarker`; page using the last returned key instead. |
+| URL encoding | With `EncodingType=url`, a space in a key or prefix is encoded as `+` rather than `%20`. Most SDKs decode `%20` only, so keys with spaces can come back wrong. | Avoid spaces in key names, or decode `+` as a space yourself when you request URL encoding. |
+| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Verify integrity with ETags, or compare a hash you compute yourself after download. |
 
 ## Differences from AWS S3
 
@@ -202,11 +254,12 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Behavior | AWS S3 | Fil One |
 |----------|--------|---------|
 | Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the dashboard; achievable via the API in `us-east-1` using `CopyObject`. |
-| Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. Not yet confirmed in `eu-west-1` — download and re-upload as a fallback there. |
+| Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
 | Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
-| Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. |
+| Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected, and never make an object public. |
+| Error codes for missing features | `NotImplemented` (501). | `AccessDenied` (403) in `eu-west-1`. A 403 on a bucket-configuration call means the feature is absent, not that your key lacks permission. |
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
 | Object Lock modes | Compliance and Governance. | Compliance and Governance. Legal Hold confirmed working in `us-east-1`; not yet confirmed in `eu-west-1`. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
