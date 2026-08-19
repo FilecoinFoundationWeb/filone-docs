@@ -2942,3 +2942,45 @@ Validation status: Not currently tested. Use an Amazon S3 bookmark with the endp
 Source: https://docs.fil.one/integrations/data-movement/aws-cli-sdk
 
 Validation status: Not currently tested. Use the maintained AWS CLI, boto3, JavaScript v3, and Go SDK pages rather than duplicated examples. Validate small and automatic-multipart uploads, listing, restore, SHA-256 and byte size, and exact-prefix cleanup. boto3 is the reference API workflow, not backup-product certification.
+
+# Acronis Cyber Protect
+
+Source: https://docs.fil.one/integrations/backup/acronis-cyber-protect
+
+Validation status: Not currently tested. Add Public cloud storage using S3 compatible, the regional endpoint and key, AuthV4, and an existing bucket. Validate a disposable backup, local deletion, restore, SHA-256 and size, and scoped cleanup. This is not Acronis certification; validate any immutability option separately.
+
+# Comet Backup
+
+Source: https://docs.fil.one/integrations/backup/comet-backup
+
+Validation status: Not currently tested. Configure an S3-compatible Storage Template or Custom Storage Vault with encrypted transmission. Complete Test Connection, backup, restore to a new directory, SHA-256 and size comparison, native vault checking, and isolated cleanup.
+
+# MSP360
+
+Source: https://docs.fil.one/integrations/backup/msp360
+
+Validation status: Not currently tested. Add an S3 Compatible storage account with the regional HTTPS endpoint, SigV4, certificate validation, and existing bucket. Validate small and multipart-sized backup, restore, hashes, and exact test-set cleanup.
+
+# NAKIVO Backup and Replication
+
+Source: https://docs.fil.one/integrations/backup/nakivo
+
+Validation status: Not currently tested. Configure an S3-compatible repository with matching endpoint, region, credentials, bucket, and TLS validation. Validate file-level recovery and repository verification using disposable data before relying on multipart, retention, or immutability behavior.
+
+# Synology Cloud Sync
+
+Source: https://docs.fil.one/integrations/nas/synology-cloud-sync
+
+Validation status: Not currently tested. Configure S3 Storage with a custom server URL, SigV4, and an existing bucket. Validate a dedicated-prefix sync and download-only recovery with SHA-256 and size. Test deletion semantics before enabling bidirectional sync.
+
+# QNAP HBS
+
+Source: https://docs.fil.one/integrations/nas/qnap-hbs
+
+Validation status: Not currently tested. Create an S3 Compatible HBS 3 Storage Space with SSL, certificate validation, SigV4, and an existing bucket. Back up disposable data, restore to a new folder, compare hashes, inspect logs, and keep retention or sync deletion inside the validation prefix.
+
+# TrueNAS Cloud Sync
+
+Source: https://docs.fil.one/integrations/nas/truenas-cloud-sync
+
+Validation status: Not currently tested. Configure Amazon S3 credentials with a custom endpoint and SigV4, then start with COPY to a dedicated folder. Validate PUSH and PULL to a separate dataset with size and SHA-256. SYNC can delete destination files and MOVE deletes source files.

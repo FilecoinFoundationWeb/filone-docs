@@ -1,0 +1,42 @@
+---
+title: TrueNAS Cloud Sync
+description: Configure a TrueNAS Cloud Sync push, pull, or sync task with Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# TrueNAS Cloud Sync
+
+TrueNAS Cloud Sync connects to Fil One with an Amazon S3 credential that uses a custom endpoint, SigV4, path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 access key and secret scoped to the bucket's region (leave signature version 2 disabled) |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named TrueNAS version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+In TrueNAS SCALE 22 and later, create the credential under Backup Credentials; in TrueNAS CORE, use the System cloud credentials page. Choose Amazon S3 with a custom endpoint, enter the regional key and region, keep signature version 2 disabled, and verify the credential. Create a Cloud Sync task using an existing bucket and a dedicated folder.
+
+Choose the COPY transfer mode for the first test. SYNC can delete destination files that are absent at the source, and MOVE deletes source files after transfer.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Run a PUSH of the fixture, then a PULL into a separate dataset; compare size and SHA-256.
+2. Inspect the task logs and confirm cleanup stays within the test folder.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Credential verification fails | Recheck endpoint, region, key scope, SigV4, and system time. |
+| Task succeeds with missing files | Compare the source and restored manifests before increasing concurrency. |

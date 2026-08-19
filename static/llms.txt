@@ -181,6 +181,13 @@ Critical integration notes for developers:
 - [rclone](https://docs.fil.one/integrations/data-movement/rclone): Not currently tested; configuration plus upload, restore, checksum, and cleanup validation
 - [Cyberduck and Mountain Duck](https://docs.fil.one/integrations/data-movement/cyberduck-mountain-duck): Not currently tested; bookmark, mount, restore, and troubleshooting guidance
 - [AWS CLI and SDKs](https://docs.fil.one/integrations/data-movement/aws-cli-sdk): Not currently tested; links to the maintained CLI and SDK guides without duplicating them
+- [Acronis Cyber Protect](https://docs.fil.one/integrations/backup/acronis-cyber-protect): Not currently tested; S3-compatible storage, backup, restore, and integrity validation
+- [Comet Backup](https://docs.fil.one/integrations/backup/comet-backup): Not currently tested; Storage Vault setup and restore validation
+- [MSP360](https://docs.fil.one/integrations/backup/msp360): Not currently tested; S3-compatible storage account and recovery workflow
+- [NAKIVO](https://docs.fil.one/integrations/backup/nakivo): Not currently tested; repository, recovery, and verification guidance
+- [Synology Cloud Sync](https://docs.fil.one/integrations/nas/synology-cloud-sync): Not currently tested; custom S3 task and download recovery
+- [QNAP HBS](https://docs.fil.one/integrations/nas/qnap-hbs): Not currently tested; HBS storage space, backup, and restore
+- [TrueNAS Cloud Sync](https://docs.fil.one/integrations/nas/truenas-cloud-sync): Not currently tested; credential, push, pull, and integrity workflow
 
 ## Optional
 

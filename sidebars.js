@@ -92,6 +92,25 @@ const sidebars = {
             "integrations/data-movement/aws-cli-sdk",
           ],
         },
+        {
+          type: "category",
+          label: "Backup and disaster recovery",
+          items: [
+            "integrations/backup/acronis-cyber-protect",
+            "integrations/backup/comet-backup",
+            "integrations/backup/msp360",
+            "integrations/backup/nakivo",
+          ],
+        },
+        {
+          type: "category",
+          label: "NAS and file services",
+          items: [
+            "integrations/nas/synology-cloud-sync",
+            "integrations/nas/qnap-hbs",
+            "integrations/nas/truenas-cloud-sync",
+          ],
+        },
       ],
     },
     "faq",

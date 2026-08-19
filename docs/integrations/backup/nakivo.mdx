@@ -1,0 +1,41 @@
+---
+title: NAKIVO Backup and Replication
+description: Configure Fil One as an S3-compatible NAKIVO repository.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# NAKIVO Backup and Replication
+
+NAKIVO Backup and Replication writes to Fil One as an S3-compatible repository, using SigV4, path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 access key and secret scoped to the bucket's region |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named NAKIVO Backup and Replication version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+Add an S3-compatible repository. Enter the regional endpoint, region, matching credentials, and an existing bucket. Keep HTTPS certificate validation enabled. Ensure the Transporter that performs data movement can reach the endpoint.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Back up a disposable workload with known file hashes, then perform file-level recovery to a different location and compare size and SHA-256.
+2. Run NAKIVO's repository verification if available.
+3. Exercise retention against only the test recovery point and confirm unrelated prefixes remain untouched.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Connection errors | Endpoint, key region, and path-style settings must match. |
+| Retention or immutability options | Validate against the named NAKIVO release and current [S3 Compatibility](/reference/s3-compatibility) behavior. |

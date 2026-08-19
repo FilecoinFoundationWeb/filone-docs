@@ -1,0 +1,42 @@
+---
+title: Acronis Cyber Protect
+description: Configure a Fil One storage location for Acronis backup and restore.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Acronis Cyber Protect
+
+Acronis Cyber Protect writes to Fil One as an S3-compatible backup location, using SigV4 (AuthV4), path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 (AuthV4) access key and secret scoped to the bucket's region |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Acronis Cyber Protect version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+In the Acronis administration console, add an S3-compatible storage location. Enter the regional endpoint, the matching access key, and AuthV4 signing from [Connection settings](/integrations/connection-settings). Select an existing Fil One bucket when prompted, then assign the location to a protection plan.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Protect the fixture directory with the plan, run it, and confirm the activity completes.
+2. Restore to a new location and compare size and SHA-256 for every restored file.
+3. Confirm that retention and cleanup operations affect only the test backup set.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Connection failure | Recheck endpoint, regional key, AuthV4, and TLS validation. |
+| Missing bucket | Create it first and ensure the key is scoped to it. |
+| Immutability option | This depends on Object Lock semantics. Review [S3 Compatibility](/reference/s3-compatibility) and validate it with the exact Acronis release before enabling it. |
