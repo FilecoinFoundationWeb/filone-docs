@@ -83,6 +83,7 @@ const sidebars = {
       items: [
         "integrations/index",
         "integrations/connection-settings",
+        "integrations/validate-an-integration",
         {
           type: "category",
           label: "Data movement",
@@ -126,6 +127,18 @@ const sidebars = {
           items: [
             "integrations/logging/elasticsearch-snapshots",
             "integrations/logging/splunk-smartstore",
+          ],
+        },
+        {
+          type: "category",
+          label: "Data and AI",
+          items: [
+            "integrations/data-ai/apache-iceberg",
+            "integrations/data-ai/databricks",
+            "integrations/data-ai/delta-lake",
+            "integrations/data-ai/duckdb",
+            "integrations/data-ai/hugging-face-datasets",
+            "integrations/data-ai/ray-data",
           ],
         },
       ],

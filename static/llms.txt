@@ -176,23 +176,30 @@ Critical integration notes for developers:
 
 ## Integrations
 
-- [Integrations](https://docs.fil.one/integrations): Validation status definitions and integration guide index
-- [Integration connection settings](https://docs.fil.one/integrations/connection-settings): Central endpoint, region, SigV4, path-style, and credential guidance
-- [rclone](https://docs.fil.one/integrations/data-movement/rclone): Not currently tested; configuration plus upload, restore, checksum, and cleanup validation
+- [Integrations](https://docs.fil.one/integrations): Validation status definitions and a table of every integration guide with its status
+- [Integration connection settings](https://docs.fil.one/integrations/connection-settings): Endpoints (https://eu-west-1.s3.fil.one, https://us-east-1.s3.fil.one), region, SigV4, path-style, and credential settings
+- [Validate an integration](https://docs.fil.one/integrations/validate-an-integration): The shared upload, list, restore, SHA-256, and cleanup round trip every guide links to
+- [rclone](https://docs.fil.one/integrations/data-movement/rclone): Not currently tested; provider Other, force_path_style, config example, rclone check validation
 - [Cyberduck and Mountain Duck](https://docs.fil.one/integrations/data-movement/cyberduck-mountain-duck): Not currently tested; bookmark, mount, restore, and troubleshooting guidance
-- [AWS CLI and SDKs](https://docs.fil.one/integrations/data-movement/aws-cli-sdk): Not currently tested; links to the maintained CLI and SDK guides without duplicating them
+- [AWS CLI and SDKs](https://docs.fil.one/integrations/data-movement/aws-cli-sdk): Not currently tested; the reference clients, with setup in the SDK guides
 - [Acronis Cyber Protect](https://docs.fil.one/integrations/backup/acronis-cyber-protect): Not currently tested; S3-compatible storage, backup, restore, and integrity validation
 - [Comet Backup](https://docs.fil.one/integrations/backup/comet-backup): Not currently tested; Storage Vault setup and restore validation
 - [MSP360](https://docs.fil.one/integrations/backup/msp360): Not currently tested; S3-compatible storage account and recovery workflow
-- [NAKIVO](https://docs.fil.one/integrations/backup/nakivo): Not currently tested; repository, recovery, and verification guidance
+- [NAKIVO Backup and Replication](https://docs.fil.one/integrations/backup/nakivo): Not currently tested; repository, recovery, and verification guidance
 - [Synology Cloud Sync](https://docs.fil.one/integrations/nas/synology-cloud-sync): Not currently tested; custom S3 task and download recovery
 - [QNAP HBS](https://docs.fil.one/integrations/nas/qnap-hbs): Not currently tested; HBS storage space, backup, and restore
 - [TrueNAS Cloud Sync](https://docs.fil.one/integrations/nas/truenas-cloud-sync): Not currently tested; credential, push, pull, and integrity workflow
 - [Velero](https://docs.fil.one/integrations/devops/velero): Not currently tested; Kubernetes backup, restore, and volume-scope validation
 - [Harbor](https://docs.fil.one/integrations/devops/harbor): Not currently tested; registry push, pull, digest, and garbage-collection guidance
-- [Terraform S3 backend](https://docs.fil.one/integrations/devops/terraform): Not currently tested; state migration, recovery, and concurrency cautions
-- [Elasticsearch snapshots](https://docs.fil.one/integrations/logging/elasticsearch-snapshots): Not currently tested; repository verification, restore, and searchable-snapshot validation
+- [Terraform S3 backend](https://docs.fil.one/integrations/devops/terraform): Not currently tested; endpoints and use_path_style backend settings, state migration, recovery, and concurrency validation
+- [Elasticsearch searchable snapshots](https://docs.fil.one/integrations/logging/elasticsearch-snapshots): Not currently tested; s3 repository client settings, repository verification, restore, and searchable-snapshot validation
 - [Splunk SmartStore](https://docs.fil.one/integrations/logging/splunk-smartstore): Not currently tested; remote storage, eviction, search, and recovery validation
+- [Apache Iceberg](https://docs.fil.one/integrations/data-ai/apache-iceberg): Not currently tested; S3FileIO, catalog, commits, and recovery validation
+- [Databricks](https://docs.fil.one/integrations/data-ai/databricks): Not currently tested; custom-endpoint compute, read, write, and fresh-cluster recovery
+- [Delta Lake](https://docs.fil.one/integrations/data-ai/delta-lake): Not currently tested; transaction log, checkpoints, concurrency, and recovery
+- [DuckDB](https://docs.fil.one/integrations/data-ai/duckdb): Not currently tested; httpfs read, write, and cache-independent validation
+- [Hugging Face Datasets](https://docs.fil.one/integrations/data-ai/hugging-face-datasets): Not currently tested; load, streaming, cache clearing, and package-version guidance
+- [Ray Data](https://docs.fil.one/integrations/data-ai/ray-data): Not currently tested; distributed reads, writes, worker configuration, and retry validation
 
 ## Optional
 

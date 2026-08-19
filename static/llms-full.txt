@@ -2917,100 +2917,142 @@ Intelligence deliberately per bucket rather than across everything.
 
 Source: https://docs.fil.one/integrations
 
-Integration guides are compatibility guidance, not vendor certification. Verified requires a named tool version, end-to-end workflow, restore, integrity check, evidence link, verification date, and coverage in every listed region. Other states are Compatible, Preview, Not currently tested, and Not currently supported.
+Each integration guide gives the connection settings, a validation procedure, and troubleshooting for one tool. Statuses: Verified (named tool version completed the end-to-end workflow, restore, and integrity check in every listed region, with evidence and date), Compatible (an end-to-end run exists for a named version, but not for every region or not within the last 12 months), Preview (runnable validation path, incomplete coverage), Not currently tested (no end-to-end run recorded for any version or region), Not currently supported (a known product or addressing requirement blocks the integration). All 21 published guides are Not currently tested. The index page lists every guide with its status.
 
 # Integration connection settings
 
 Source: https://docs.fil.one/integrations/connection-settings
 
-Use the endpoint in the bucket's Access endpoints panel and keep it in configuration. Endpoint, region, API key, and bucket must belong to the same region. Use SigV4, path-style addressing, HTTPS, and certificate validation. Never put secret keys in docs, screenshots, source control, or command-line history. Current API behavior lives in the S3 Compatibility reference.
+Endpoint: https://eu-west-1.s3.fil.one or https://us-east-1.s3.fil.one, matching the bucket's region (also shown in the bucket's Access endpoints panel). Region: eu-west-1 or us-east-1. Authentication: SigV4 with a key created for the same region and scoped to the bucket. Addressing: path style required. Endpoint, region, key, and bucket must belong to the same region. Keep TLS certificate validation enabled and secret keys out of docs, screenshots, source control, and command-line history. Feature availability differs between the S3 API and the app.fil.one dashboard; the S3 Compatibility reference covers API behavior.
+
+# Validate an integration
+
+Source: https://docs.fil.one/integrations/validate-an-integration
+
+The round trip every guide links to: create a fixture with a small file, a nested file, and a file large enough to trigger multipart upload; copy it to a unique disposable prefix; list the prefix; remove the local copy; restore to a new directory; compare byte size and SHA-256 for every file; delete only that prefix and confirm it is empty. Run it with disposable data before pointing production workloads at the bucket. Record tool version, region, and date with the result.
 
 # rclone
 
 Source: https://docs.fil.one/integrations/data-movement/rclone
 
-Validation status: Not currently tested. Configure an Other S3 provider with the bucket's endpoint and region, path-style access, and prompted or secret-store credentials. Validate a small, nested, and multipart-sized fixture under a unique prefix; list it, delete the local copy, restore, compare size and SHA-256, run rclone check --download, and delete only that prefix.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named rclone version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. rclone connects to Fil One as an S3 remote with provider = Other, SigV4 signing, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Cyberduck and Mountain Duck
 
 Source: https://docs.fil.one/integrations/data-movement/cyberduck-mountain-duck
 
-Validation status: Not currently tested. Use an Amazon S3 bookmark with the endpoint hostname, matching regional key, bucket path, HTTPS, and certificate validation. Validate nested upload, download, SHA-256, rename, delete, and recovery with disposable data. Mountain Duck uses the same bookmark settings for a desktop mount.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Cyberduck or Mountain Duck version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Cyberduck and Mountain Duck connect to Fil One through Cyberduck's path-style S3 connection profile, using SigV4 and a key scoped to the bucket's region. Mountain Duck uses the same bookmark and mounts the bucket in Finder or File Explorer. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # AWS CLI and SDKs
 
 Source: https://docs.fil.one/integrations/data-movement/aws-cli-sdk
 
-Validation status: Not currently tested. Use the maintained AWS CLI, boto3, JavaScript v3, and Go SDK pages rather than duplicated examples. Validate small and automatic-multipart uploads, listing, restore, SHA-256 and byte size, and exact-prefix cleanup. boto3 is the reference API workflow, not backup-product certification.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named AWS CLI or SDK version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. The AWS CLI and SDKs are Fil One's reference clients; see the SDK guides for setup. Each client takes the regional endpoint, SigV4 credentials, and path-style addressing. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Acronis Cyber Protect
 
 Source: https://docs.fil.one/integrations/backup/acronis-cyber-protect
 
-Validation status: Not currently tested. Add Public cloud storage using S3 compatible, the regional endpoint and key, AuthV4, and an existing bucket. Validate a disposable backup, local deletion, restore, SHA-256 and size, and scoped cleanup. This is not Acronis certification; validate any immutability option separately.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Acronis Cyber Protect version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Acronis Cyber Protect writes to Fil One as an S3-compatible backup location, using SigV4 (AuthV4), path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Comet Backup
 
 Source: https://docs.fil.one/integrations/backup/comet-backup
 
-Validation status: Not currently tested. Configure an S3-compatible Storage Template or Custom Storage Vault with encrypted transmission. Complete Test Connection, backup, restore to a new directory, SHA-256 and size comparison, native vault checking, and isolated cleanup.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Comet Backup version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Comet Backup writes to Fil One through an S3-compatible Storage Vault, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # MSP360
 
 Source: https://docs.fil.one/integrations/backup/msp360
 
-Validation status: Not currently tested. Add an S3 Compatible storage account with the regional HTTPS endpoint, SigV4, certificate validation, and existing bucket. Validate small and multipart-sized backup, restore, hashes, and exact test-set cleanup.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named MSP360 version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. MSP360 writes to Fil One as an S3-compatible storage account, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # NAKIVO Backup and Replication
 
 Source: https://docs.fil.one/integrations/backup/nakivo
 
-Validation status: Not currently tested. Configure an S3-compatible repository with matching endpoint, region, credentials, bucket, and TLS validation. Validate file-level recovery and repository verification using disposable data before relying on multipart, retention, or immutability behavior.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named NAKIVO Backup and Replication version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. NAKIVO Backup and Replication writes to Fil One as an S3-compatible repository, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Synology Cloud Sync
 
 Source: https://docs.fil.one/integrations/nas/synology-cloud-sync
 
-Validation status: Not currently tested. Configure S3 Storage with a custom server URL, SigV4, and an existing bucket. Validate a dedicated-prefix sync and download-only recovery with SHA-256 and size. Test deletion semantics before enabling bidirectional sync.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Synology Cloud Sync version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Synology Cloud Sync connects to Fil One as S3 storage with a custom server URL, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # QNAP HBS
 
 Source: https://docs.fil.one/integrations/nas/qnap-hbs
 
-Validation status: Not currently tested. Create an S3 Compatible HBS 3 Storage Space with SSL, certificate validation, SigV4, and an existing bucket. Back up disposable data, restore to a new folder, compare hashes, inspect logs, and keep retention or sync deletion inside the validation prefix.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named QNAP HBS version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. QNAP Hybrid Backup Sync (HBS 3) connects to Fil One as an S3-compatible storage space, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # TrueNAS Cloud Sync
 
 Source: https://docs.fil.one/integrations/nas/truenas-cloud-sync
 
-Validation status: Not currently tested. Configure Amazon S3 credentials with a custom endpoint and SigV4, then start with COPY to a dedicated folder. Validate PUSH and PULL to a separate dataset with size and SHA-256. SYNC can delete destination files and MOVE deletes source files.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named TrueNAS version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. TrueNAS Cloud Sync connects to Fil One with an Amazon S3 credential that uses a custom endpoint, SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Velero
 
 Source: https://docs.fil.one/integrations/devops/velero
 
-Validation status: Not currently tested. Configure the AWS object-store plugin with an existing bucket, regional endpoint and region, path-style access, and credentials in a Kubernetes Secret. Validate a disposable namespace backup, deletion, restore, resources, data hashes, logs, and scoped cleanup. Volume snapshots are a separate provider concern. This is not a supported-provider or certification claim.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Velero version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Velero writes backups to Fil One through its AWS object-store plugin, with a backup storage location that sets s3Url to the regional endpoint, s3ForcePathStyle: "true", and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Harbor
 
 Source: https://docs.fil.one/integrations/devops/harbor
 
-Validation status: Not currently tested. Configure the s3 registry driver with a dedicated bucket or prefix, regional endpoint, region, TLS, path style, and protected credentials. Validate image push, local deletion, pull, digest, container start, and garbage collection. Harbor database backup is separate.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Harbor version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Harbor stores image layers in Fil One through the registry's s3 storage driver, with regionendpoint set to the regional endpoint, forcepathstyle: true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Terraform S3 backend
 
 Source: https://docs.fil.one/integrations/devops/terraform
 
-Validation status: Not currently tested. Configure an existing bucket, dedicated state key, custom endpoint, matching region, and path style without embedding credentials. Validate init, apply, empty plan, offline state backup, reinitialization, recovery, and concurrent writers. Do not enable S3 lock-file behavior until conditional writes are proven for the exact release and region.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Terraform version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Terraform's s3 backend stores state in Fil One with endpoints { s3 = ... } set to the regional endpoint and use_path_style = true (Terraform 1.6 and later backend syntax), signed with SigV4 by a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Elasticsearch searchable snapshots
 
 Source: https://docs.fil.one/integrations/logging/elasticsearch-snapshots
 
-Validation status: Not currently tested. Install repository-s3 where required, keep credentials in the keystore, configure endpoint, region, and path style, and register a dedicated base_path. Validate repository verification, snapshot, index deletion, restore, counts and hashes. Searchable snapshots have separate license and mount validation.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Elasticsearch version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Elasticsearch stores snapshots in Fil One through an s3 repository whose named client sets endpoint, region, and path_style_access: true, with a key scoped to the bucket's region held in the keystore. Elasticsearch 8.x includes repository-s3; on 7.x install the plugin on every node. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Splunk SmartStore
 
 Source: https://docs.fil.one/integrations/logging/splunk-smartstore
 
-Validation status: Not currently tested. Define remote storage with the bucket, endpoint, auth region, path-style URL mode, and protected credentials, then reference it from intended indexes. Validate upload, eviction, remote-backed search, test-indexer replacement, recovery, event counts, and bounded cache behavior. Licensing and topology requirements apply.
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Splunk Enterprise version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Splunk SmartStore uses Fil One as a remote volume in indexes.conf, with remote.s3.endpoint set to the regional endpoint, remote.s3.auth_region set to the bucket's region, path-style URLs, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Apache Iceberg
+
+Source: https://docs.fil.one/integrations/data-ai/apache-iceberg
+
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Apache Iceberg version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Apache Iceberg reads and writes table data in Fil One through S3FileIO, with s3.endpoint set to the regional endpoint, s3.path-style-access=true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Databricks
+
+Source: https://docs.fil.one/integrations/data-ai/databricks
+
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Databricks Runtime version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Availability of custom S3-compatible endpoints varies by Databricks compute mode. On compute that permits a custom endpoint, Databricks reads and writes Fil One through the S3 connector with the regional endpoint, path-style access, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Delta Lake
+
+Source: https://docs.fil.one/integrations/data-ai/delta-lake
+
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Delta Lake version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Delta Lake on Spark reads and writes Fil One through the s3a connector, with fs.s3a.endpoint set to the regional endpoint, fs.s3a.path.style.access=true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# DuckDB
+
+Source: https://docs.fil.one/integrations/data-ai/duckdb
+
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named DuckDB version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. DuckDB reads and writes Fil One through the httpfs extension with an S3 secret that sets ENDPOINT to the regional hostname, URL_STYLE 'path', and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Hugging Face Datasets
+
+Source: https://docs.fil.one/integrations/data-ai/hugging-face-datasets
+
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Hugging Face Datasets version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Hugging Face datasets reads files in Fil One through fsspec and s3fs, passing the regional endpoint, region, path-style addressing, and a key scoped to the bucket's region as storage options. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Ray Data
+
+Source: https://docs.fil.one/integrations/data-ai/ray-data
+
+Validation status: Not currently tested. Fil One has not yet run the round trip in the guide with a named Ray version in eu-west-1 and us-east-1; results will be added to the guide with version, date, and evidence. Ray Data reads and writes Fil One through a PyArrow S3FileSystem with endpoint_override set to the regional endpoint, region set to the bucket's region, path-style addressing, and a key scoped to the bucket's region on every worker. Configuration, tool-specific validation steps, and troubleshooting are on the page.

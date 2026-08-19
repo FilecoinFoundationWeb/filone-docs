@@ -1,0 +1,41 @@
+---
+title: Hugging Face Datasets
+description: Evaluate Hugging Face Datasets access to files stored in Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Hugging Face Datasets
+
+Hugging Face `datasets` reads files in Fil One through `fsspec` and `s3fs`, passing the regional endpoint, region, path-style addressing, and a key scoped to the bucket's region as storage options.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`client_kwargs={"endpoint_url": ...}`) |
+| Region | `eu-west-1` or `us-east-1` (`client_kwargs={"region_name": ...}`) |
+| Addressing | Path style (`config_kwargs={"s3": {"addressing_style": "path"}}`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region (`key` and `secret`) |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Hugging Face Datasets version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+Pass the regional endpoint, region, matching credentials, and path-style behavior through the storage options supported by the installed `s3fs` release. Load credentials from a secret store or environment and keep them out of notebooks. Use explicit object paths under an existing bucket. Pin and record the complete Python package set, because endpoint and addressing options can change across `datasets`, `fsspec`, and `s3fs`.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Load a disposable dataset normally and in streaming mode. Compare feature schema, row count, and deterministic sample hashes.
+2. Clear the local cache and load it again to confirm the remote path is sufficient.
+3. If preprocessing writes cache or transformed data remotely, isolate that output under a unique prefix and validate its cleanup.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Load works once, then fails | A local cache can mask remote errors; clear the cache and repeat. |
+| Requests target a bucket subdomain | Set the path-style addressing option for the installed `s3fs` release. |
