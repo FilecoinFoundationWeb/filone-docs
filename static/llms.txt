@@ -188,6 +188,11 @@ Critical integration notes for developers:
 - [Synology Cloud Sync](https://docs.fil.one/integrations/nas/synology-cloud-sync): Not currently tested; custom S3 task and download recovery
 - [QNAP HBS](https://docs.fil.one/integrations/nas/qnap-hbs): Not currently tested; HBS storage space, backup, and restore
 - [TrueNAS Cloud Sync](https://docs.fil.one/integrations/nas/truenas-cloud-sync): Not currently tested; credential, push, pull, and integrity workflow
+- [Velero](https://docs.fil.one/integrations/devops/velero): Not currently tested; Kubernetes backup, restore, and volume-scope validation
+- [Harbor](https://docs.fil.one/integrations/devops/harbor): Not currently tested; registry push, pull, digest, and garbage-collection guidance
+- [Terraform S3 backend](https://docs.fil.one/integrations/devops/terraform): Not currently tested; state migration, recovery, and concurrency cautions
+- [Elasticsearch snapshots](https://docs.fil.one/integrations/logging/elasticsearch-snapshots): Not currently tested; repository verification, restore, and searchable-snapshot validation
+- [Splunk SmartStore](https://docs.fil.one/integrations/logging/splunk-smartstore): Not currently tested; remote storage, eviction, search, and recovery validation
 
 ## Optional
 

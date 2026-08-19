@@ -1,0 +1,42 @@
+---
+title: Velero
+description: Configure Velero object storage for Kubernetes backup and restore with Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Velero
+
+Velero writes backups to Fil One through its AWS object-store plugin, with a backup storage location that sets `s3Url` to the regional endpoint, `s3ForcePathStyle: "true"`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`s3Url`) |
+| Region | `eu-west-1` or `us-east-1` (`region`) |
+| Addressing | Path style (`s3ForcePathStyle: "true"`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through a Kubernetes Secret |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Velero version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+Install Velero with its AWS object-store plugin. Configure a backup storage location with the existing bucket, `region`, `s3Url`, and `s3ForcePathStyle: "true"`. Supply the key through a Kubernetes Secret rather than a manifest committed to source control. Volume-snapshot support is separate from object storage and requires its own provider.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Create a disposable namespace containing representative objects and persistent data.
+2. Run a backup, inspect `velero backup describe --details` and the logs, delete the namespace, then restore it.
+3. Verify resource counts, application data, and file hashes. Confirm that expiration or cleanup affects only the test backup.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Storage location unavailable | Endpoint, region, secret, bucket scope, or `s3ForcePathStyle` is wrong. |
+| Version mismatch | Check Velero, plugin, and Kubernetes compatibility as a version set. |
+| Metadata restores but volumes do not | Volume recovery needs a snapshot or file-system backup provider; test it separately. |

@@ -111,6 +111,23 @@ const sidebars = {
             "integrations/nas/truenas-cloud-sync",
           ],
         },
+        {
+          type: "category",
+          label: "Kubernetes and DevOps",
+          items: [
+            "integrations/devops/velero",
+            "integrations/devops/harbor",
+            "integrations/devops/terraform",
+          ],
+        },
+        {
+          type: "category",
+          label: "SIEM and logging",
+          items: [
+            "integrations/logging/elasticsearch-snapshots",
+            "integrations/logging/splunk-smartstore",
+          ],
+        },
       ],
     },
     "faq",

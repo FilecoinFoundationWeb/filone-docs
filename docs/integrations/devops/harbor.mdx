@@ -1,0 +1,43 @@
+---
+title: Harbor
+description: Configure Harbor registry storage on a Fil One S3-compatible bucket.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Harbor
+
+Harbor stores image layers in Fil One through the registry's `s3` storage driver, with `regionendpoint` set to the regional endpoint, `forcepathstyle: true`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`regionendpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`region`) |
+| Addressing | Path style (`forcepathstyle: true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region (`v4auth: true`) |
+| TLS | `secure: true` |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Harbor version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+Set Harbor's registry storage driver to `s3`. Provide the existing bucket, `regionendpoint`, `region`, `secure: true`, and `forcepathstyle: true`. Store credentials in the deployment's secret mechanism. Use a dedicated bucket or prefix so registry garbage collection cannot affect unrelated objects. Back up Harbor's database separately; the registry bucket holds only image layers.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Push a disposable image with several layers, remove the local image, and pull it again. Compare the image digest and start a container.
+2. Inspect Harbor and registry logs.
+3. Delete the test artifact, run garbage collection in dry-run mode first, then confirm only unreferenced test layers are removed.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Redirects or bucket-subdomain requests | Set `forcepathstyle: true`. |
+| `403` | Key region does not match the endpoint, or the key is not scoped to the bucket. |
+| Multipart or garbage-collection failures | Rerun the validation with the exact Harbor release before production rollout. |

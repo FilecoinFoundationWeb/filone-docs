@@ -2984,3 +2984,33 @@ Validation status: Not currently tested. Create an S3 Compatible HBS 3 Storage S
 Source: https://docs.fil.one/integrations/nas/truenas-cloud-sync
 
 Validation status: Not currently tested. Configure Amazon S3 credentials with a custom endpoint and SigV4, then start with COPY to a dedicated folder. Validate PUSH and PULL to a separate dataset with size and SHA-256. SYNC can delete destination files and MOVE deletes source files.
+
+# Velero
+
+Source: https://docs.fil.one/integrations/devops/velero
+
+Validation status: Not currently tested. Configure the AWS object-store plugin with an existing bucket, regional endpoint and region, path-style access, and credentials in a Kubernetes Secret. Validate a disposable namespace backup, deletion, restore, resources, data hashes, logs, and scoped cleanup. Volume snapshots are a separate provider concern. This is not a supported-provider or certification claim.
+
+# Harbor
+
+Source: https://docs.fil.one/integrations/devops/harbor
+
+Validation status: Not currently tested. Configure the s3 registry driver with a dedicated bucket or prefix, regional endpoint, region, TLS, path style, and protected credentials. Validate image push, local deletion, pull, digest, container start, and garbage collection. Harbor database backup is separate.
+
+# Terraform S3 backend
+
+Source: https://docs.fil.one/integrations/devops/terraform
+
+Validation status: Not currently tested. Configure an existing bucket, dedicated state key, custom endpoint, matching region, and path style without embedding credentials. Validate init, apply, empty plan, offline state backup, reinitialization, recovery, and concurrent writers. Do not enable S3 lock-file behavior until conditional writes are proven for the exact release and region.
+
+# Elasticsearch searchable snapshots
+
+Source: https://docs.fil.one/integrations/logging/elasticsearch-snapshots
+
+Validation status: Not currently tested. Install repository-s3 where required, keep credentials in the keystore, configure endpoint, region, and path style, and register a dedicated base_path. Validate repository verification, snapshot, index deletion, restore, counts and hashes. Searchable snapshots have separate license and mount validation.
+
+# Splunk SmartStore
+
+Source: https://docs.fil.one/integrations/logging/splunk-smartstore
+
+Validation status: Not currently tested. Define remote storage with the bucket, endpoint, auth region, path-style URL mode, and protected credentials, then reference it from intended indexes. Validate upload, eviction, remote-backed search, test-indexer replacement, recovery, event counts, and bounded cache behavior. Licensing and topology requirements apply.
