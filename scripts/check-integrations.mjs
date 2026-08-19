@@ -39,7 +39,7 @@ for (const file of guides) {
       const field = value(key);
       if (!field || field === "[]" || field === "null") failures.push(`${file}: Verified requires ${key}`);
     }
-    if (!/^\[[^\]]+\]$/.test(value("tested_versions") ?? "")) failures.push(`${file}: Verified versions must be a non-empty inline list`);
+    if (!/^\[[^\]]*\S[^\]]*\]$/.test(value("tested_versions") ?? "")) failures.push(`${file}: Verified versions must be a non-empty inline list`);
     if (!/^\[(eu-west-1|us-east-1)(,\s*(eu-west-1|us-east-1))*\]$/.test(value("verified_regions") ?? "")) failures.push(`${file}: Verified regions must use public region IDs`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value("verification_date") ?? "")) failures.push(`${file}: Verified requires an ISO verification date`);
     if (!/^https:\/\//.test(value("evidence") ?? "")) failures.push(`${file}: Verified evidence must be an HTTPS link`);
@@ -47,7 +47,7 @@ for (const file of guides) {
   if (status !== "Verified" && /(^|\W)Verified(\W|$)/.test(body)) {
     failures.push(`${file}: body uses Verified without Verified metadata`);
   }
-  if (status && !blocked) {
+  if (status) {
     const statusLines = body.split("\n").filter((line) => line.startsWith("Validation status: "));
     if (statusLines.length !== 1 || !statusLines[0].startsWith(`Validation status: ${status}.`)) {
       failures.push(`${file}: body must contain exactly one line starting with "Validation status: ${status}."`);
