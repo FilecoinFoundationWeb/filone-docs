@@ -1,0 +1,26 @@
+---
+title: Integrations
+description: Configure and validate third-party tools with Fil One object storage.
+---
+
+# Integrations
+
+These guides explain how to connect common transfer, backup, NAS, DevOps, analytics, and AI tools to Fil One. Each guide gives the connection settings, a validation procedure, and troubleshooting for one tool.
+
+Every guide displays one of these validation states:
+
+| Status | Meaning |
+| --- | --- |
+| **Verified** | A named tool version completed the documented end-to-end workflow, restore, and integrity check in every listed region. The guide includes the evidence and verification date. |
+| **Compatible** | An end-to-end run exists for a named version, but not for every region or not within the last 12 months. |
+| **Preview** | A runnable validation path exists, but coverage is incomplete. |
+| **Not currently tested** | No end-to-end run has been recorded for any version or region. Follow the validation steps before production use. |
+| **Not currently supported** | A known product or addressing requirement blocks the integration. |
+
+Start with [Connection settings](/integrations/connection-settings) and the [validation round trip](/integrations/validate-an-integration), then open the guide for your tool. For API behavior, use the [S3 Compatibility reference](/reference/s3-compatibility).
+
+| Category | Tool | Status |
+| --- | --- | --- |
+| Data movement | [rclone](/integrations/data-movement/rclone) | Not currently tested |
+| Data movement | [Cyberduck and Mountain Duck](/integrations/data-movement/cyberduck-mountain-duck) | Not currently tested |
+| Data movement | [AWS CLI and SDKs](/integrations/data-movement/aws-cli-sdk) | Not currently tested |

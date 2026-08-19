@@ -1,0 +1,38 @@
+---
+title: AWS CLI and SDKs
+description: Use existing Fil One AWS CLI and SDK guides for data movement workflows.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# AWS CLI and SDKs
+
+The AWS CLI and SDKs are Fil One's reference clients; see the [SDK guides](/sdk/overview) for setup. Each client takes the regional endpoint, SigV4 credentials, and path-style addressing.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style (`forcePathStyle: true` in JavaScript, `UsePathStyle: true` in Go, `addressing_style: path` in boto3 and the CLI) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named AWS CLI or SDK version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+Follow the guide for your client: [AWS CLI](/sdk/cli), [Python with boto3](/sdk/python), [JavaScript with AWS SDK v3](/sdk/javascript), or [Go with aws-sdk-go-v2](/sdk/go). Apply the [connection settings](/integrations/connection-settings) to each client.
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration). Include a file above the client's multipart threshold so automatic multipart upload is exercised. For supported operations and regional differences, see [S3 Compatibility](/reference/s3-compatibility); for object and part sizes, see [Limits & Quotas](/limits).
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Requests go to a bucket subdomain | Set the client's path-style option. |
+| Signature mismatch or `403` | Endpoint, region, and key must belong to the same region and the key must be scoped to the bucket. |
+| Optional operation returns `403` or `NotImplemented` | Compare against [S3 Compatibility](/reference/s3-compatibility). |

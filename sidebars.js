@@ -77,6 +77,23 @@ const sidebars = {
         "sdk/cli",
       ],
     },
+    {
+      type: "category",
+      label: "Integrations",
+      items: [
+        "integrations/index",
+        "integrations/connection-settings",
+        {
+          type: "category",
+          label: "Data movement",
+          items: [
+            "integrations/data-movement/rclone",
+            "integrations/data-movement/cyberduck-mountain-duck",
+            "integrations/data-movement/aws-cli-sdk",
+          ],
+        },
+      ],
+    },
     "faq",
     "limits",
   ],

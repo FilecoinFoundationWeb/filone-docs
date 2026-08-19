@@ -1,0 +1,18 @@
+---
+title: Validate an integration
+description: The round trip every Fil One integration guide uses to confirm upload, restore, and integrity.
+---
+
+# Validate an integration
+
+Every integration guide links to this round trip. Run it with disposable data before pointing production workloads at the bucket.
+
+1. Create a local fixture directory containing a small text file, a nested file, and a file large enough to trigger multipart upload in the tool (above the tool's part or chunk threshold; see [Limits & Quotas](/limits) for part sizes).
+2. Copy the fixture to a unique, disposable prefix in the bucket, for example `validation-YYYYMMDD-HHMM/`.
+3. List the prefix and confirm every file is present.
+4. Remove the local copy of the fixture.
+5. Restore the prefix to a new local directory.
+6. Compare byte size and SHA-256 for every restored file against the values recorded before upload.
+7. Delete only that prefix, then list it again to confirm it is empty.
+
+Record the tool version, the region, and the date with the result. The tool-specific guide adds any steps that go beyond this round trip.

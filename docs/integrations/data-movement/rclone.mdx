@@ -1,0 +1,61 @@
+---
+title: rclone
+description: Configure rclone for upload, restore, and integrity checks with Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# rclone
+
+rclone connects to Fil One as an S3 remote with `provider = Other`, SigV4 signing, path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style (`force_path_style = true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region |
+| Provider | `Other` |
+
+Validation status: Not currently tested. Fil One has not yet run the round trip below with a named rclone version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
+
+## Configure
+
+Run `rclone config`, create a new remote, choose **Amazon S3 Compliant Storage Providers**, and select **Other** as the provider. Enter the bucket's region and endpoint when prompted, enable path-style access, and enter credentials at rclone's prompts. The resulting section in `rclone.conf` looks like this:
+
+```ini
+[filone]
+type = s3
+provider = Other
+access_key_id = ACCESS_KEY
+secret_access_key = SECRET_KEY
+region = eu-west-1
+endpoint = https://eu-west-1.s3.fil.one
+force_path_style = true
+```
+
+Test discovery without changing remote data:
+
+```bash
+rclone lsd filone:
+```
+
+## Validate
+
+Follow the [validation round trip](/integrations/validate-an-integration), then:
+
+1. Copy with `rclone copy ./fixture filone:BUCKET/VALIDATION_PREFIX` and list with `rclone lsjson filone:BUCKET/VALIDATION_PREFIX`.
+2. Restore with `rclone copy filone:BUCKET/VALIDATION_PREFIX ./restored`.
+3. Run `rclone check --download ./restored filone:BUCKET/VALIDATION_PREFIX`.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Signature mismatch | Endpoint, region, and key must refer to the same region; confirm `force_path_style = true`. |
+| Bucket not found | Confirm the bucket already exists and the key is scoped to it. |
+| TLS error | Keep certificate validation enabled; inspect local proxy or trust-store configuration. |
+| Cleanup leaves data | List the exact validation prefix and remove only that prefix. |

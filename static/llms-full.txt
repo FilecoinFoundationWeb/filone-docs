@@ -2913,3 +2913,32 @@ Embeddings and extracted chunk text are held in storage Fil One manages, separat
 from the bucket. Objects themselves are not moved or modified. Extracted chunk
 text is retained in the index so answers can quote it — enable Bucket
 Intelligence deliberately per bucket rather than across everything.
+# Integrations
+
+Source: https://docs.fil.one/integrations
+
+Integration guides are compatibility guidance, not vendor certification. Verified requires a named tool version, end-to-end workflow, restore, integrity check, evidence link, verification date, and coverage in every listed region. Other states are Compatible, Preview, Not currently tested, and Not currently supported.
+
+# Integration connection settings
+
+Source: https://docs.fil.one/integrations/connection-settings
+
+Use the endpoint in the bucket's Access endpoints panel and keep it in configuration. Endpoint, region, API key, and bucket must belong to the same region. Use SigV4, path-style addressing, HTTPS, and certificate validation. Never put secret keys in docs, screenshots, source control, or command-line history. Current API behavior lives in the S3 Compatibility reference.
+
+# rclone
+
+Source: https://docs.fil.one/integrations/data-movement/rclone
+
+Validation status: Not currently tested. Configure an Other S3 provider with the bucket's endpoint and region, path-style access, and prompted or secret-store credentials. Validate a small, nested, and multipart-sized fixture under a unique prefix; list it, delete the local copy, restore, compare size and SHA-256, run rclone check --download, and delete only that prefix.
+
+# Cyberduck and Mountain Duck
+
+Source: https://docs.fil.one/integrations/data-movement/cyberduck-mountain-duck
+
+Validation status: Not currently tested. Use an Amazon S3 bookmark with the endpoint hostname, matching regional key, bucket path, HTTPS, and certificate validation. Validate nested upload, download, SHA-256, rename, delete, and recovery with disposable data. Mountain Duck uses the same bookmark settings for a desktop mount.
+
+# AWS CLI and SDKs
+
+Source: https://docs.fil.one/integrations/data-movement/aws-cli-sdk
+
+Validation status: Not currently tested. Use the maintained AWS CLI, boto3, JavaScript v3, and Go SDK pages rather than duplicated examples. Validate small and automatic-multipart uploads, listing, restore, SHA-256 and byte size, and exact-prefix cleanup. boto3 is the reference API workflow, not backup-product certification.
