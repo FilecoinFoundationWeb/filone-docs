@@ -1,0 +1,38 @@
+---
+title: QNAP HBS
+description: Configure QNAP Hybrid Backup Sync with Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# QNAP HBS
+
+QNAP Hybrid Backup Sync (HBS 3) connects to Fil One as an S3-compatible storage space, using SigV4, path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 access key and secret scoped to the bucket's region |
+
+## Configure
+
+In HBS 3, create a storage space of the S3-compatible type. Enter the regional endpoint, region, SigV4 credentials, and existing bucket. Enable SSL and certificate validation. Create a backup or sync job targeting a dedicated remote prefix.
+
+## Examples
+
+1. Run the backup job for the fixture, delete the local fixture, and restore it to a new folder; compare size and SHA-256.
+2. Review the HBS job log for skipped files.
+3. Test retention or sync deletion only inside the validation prefix.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Timestamp or signature errors | Enable NTP on the NAS; choose SigV4 and the correct region. |
+| Connection fails | Confirm the service address includes HTTPS and does not construct a bucket subdomain. |
+| Large-file failures | Capture a repeatable failure before reducing concurrency or chunk size. |

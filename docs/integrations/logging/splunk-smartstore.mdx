@@ -1,0 +1,37 @@
+---
+title: Splunk SmartStore
+description: Evaluate Fil One as remote storage for Splunk SmartStore.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Splunk SmartStore
+
+Splunk SmartStore uses Fil One as a `remote` volume in `indexes.conf`, with `remote.s3.endpoint` set to the regional endpoint, `remote.s3.auth_region` set to the bucket's region, path-style URLs, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`remote.s3.endpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`remote.s3.auth_region`) |
+| Addressing | Path style (`remote.s3.url_version = v1`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region (`remote.s3.signature_version = v4`) |
+
+## Configure
+
+Define a `remote` volume in `indexes.conf` with the existing bucket, regional endpoint, auth region, path-style URL mode, and versioning behavior appropriate to the bucket. Reference the volume from each intended index with `remotePath`. Store credentials through the deployment's protected configuration workflow and apply the settings consistently across an indexer cluster. SmartStore licensing and topology requirements apply.
+
+## Examples
+
+1. Index disposable events, roll data to remote storage, and confirm searches can fetch evicted buckets.
+2. Restart or replace a test indexer and verify remote recovery. Compare event counts and representative hashes or fields.
+3. Exercise cache eviction under a bounded test load before choosing concurrency and cache-size settings.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Remote errors | Use `splunk btool` to inspect effective configuration; check endpoint, auth region, URL style, clock skew, and credential scope. |
+| Uploads succeed but searches fail after eviction | Review indexer and cache-manager logs and rerun the search-after-eviction step. |

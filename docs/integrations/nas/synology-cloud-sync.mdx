@@ -1,0 +1,38 @@
+---
+title: Synology Cloud Sync
+description: Configure Synology Cloud Sync with a Fil One bucket.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Synology Cloud Sync
+
+Synology Cloud Sync connects to Fil One as S3 storage with a custom server URL, using SigV4, path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 access key and secret scoped to the bucket's region |
+
+## Configure
+
+Install Cloud Sync, add a connection, and choose S3 storage with a custom server URL. Enter the regional endpoint, SigV4 credentials, and existing bucket. Choose a local path, remote path, and one of bidirectional, upload-only, or download-only synchronization. Keep TLS validation enabled.
+
+## Examples
+
+1. Sync the fixture with an upload-only task to a dedicated remote prefix and wait for the task to report up to date.
+2. Remove the local fixture and create a download-only recovery task to a separate directory; compare size and SHA-256.
+3. Test rename and delete semantics before choosing bidirectional sync, because that mode can propagate deletions.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Empty bucket dropdown | Endpoint, region, credentials, or bucket scope do not match. |
+| Signature failures | Correct NAS time with NTP. |
+| Large files stall | Test a smaller chunk size within the multipart guidance in [Limits & Quotas](/limits). |

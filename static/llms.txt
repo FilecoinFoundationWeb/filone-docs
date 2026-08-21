@@ -174,6 +174,33 @@ Critical integration notes for developers:
   download, paginated listing, presigned URLs, and error handling; requires
   `UsePathStyle: true`
 
+## Integrations
+
+- [Integrations](https://docs.fil.one/integrations): Setup guides for common transfer, backup, NAS, DevOps, analytics, and AI tools
+- [Integration connection settings](https://docs.fil.one/integrations/connection-settings): Endpoints (https://eu-west-1.s3.fil.one, https://us-east-1.s3.fil.one), region, SigV4, path-style, and credential settings
+- [Check a setup](https://docs.fil.one/integrations/validate-an-integration): Optional steps to copy a small fixture, restore it, and compare checksums
+- [rclone](https://docs.fil.one/integrations/data-movement/rclone): provider Other, force_path_style, config example, rclone check validation
+- [Cyberduck and Mountain Duck](https://docs.fil.one/integrations/data-movement/cyberduck-mountain-duck): bookmark, mount, restore, and troubleshooting guidance
+- [AWS CLI and SDKs](https://docs.fil.one/integrations/data-movement/aws-cli-sdk): the reference clients, with setup in the SDK guides
+- [Acronis Cyber Protect](https://docs.fil.one/integrations/backup/acronis-cyber-protect): S3-compatible storage, backup, restore, and integrity validation
+- [Comet Backup](https://docs.fil.one/integrations/backup/comet-backup): Storage Vault setup and restore validation
+- [MSP360](https://docs.fil.one/integrations/backup/msp360): S3-compatible storage account and recovery workflow
+- [NAKIVO Backup and Replication](https://docs.fil.one/integrations/backup/nakivo): repository, recovery, and verification guidance
+- [Synology Cloud Sync](https://docs.fil.one/integrations/nas/synology-cloud-sync): custom S3 task and download recovery
+- [QNAP HBS](https://docs.fil.one/integrations/nas/qnap-hbs): HBS storage space, backup, and restore
+- [TrueNAS Cloud Sync](https://docs.fil.one/integrations/nas/truenas-cloud-sync): credential, push, pull, and integrity workflow
+- [Velero](https://docs.fil.one/integrations/devops/velero): Kubernetes backup, restore, and volume-scope validation
+- [Harbor](https://docs.fil.one/integrations/devops/harbor): registry push, pull, digest, and garbage-collection guidance
+- [Terraform S3 backend](https://docs.fil.one/integrations/devops/terraform): endpoints and use_path_style backend settings, state migration, recovery, and concurrency validation
+- [Elasticsearch searchable snapshots](https://docs.fil.one/integrations/logging/elasticsearch-snapshots): s3 repository client settings, repository verification, restore, and searchable-snapshot validation
+- [Splunk SmartStore](https://docs.fil.one/integrations/logging/splunk-smartstore): remote storage, eviction, search, and recovery validation
+- [Apache Iceberg](https://docs.fil.one/integrations/data-ai/apache-iceberg): S3FileIO, catalog, commits, and recovery validation
+- [Databricks](https://docs.fil.one/integrations/data-ai/databricks): custom-endpoint compute, read, write, and fresh-cluster recovery
+- [Delta Lake](https://docs.fil.one/integrations/data-ai/delta-lake): transaction log, checkpoints, concurrency, and recovery
+- [DuckDB](https://docs.fil.one/integrations/data-ai/duckdb): httpfs read, write, and cache-independent validation
+- [Hugging Face Datasets](https://docs.fil.one/integrations/data-ai/hugging-face-datasets): load, streaming, cache clearing, and package-version guidance
+- [Ray Data](https://docs.fil.one/integrations/data-ai/ray-data): distributed reads, writes, worker configuration, and retry validation
+
 ## Optional
 
 The browser console at app.fil.one, one page per console screen. No code

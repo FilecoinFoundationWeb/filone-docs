@@ -9,7 +9,8 @@
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
-    "serve": "docusaurus serve"
+    "serve": "docusaurus serve",
+    "check:integrations": "node scripts/check-integrations.mjs"
   },
   "dependencies": {
     "@docusaurus/core": "^3.9.2",

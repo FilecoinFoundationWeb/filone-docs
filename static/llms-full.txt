@@ -2913,3 +2913,146 @@ Embeddings and extracted chunk text are held in storage Fil One manages, separat
 from the bucket. Objects themselves are not moved or modified. Extracted chunk
 text is retained in the index so answers can quote it — enable Bucket
 Intelligence deliberately per bucket rather than across everything.
+# Integrations
+
+Source: https://docs.fil.one/integrations
+
+Each integration guide gives the connection settings, setup steps, and troubleshooting for one tool. For API behavior, see the S3 Compatibility reference.
+
+# Integration connection settings
+
+Source: https://docs.fil.one/integrations/connection-settings
+
+Endpoint: https://eu-west-1.s3.fil.one or https://us-east-1.s3.fil.one, matching the bucket's region (also shown in the bucket's Access endpoints panel). Region: eu-west-1 or us-east-1. Authentication: SigV4 with a key created for the same region and scoped to the bucket. Addressing: path style required. Endpoint, region, key, and bucket must belong to the same region. Keep TLS certificate validation enabled and secret keys out of docs, screenshots, source control, and command-line history. Feature availability differs between the S3 API and the app.fil.one dashboard; the S3 Compatibility reference covers API behavior.
+
+# Check a setup
+
+Source: https://docs.fil.one/integrations/validate-an-integration
+
+Optional steps to copy a small fixture (including a file large enough for multipart upload), restore it, and compare size and SHA-256. Use a unique prefix you can delete.
+
+# rclone
+
+Source: https://docs.fil.one/integrations/data-movement/rclone
+
+rclone connects to Fil One as an S3 remote with provider = Other, SigV4 signing, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Cyberduck and Mountain Duck
+
+Source: https://docs.fil.one/integrations/data-movement/cyberduck-mountain-duck
+
+Cyberduck and Mountain Duck connect to Fil One through Cyberduck's path-style S3 connection profile, using SigV4 and a key scoped to the bucket's region. Mountain Duck uses the same bookmark and mounts the bucket in Finder or File Explorer. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# AWS CLI and SDKs
+
+Source: https://docs.fil.one/integrations/data-movement/aws-cli-sdk
+
+The AWS CLI and SDKs are Fil One's reference clients; see the SDK guides for setup. Each client takes the regional endpoint, SigV4 credentials, and path-style addressing. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Acronis Cyber Protect
+
+Source: https://docs.fil.one/integrations/backup/acronis-cyber-protect
+
+Acronis Cyber Protect writes to Fil One as an S3-compatible backup location, using SigV4 (AuthV4), path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Comet Backup
+
+Source: https://docs.fil.one/integrations/backup/comet-backup
+
+Comet Backup writes to Fil One through an S3-compatible Storage Vault, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# MSP360
+
+Source: https://docs.fil.one/integrations/backup/msp360
+
+MSP360 writes to Fil One as an S3-compatible storage account, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# NAKIVO Backup and Replication
+
+Source: https://docs.fil.one/integrations/backup/nakivo
+
+NAKIVO Backup and Replication writes to Fil One as an S3-compatible repository, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Synology Cloud Sync
+
+Source: https://docs.fil.one/integrations/nas/synology-cloud-sync
+
+Synology Cloud Sync connects to Fil One as S3 storage with a custom server URL, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# QNAP HBS
+
+Source: https://docs.fil.one/integrations/nas/qnap-hbs
+
+QNAP Hybrid Backup Sync (HBS 3) connects to Fil One as an S3-compatible storage space, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# TrueNAS Cloud Sync
+
+Source: https://docs.fil.one/integrations/nas/truenas-cloud-sync
+
+TrueNAS Cloud Sync connects to Fil One with an Amazon S3 credential that uses a custom endpoint, SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Velero
+
+Source: https://docs.fil.one/integrations/devops/velero
+
+Velero writes backups to Fil One through its AWS object-store plugin, with a backup storage location that sets s3Url to the regional endpoint, s3ForcePathStyle: "true", and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Harbor
+
+Source: https://docs.fil.one/integrations/devops/harbor
+
+Harbor stores image layers in Fil One through the registry's s3 storage driver, with regionendpoint set to the regional endpoint, forcepathstyle: true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Terraform S3 backend
+
+Source: https://docs.fil.one/integrations/devops/terraform
+
+Terraform's s3 backend stores state in Fil One with endpoints { s3 = ... } set to the regional endpoint and use_path_style = true (Terraform 1.6 and later backend syntax), signed with SigV4 by a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Elasticsearch searchable snapshots
+
+Source: https://docs.fil.one/integrations/logging/elasticsearch-snapshots
+
+Elasticsearch stores snapshots in Fil One through an s3 repository whose named client sets endpoint, region, and path_style_access: true, with a key scoped to the bucket's region held in the keystore. Elasticsearch 8.x includes repository-s3; on 7.x install the plugin on every node. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Splunk SmartStore
+
+Source: https://docs.fil.one/integrations/logging/splunk-smartstore
+
+Splunk SmartStore uses Fil One as a remote volume in indexes.conf, with remote.s3.endpoint set to the regional endpoint, remote.s3.auth_region set to the bucket's region, path-style URLs, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Apache Iceberg
+
+Source: https://docs.fil.one/integrations/data-ai/apache-iceberg
+
+Apache Iceberg reads and writes table data in Fil One through S3FileIO, with s3.endpoint set to the regional endpoint, s3.path-style-access=true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Databricks
+
+Source: https://docs.fil.one/integrations/data-ai/databricks
+
+Availability of custom S3-compatible endpoints varies by Databricks compute mode. On compute that permits a custom endpoint, Databricks reads and writes Fil One through the S3 connector with the regional endpoint, path-style access, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Delta Lake
+
+Source: https://docs.fil.one/integrations/data-ai/delta-lake
+
+Delta Lake on Spark reads and writes Fil One through the s3a connector, with fs.s3a.endpoint set to the regional endpoint, fs.s3a.path.style.access=true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# DuckDB
+
+Source: https://docs.fil.one/integrations/data-ai/duckdb
+
+DuckDB reads and writes Fil One through the httpfs extension with an S3 secret that sets ENDPOINT to the regional hostname, URL_STYLE 'path', and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Hugging Face Datasets
+
+Source: https://docs.fil.one/integrations/data-ai/hugging-face-datasets
+
+Hugging Face datasets reads files in Fil One through fsspec and s3fs, passing the regional endpoint, region, path-style addressing, and a key scoped to the bucket's region as storage options. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+
+# Ray Data
+
+Source: https://docs.fil.one/integrations/data-ai/ray-data
+
+Ray Data reads and writes Fil One through a PyArrow S3FileSystem with endpoint_override set to the regional endpoint, region set to the bucket's region, path-style addressing, and a key scoped to the bucket's region on every worker. Configuration, tool-specific validation steps, and troubleshooting are on the page.
