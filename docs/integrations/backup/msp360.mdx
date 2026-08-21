@@ -19,15 +19,11 @@ MSP360 writes to Fil One as an S3-compatible storage account, using SigV4, path-
 | Addressing | Path style |
 | Authentication | SigV4 (signature version 4) access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named MSP360 version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Add an S3-compatible storage account. Put the regional URL in the HTTPS endpoint field, choose signature version 4, keep certificate validation enabled, and select an existing bucket. Enable native multipart upload after validating it with your MSP360 release. The desktop agent exposes the same core settings.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Create a test plan for the fixture directory and run it.
 2. Confirm the remote objects are listed, restore to a new directory, and compare size and SHA-256.

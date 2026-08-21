@@ -19,15 +19,11 @@ Apache Iceberg reads and writes table data in Fil One through `S3FileIO`, with `
 | Addressing | Path style (`s3.path-style-access=true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through the engine's secret mechanism |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Apache Iceberg version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Use Iceberg's `S3FileIO` when your engine supports it. Configure the warehouse on an existing bucket, the regional endpoint and region, path-style access, and credentials through the engine's secret mechanism. Catalog configuration is separate: REST, JDBC, Hive, Glue-compatible, and filesystem catalogs have different correctness and concurrency properties.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Create a disposable table, append and update data, and read it from a fresh session.
 2. Validate partition pruning and inspect metadata and manifest objects under the dedicated warehouse prefix.

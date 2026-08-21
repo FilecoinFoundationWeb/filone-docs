@@ -19,15 +19,11 @@ Velero writes backups to Fil One through its AWS object-store plugin, with a bac
 | Addressing | Path style (`s3ForcePathStyle: "true"`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through a Kubernetes Secret |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Velero version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Install Velero with its AWS object-store plugin. Configure a backup storage location with the existing bucket, `region`, `s3Url`, and `s3ForcePathStyle: "true"`. Supply the key through a Kubernetes Secret rather than a manifest committed to source control. Volume-snapshot support is separate from object storage and requires its own provider.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Create a disposable namespace containing representative objects and persistent data.
 2. Run a backup, inspect `velero backup describe --details` and the logs, delete the namespace, then restore it.

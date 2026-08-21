@@ -47,11 +47,13 @@ for (const file of guides) {
   if (status !== "Verified" && /(^|\W)Verified(\W|$)/.test(body)) {
     failures.push(`${file}: body uses Verified without Verified metadata`);
   }
-  if (status) {
-    const statusLines = body.split("\n").filter((line) => line.startsWith("Validation status: "));
+  const statusLines = body.split("\n").filter((line) => line.startsWith("Validation status: "));
+  if (status === "Verified" || status === "Not currently supported") {
     if (statusLines.length !== 1 || !statusLines[0].startsWith(`Validation status: ${status}.`)) {
       failures.push(`${file}: body must contain exactly one line starting with "Validation status: ${status}."`);
     }
+  } else if (statusLines.length) {
+    failures.push(`${file}: untested guides must not include a Validation status line`);
   }
   if (blocked && sidebar.includes(`"${route}"`)) failures.push(`sidebars.js: blocked guide must not be listed: ${route}`);
   if (!blocked && !sidebar.includes(`"${route}"`)) failures.push(`sidebars.js: missing ${route}`);

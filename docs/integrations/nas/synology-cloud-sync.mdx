@@ -19,15 +19,11 @@ Synology Cloud Sync connects to Fil One as S3 storage with a custom server URL, 
 | Addressing | Path style |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Synology Cloud Sync version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Install Cloud Sync, add a connection, and choose S3 storage with a custom server URL. Enter the regional endpoint, SigV4 credentials, and existing bucket. Choose a local path, remote path, and one of bidirectional, upload-only, or download-only synchronization. Keep TLS validation enabled.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Sync the fixture with an upload-only task to a dedicated remote prefix and wait for the task to report up to date.
 2. Remove the local fixture and create a download-only recovery task to a separate directory; compare size and SHA-256.

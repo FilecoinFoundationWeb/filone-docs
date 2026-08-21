@@ -19,15 +19,13 @@ The AWS CLI and SDKs are Fil One's reference clients; see the [SDK guides](/sdk/
 | Addressing | Path style (`forcePathStyle: true` in JavaScript, `UsePathStyle: true` in Go, `addressing_style: path` in boto3 and the CLI) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named AWS CLI or SDK version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Follow the guide for your client: [AWS CLI](/sdk/cli), [Python with boto3](/sdk/python), [JavaScript with AWS SDK v3](/sdk/javascript), or [Go with aws-sdk-go-v2](/sdk/go). Apply the [connection settings](/integrations/connection-settings) to each client.
 
-## Validate
+## Examples
 
-Follow the [validation round trip](/integrations/validate-an-integration). Include a file above the client's multipart threshold so automatic multipart upload is exercised. For supported operations and regional differences, see [S3 Compatibility](/reference/s3-compatibility); for object and part sizes, see [Limits & Quotas](/limits).
+Include a file above the client's multipart threshold so automatic multipart upload is exercised. For supported operations and regional differences, see [S3 Compatibility](/reference/s3-compatibility); for object and part sizes, see [Limits & Quotas](/limits).
 
 ## Troubleshooting
 

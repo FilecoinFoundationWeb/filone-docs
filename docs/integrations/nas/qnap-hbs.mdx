@@ -19,15 +19,11 @@ QNAP Hybrid Backup Sync (HBS 3) connects to Fil One as an S3-compatible storage 
 | Addressing | Path style |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named QNAP HBS version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 In HBS 3, create a storage space of the S3-compatible type. Enter the regional endpoint, region, SigV4 credentials, and existing bucket. Enable SSL and certificate validation. Create a backup or sync job targeting a dedicated remote prefix.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Run the backup job for the fixture, delete the local fixture, and restore it to a new folder; compare size and SHA-256.
 2. Review the HBS job log for skipped files.

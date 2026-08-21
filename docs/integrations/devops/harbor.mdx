@@ -20,15 +20,11 @@ Harbor stores image layers in Fil One through the registry's `s3` storage driver
 | Authentication | SigV4 access key and secret scoped to the bucket's region (`v4auth: true`) |
 | TLS | `secure: true` |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Harbor version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Set Harbor's registry storage driver to `s3`. Provide the existing bucket, `regionendpoint`, `region`, `secure: true`, and `forcepathstyle: true`. Store credentials in the deployment's secret mechanism. Use a dedicated bucket or prefix so registry garbage collection cannot affect unrelated objects. Back up Harbor's database separately; the registry bucket holds only image layers.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Push a disposable image with several layers, remove the local image, and pull it again. Compare the image digest and start a container.
 2. Inspect Harbor and registry logs.

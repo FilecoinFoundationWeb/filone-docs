@@ -19,15 +19,11 @@ Splunk SmartStore uses Fil One as a `remote` volume in `indexes.conf`, with `rem
 | Addressing | Path style (`remote.s3.url_version = v1`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region (`remote.s3.signature_version = v4`) |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Splunk Enterprise version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Define a `remote` volume in `indexes.conf` with the existing bucket, regional endpoint, auth region, path-style URL mode, and versioning behavior appropriate to the bucket. Reference the volume from each intended index with `remotePath`. Store credentials through the deployment's protected configuration workflow and apply the settings consistently across an indexer cluster. SmartStore licensing and topology requirements apply.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Index disposable events, roll data to remote storage, and confirm searches can fetch evicted buckets.
 2. Restart or replace a test indexer and verify remote recovery. Compare event counts and representative hashes or fields.

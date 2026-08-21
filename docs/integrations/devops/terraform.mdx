@@ -19,8 +19,6 @@ Terraform's `s3` backend stores state in Fil One with `endpoints { s3 = ... }` s
 | Addressing | Path style (`use_path_style = true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied outside the configuration |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Terraform version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Use the `s3` backend with an existing bucket, a dedicated state key, the regional endpoint, matching region, and path-style addressing. Keep credentials outside the Terraform configuration. Evaluate the backend's non-AWS options `skip_credentials_validation`, `skip_requesting_account_id`, `skip_metadata_api_check`, and `skip_s3_checksum` for your Terraform release, and enable only the ones that release needs.
@@ -37,9 +35,7 @@ terraform {
 }
 ```
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Initialize against a disposable configuration, apply it, and confirm a subsequent `terraform plan` is empty.
 2. Copy state to an offline recovery location, remove the local working directory, reinitialize, and confirm state can be read.

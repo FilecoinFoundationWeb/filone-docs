@@ -19,8 +19,6 @@ DuckDB reads and writes Fil One through the `httpfs` extension with an S3 secret
 | Addressing | Path style (`URL_STYLE 'path'`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region (`KEY_ID` and `SECRET`) |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named DuckDB version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Install and load DuckDB's `httpfs` extension. Create an S3 secret with the regional key, region, endpoint hostname, `USE_SSL true`, and `URL_STYLE 'path'`. Use a secret provider appropriate to your environment and keep credentials out of SQL files.
@@ -39,9 +37,7 @@ CREATE SECRET filone (
 );
 ```
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Read a disposable Parquet file from the bucket and compare row count and deterministic aggregates.
 2. Use `COPY` to write a result under a unique prefix, start a fresh DuckDB process, and read the output back. Compare schema, row count, byte size, and content-level checks before removing the prefix.

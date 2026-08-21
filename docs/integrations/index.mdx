@@ -1,44 +1,32 @@
 ---
 title: Integrations
-description: Configure and validate third-party tools with Fil One object storage.
+description: Configure third-party tools with Fil One object storage.
 ---
 
 # Integrations
 
-These guides explain how to connect common transfer, backup, NAS, DevOps, analytics, and AI tools to Fil One. Each guide gives the connection settings, a validation procedure, and troubleshooting for one tool.
+These guides show how to point common transfer, backup, NAS, DevOps, analytics, and AI tools at Fil One. Start with [Connection settings](/integrations/connection-settings), then open the guide for your tool. For API behavior, see the [S3 Compatibility reference](/reference/s3-compatibility).
 
-Every guide displays one of these validation states:
-
-| Status | Meaning |
+| Category | Tool |
 | --- | --- |
-| **Verified** | A named tool version completed the documented end-to-end workflow, restore, and integrity check in every listed region. The guide includes the evidence and verification date. |
-| **Compatible** | An end-to-end run exists for a named version, but not for every region or not within the last 12 months. |
-| **Preview** | A runnable validation path exists, but coverage is incomplete. |
-| **Not currently tested** | No end-to-end run has been recorded for any version or region. Follow the validation steps before production use. |
-| **Not currently supported** | A known product or addressing requirement blocks the integration. |
-
-Start with [Connection settings](/integrations/connection-settings) and the [validation round trip](/integrations/validate-an-integration), then open the guide for your tool. For API behavior, use the [S3 Compatibility reference](/reference/s3-compatibility).
-
-| Category | Tool | Status |
-| --- | --- | --- |
-| Data movement | [rclone](/integrations/data-movement/rclone) | Not currently tested |
-| Data movement | [Cyberduck and Mountain Duck](/integrations/data-movement/cyberduck-mountain-duck) | Not currently tested |
-| Data movement | [AWS CLI and SDKs](/integrations/data-movement/aws-cli-sdk) | Not currently tested |
-| Backup and disaster recovery | [Acronis Cyber Protect](/integrations/backup/acronis-cyber-protect) | Not currently tested |
-| Backup and disaster recovery | [Comet Backup](/integrations/backup/comet-backup) | Not currently tested |
-| Backup and disaster recovery | [MSP360](/integrations/backup/msp360) | Not currently tested |
-| Backup and disaster recovery | [NAKIVO Backup and Replication](/integrations/backup/nakivo) | Not currently tested |
-| NAS and file services | [Synology Cloud Sync](/integrations/nas/synology-cloud-sync) | Not currently tested |
-| NAS and file services | [QNAP HBS](/integrations/nas/qnap-hbs) | Not currently tested |
-| NAS and file services | [TrueNAS Cloud Sync](/integrations/nas/truenas-cloud-sync) | Not currently tested |
-| Kubernetes and DevOps | [Velero](/integrations/devops/velero) | Not currently tested |
-| Kubernetes and DevOps | [Harbor](/integrations/devops/harbor) | Not currently tested |
-| Kubernetes and DevOps | [Terraform S3 backend](/integrations/devops/terraform) | Not currently tested |
-| SIEM and logging | [Elasticsearch searchable snapshots](/integrations/logging/elasticsearch-snapshots) | Not currently tested |
-| SIEM and logging | [Splunk SmartStore](/integrations/logging/splunk-smartstore) | Not currently tested |
-| Data and AI | [Apache Iceberg](/integrations/data-ai/apache-iceberg) | Not currently tested |
-| Data and AI | [Databricks](/integrations/data-ai/databricks) | Not currently tested |
-| Data and AI | [Delta Lake](/integrations/data-ai/delta-lake) | Not currently tested |
-| Data and AI | [DuckDB](/integrations/data-ai/duckdb) | Not currently tested |
-| Data and AI | [Hugging Face Datasets](/integrations/data-ai/hugging-face-datasets) | Not currently tested |
-| Data and AI | [Ray Data](/integrations/data-ai/ray-data) | Not currently tested |
+| Data movement | [rclone](/integrations/data-movement/rclone) |
+| Data movement | [Cyberduck and Mountain Duck](/integrations/data-movement/cyberduck-mountain-duck) |
+| Data movement | [AWS CLI and SDKs](/integrations/data-movement/aws-cli-sdk) |
+| Backup and disaster recovery | [Acronis Cyber Protect](/integrations/backup/acronis-cyber-protect) |
+| Backup and disaster recovery | [Comet Backup](/integrations/backup/comet-backup) |
+| Backup and disaster recovery | [MSP360](/integrations/backup/msp360) |
+| Backup and disaster recovery | [NAKIVO Backup and Replication](/integrations/backup/nakivo) |
+| NAS and file services | [Synology Cloud Sync](/integrations/nas/synology-cloud-sync) |
+| NAS and file services | [QNAP HBS](/integrations/nas/qnap-hbs) |
+| NAS and file services | [TrueNAS Cloud Sync](/integrations/nas/truenas-cloud-sync) |
+| Kubernetes and DevOps | [Velero](/integrations/devops/velero) |
+| Kubernetes and DevOps | [Harbor](/integrations/devops/harbor) |
+| Kubernetes and DevOps | [Terraform S3 backend](/integrations/devops/terraform) |
+| SIEM and logging | [Elasticsearch searchable snapshots](/integrations/logging/elasticsearch-snapshots) |
+| SIEM and logging | [Splunk SmartStore](/integrations/logging/splunk-smartstore) |
+| Data and AI | [Apache Iceberg](/integrations/data-ai/apache-iceberg) |
+| Data and AI | [Databricks](/integrations/data-ai/databricks) |
+| Data and AI | [Delta Lake](/integrations/data-ai/delta-lake) |
+| Data and AI | [DuckDB](/integrations/data-ai/duckdb) |
+| Data and AI | [Hugging Face Datasets](/integrations/data-ai/hugging-face-datasets) |
+| Data and AI | [Ray Data](/integrations/data-ai/ray-data) |

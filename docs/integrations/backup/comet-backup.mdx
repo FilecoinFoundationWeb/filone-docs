@@ -19,15 +19,11 @@ Comet Backup writes to Fil One through an S3-compatible Storage Vault, using Sig
 | Addressing | Path style |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Comet Backup version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Create either a Comet Storage Template or a user's Custom Storage Vault, select the S3-compatible type, and enter the regional hostname, region, existing bucket, and matching credentials. Enable encrypted transmission. Use the same values described in [Connection settings](/integrations/connection-settings).
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Run Comet's connection test, protect the fixture directory, and complete an on-demand backup.
 2. Restore to a separate directory, run Comet's vault integrity check, and inspect the job history for partial failures.

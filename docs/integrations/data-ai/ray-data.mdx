@@ -19,15 +19,11 @@ Ray Data reads and writes Fil One through a PyArrow `S3FileSystem` with `endpoin
 | Addressing | Path style (PyArrow uses path style with `endpoint_override` unless `force_virtual_addressing` is set) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, distributed through the cluster's secret mechanism |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Ray version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Create the S3 filesystem with the regional endpoint, region, path-style access, and matching credentials. Distribute credentials through the cluster's secret mechanism and confirm every worker receives the endpoint configuration. Use a dedicated input and output prefix.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Read a disposable multi-file Parquet dataset across several workers, apply a deterministic transformation, and write the result to a unique prefix.
 2. Start a fresh Ray job, read the output, and compare schema, row count, partition count where relevant, and deterministic aggregates.

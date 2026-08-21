@@ -19,15 +19,11 @@ Acronis Cyber Protect writes to Fil One as an S3-compatible backup location, usi
 | Addressing | Path style |
 | Authentication | SigV4 (AuthV4) access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Acronis Cyber Protect version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 In the Acronis administration console, add an S3-compatible storage location. Enter the regional endpoint, the matching access key, and AuthV4 signing from [Connection settings](/integrations/connection-settings). Select an existing Fil One bucket when prompted, then assign the location to a protection plan.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Protect the fixture directory with the plan, run it, and confirm the activity completes.
 2. Restore to a new location and compare size and SHA-256 for every restored file.

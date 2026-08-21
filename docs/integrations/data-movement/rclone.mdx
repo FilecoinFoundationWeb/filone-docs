@@ -20,8 +20,6 @@ rclone connects to Fil One as an S3 remote with `provider = Other`, SigV4 signin
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 | Provider | `Other` |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named rclone version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Run `rclone config`, create a new remote, choose **Amazon S3 Compliant Storage Providers**, and select **Other** as the provider. Enter the bucket's region and endpoint when prompted, enable path-style access, and enter credentials at rclone's prompts. The resulting section in `rclone.conf` looks like this:
@@ -43,13 +41,11 @@ Test discovery without changing remote data:
 rclone lsd filone:
 ```
 
-## Validate
+## Examples
 
-Follow the [validation round trip](/integrations/validate-an-integration), then:
-
-1. Copy with `rclone copy ./fixture filone:BUCKET/VALIDATION_PREFIX` and list with `rclone lsjson filone:BUCKET/VALIDATION_PREFIX`.
-2. Restore with `rclone copy filone:BUCKET/VALIDATION_PREFIX ./restored`.
-3. Run `rclone check --download ./restored filone:BUCKET/VALIDATION_PREFIX`.
+1. Copy with `rclone copy ./fixture filone:BUCKET/example/` and list with `rclone lsjson filone:BUCKET/example/`.
+2. Restore with `rclone copy filone:BUCKET/example/ ./restored`.
+3. Run `rclone check --download ./restored filone:BUCKET/example/`.
 
 ## Troubleshooting
 
@@ -58,4 +54,4 @@ Follow the [validation round trip](/integrations/validate-an-integration), then:
 | Signature mismatch | Endpoint, region, and key must refer to the same region; confirm `force_path_style = true`. |
 | Bucket not found | Confirm the bucket already exists and the key is scoped to it. |
 | TLS error | Keep certificate validation enabled; inspect local proxy or trust-store configuration. |
-| Cleanup leaves data | List the exact validation prefix and remove only that prefix. |
+| Cleanup leaves data | List the exact prefix and remove only that prefix. |

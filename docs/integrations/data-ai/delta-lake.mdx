@@ -19,15 +19,11 @@ Delta Lake on Spark reads and writes Fil One through the `s3a` connector, with `
 | Addressing | Path style (`fs.s3a.path.style.access=true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through the platform's secret mechanism |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Delta Lake version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 Configure Spark's S3 connector with the existing bucket, regional endpoint and region, path-style access, and credentials supplied through the platform's secret mechanism. Keep a dedicated table prefix. Ensure the driver and every executor receive the same settings.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Create a disposable Delta table, append and update rows, produce a checkpoint, and read the table from a fresh session.
 2. Run concurrent writers and verify conflicts do not cause silent data loss.

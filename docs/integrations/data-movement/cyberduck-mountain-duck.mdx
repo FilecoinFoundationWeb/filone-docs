@@ -19,8 +19,6 @@ Cyberduck and Mountain Duck connect to Fil One through Cyberduck's path-style S3
 | Addressing | Path style (Cyberduck's path-style S3 connection profile) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 
-Validation status: Not currently tested. Fil One has not yet run the round trip below with a named Cyberduck or Mountain Duck version in eu-west-1 and us-east-1; results will be added here with version, date, and evidence.
-
 ## Configure
 
 1. Install Cyberduck's path-style S3 connection profile from the profiles list.
@@ -30,9 +28,7 @@ Validation status: Not currently tested. Fil One has not yet run the round trip 
 
 Mountain Duck uses the same bookmark settings, then mounts the bucket through Finder or File Explorer.
 
-## Validate
-
-Follow the [validation round trip](/integrations/validate-an-integration), then:
+## Examples
 
 1. Rename and delete a test object and confirm the remote listing reflects each operation.
 2. Test keys containing spaces before a larger migration.
