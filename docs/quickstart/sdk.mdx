@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 Choose your language and follow along. Each example uploads a file and verifies it. **Create the bucket first in the dashboard** — `CreateBucket` over the S3 API is not available in `eu-west-1`, the default region these examples use.
 
 :::note The endpoint depends on your bucket's region
-These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
+These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
 :::
 
 <Tabs>
@@ -25,7 +25,7 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
 
     s3 = boto3.client(
         "s3",
-        endpoint_url="https://eu-west-1.s3.fil.one",
+        endpoint_url="https://eu-west-1.s3.filonecontent.com",
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
         region_name="eu-west-1",
@@ -52,7 +52,7 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
     import { readFileSync } from "fs";
 
     const client = new S3Client({
-      endpoint: "https://eu-west-1.s3.fil.one",
+      endpoint: "https://eu-west-1.s3.filonecontent.com",
       region: "eu-west-1",
       forcePathStyle: true,
       credentials: {
@@ -98,7 +98,7 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
 
     func main() {
         client := s3.New(s3.Options{
-            BaseEndpoint:  aws.String("https://eu-west-1.s3.fil.one"),
+            BaseEndpoint:  aws.String("https://eu-west-1.s3.filonecontent.com"),
             Region:        "eu-west-1",
             UsePathStyle:  true,
             Credentials: credentials.NewStaticCredentialsProvider(

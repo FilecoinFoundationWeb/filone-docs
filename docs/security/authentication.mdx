@@ -14,7 +14,7 @@ This page is about signing **API requests**. For the account you log into the da
 :::
 
 :::note Keys and endpoints are region-specific
-Every access key belongs to a **single region**, chosen when you create it, and it only authenticates requests to that region's endpoint. Examples below use `eu-west-1`, the default region — for `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. If you store data in both regions you need a key for each.
+Every access key belongs to a **single region**, chosen when you create it, and it only authenticates requests to that region's endpoint. Examples below use `eu-west-1`, the default region — for `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and region `us-east-1`. If you store data in both regions you need a key for each.
 :::
 
 ## API keys
@@ -62,7 +62,7 @@ When prompted, enter your Access Key ID, Secret Access Key, and `eu-west-1` as t
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.fil.one
+endpoint_url = https://eu-west-1.s3.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -81,7 +81,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -97,7 +97,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
     region_name="eu-west-1",
@@ -111,7 +111,7 @@ s3 = boto3.client(
 import { S3Client } from "@aws-sdk/client-s3";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.fil.one",
+  endpoint: "https://eu-west-1.s3.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -137,7 +137,7 @@ import (
 
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(

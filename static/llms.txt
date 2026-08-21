@@ -6,13 +6,13 @@
 > committed to store. No egress fees on paid plans, no per-request charges,
 > $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
-> `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
+> `https://<region>.s3.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
   in us-east-1, unavailable in eu-west-1 (use the dashboard there)
-- Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
+- Path-style addressing required: `https://eu-west-1.s3.filonecontent.com/bucket/key`
   (virtual-hosted-style URLs are not supported)
 - Access keys are scoped to ONE region and cannot be used against another
 - Region, versioning, Object Lock and retention are fixed at bucket creation and

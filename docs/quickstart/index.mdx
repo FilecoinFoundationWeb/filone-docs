@@ -58,7 +58,7 @@ Your secret key is shown once. Copy it and store it securely. If you lose it, yo
 A key also belongs to a single region, so create it in the same region as your bucket.
 :::
 
-The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1` instead.
+The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and region `us-east-1` instead.
 
 <Tabs>
   <TabItem value="app-ui" label="App">
@@ -83,13 +83,13 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
 
     ```bash
     aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-      --endpoint-url https://eu-west-1.s3.fil.one
+      --endpoint-url https://eu-west-1.s3.filonecontent.com
     ```
 
     Verify it's there:
 
     ```bash
-    aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+    aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
     ```
   </TabItem>
 
@@ -100,7 +100,7 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
 
     s3 = boto3.client(
         "s3",
-        endpoint_url="https://eu-west-1.s3.fil.one",
+        endpoint_url="https://eu-west-1.s3.filonecontent.com",
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
         region_name="eu-west-1",
@@ -123,7 +123,7 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
     import { readFileSync } from "fs";
 
     const client = new S3Client({
-      endpoint: "https://eu-west-1.s3.fil.one",
+      endpoint: "https://eu-west-1.s3.filonecontent.com",
       region: "eu-west-1",
       forcePathStyle: true,
       credentials: {

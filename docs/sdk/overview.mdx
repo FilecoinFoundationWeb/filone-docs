@@ -22,7 +22,7 @@ Every SDK and tool needs the same four things:
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | `https://<region>.s3.fil.one` |
+| Endpoint | `https://<region>.s3.filonecontent.com` |
 | Region | `eu-west-1` or `us-east-1` |
 | Credentials | Your Access Key ID and Secret Access Key from the dashboard |
 | Path-style addressing | **Required.** Fil One does not support virtual-hosted-style URLs — enable path-style in every client (`forcePathStyle`, `addressing_style = path`, `UsePathStyle`, etc.) |
@@ -31,8 +31,8 @@ The endpoint is region-specific, and it has to match the region of the bucket yo
 
 | Region | Endpoint |
 |--------|----------|
-| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.fil.one` |
-| US East (Michigan) `us-east-1` | `https://us-east-1.s3.fil.one` |
+| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.filonecontent.com` |
+| US East (Michigan) `us-east-1` | `https://us-east-1.s3.filonecontent.com` |
 
 Access keys are also scoped to a single region, so a key issued for `eu-west-1` will not work against `us-east-1`. Code examples throughout these docs use `eu-west-1` because it is the default — substitute your own region where it differs.
 
@@ -51,7 +51,7 @@ Most S3-compatible tools work with Fil One, subject to the same constraints as a
 
 - **rclone** -- Sync files between local storage and Fil One. Configure with `rclone config` using the S3 provider type.
 - **Cyberduck** -- GUI file browser for macOS and Windows. Add a new S3 connection with the Fil One endpoint.
-- **s3cmd** -- Command-line tool. Configure with `s3cmd --configure`, then set both `host_base = eu-west-1.s3.fil.one` and `host_bucket = eu-west-1.s3.fil.one/%(bucket)s` in `~/.s3cfg`. The `host_bucket` line is what forces path-style addressing; without it s3cmd stays in virtual-hosted mode and requests fail.
-- **MinIO Client (mc)** -- `mc alias set filone https://eu-west-1.s3.fil.one YOUR_KEY YOUR_SECRET`. Passing the secret on the command line leaves it in your shell history and the process list — prefer `mc alias set filone https://eu-west-1.s3.fil.one` and let `mc` prompt for the key and secret interactively.
+- **s3cmd** -- Command-line tool. Configure with `s3cmd --configure`, then set both `host_base = eu-west-1.s3.filonecontent.com` and `host_bucket = eu-west-1.s3.filonecontent.com/%(bucket)s` in `~/.s3cfg`. The `host_bucket` line is what forces path-style addressing; without it s3cmd stays in virtual-hosted mode and requests fail.
+- **MinIO Client (mc)** -- `mc alias set filone https://eu-west-1.s3.filonecontent.com YOUR_KEY YOUR_SECRET`. Passing the secret on the command line leaves it in your shell history and the process list — prefer `mc alias set filone https://eu-west-1.s3.filonecontent.com` and let `mc` prompt for the key and secret interactively.
 
 If you use a tool not listed here and run into compatibility issues, contact support.

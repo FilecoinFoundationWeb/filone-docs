@@ -6,7 +6,7 @@ description: Using boto3 with Fil One for object storage operations.
 Fil One works with [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html), the AWS SDK for Python — it is S3-API compatible, so no custom library is needed. Configure the client to point at the Fil One endpoint, **enable path-style addressing**, and use the standard API. A few S3 operations are not supported; see [S3 Compatibility](/reference/s3-compatibility) for the exceptions.
 
 :::note The endpoint depends on your bucket's region
-Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and `region_name="us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
+Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and `region_name="us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
 :::
 
 ## Installation
@@ -24,7 +24,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -35,7 +35,7 @@ s3 = boto3.client(
 Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
 
 :::warning Path-style addressing is required
-Fil One only supports **path-style** URLs (`https://eu-west-1.s3.fil.one/my-bucket/key`). boto3 defaults to virtual-hosted style (`https://my-bucket.eu-west-1.s3.fil.one/key`) even with a custom `endpoint_url`, which fails with a DNS or 404-shaped error. The `config=Config(s3={"addressing_style": "path"})` line above is not optional — without it, every request fails. `region_name` is also required, since SigV4 cannot sign without a region.
+Fil One only supports **path-style** URLs (`https://eu-west-1.s3.filonecontent.com/my-bucket/key`). boto3 defaults to virtual-hosted style (`https://my-bucket.eu-west-1.s3.filonecontent.com/key`) even with a custom `endpoint_url`, which fails with a DNS or 404-shaped error. The `config=Config(s3={"addressing_style": "path"})` line above is not optional — without it, every request fails. `region_name` is also required, since SigV4 cannot sign without a region.
 :::
 
 ## Core operations

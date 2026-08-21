@@ -23,11 +23,11 @@ Objects are the files you store in Fil One. Each object consists of the file dat
     ```bash
     # Upload a single file
     aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-      --endpoint-url https://eu-west-1.s3.fil.one
+      --endpoint-url https://eu-west-1.s3.filonecontent.com
 
     # Upload a directory
     aws s3 sync ./local-folder s3://my-bucket/folder/ \
-      --endpoint-url https://eu-west-1.s3.fil.one
+      --endpoint-url https://eu-west-1.s3.filonecontent.com
     ```
   </TabItem>
 
@@ -59,7 +59,7 @@ For very large objects (above the single-PUT limit — see [Limits](/limits)), u
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
     aws s3 cp s3://my-bucket/my-file.txt ./my-file.txt \
-      --endpoint-url https://eu-west-1.s3.fil.one
+      --endpoint-url https://eu-west-1.s3.filonecontent.com
     ```
   </TabItem>
 
@@ -73,7 +73,7 @@ For very large objects (above the single-PUT limit — see [Limits](/limits)), u
 ## Listing objects
 
 ```bash
-aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 For programmatic listing with pagination:
@@ -95,7 +95,7 @@ for page in paginator.paginate(Bucket="my-bucket"):
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
     aws s3 rm s3://my-bucket/my-file.txt \
-      --endpoint-url https://eu-west-1.s3.fil.one
+      --endpoint-url https://eu-west-1.s3.filonecontent.com
     ```
   </TabItem>
 </Tabs>

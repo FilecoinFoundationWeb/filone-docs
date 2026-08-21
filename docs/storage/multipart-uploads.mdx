@@ -24,7 +24,7 @@ The AWS CLI handles multipart uploads automatically for large files:
 ```bash
 # The AWS CLI switches to multipart above its own client-side threshold (8 MB by default)
 aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 To control thresholds:
@@ -75,11 +75,11 @@ Incomplete multipart uploads are generally expected to consume storage until abo
 ```bash
 aws s3api list-multipart-uploads \
   --bucket my-bucket \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 
 aws s3api abort-multipart-upload \
   --bucket my-bucket \
   --key large-file.zip \
   --upload-id YOUR_UPLOAD_ID \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```

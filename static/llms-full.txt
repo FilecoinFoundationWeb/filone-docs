@@ -6,13 +6,13 @@
 > committed to store. No egress fees on paid plans, no per-request charges,
 > $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
-> `https://<region>.s3.fil.one`, with standard Access Key ID / Secret Access Key
+> `https://<region>.s3.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
   in us-east-1, unavailable in eu-west-1 (use the dashboard there)
-- Path-style addressing required: `https://eu-west-1.s3.fil.one/bucket/key`
+- Path-style addressing required: `https://eu-west-1.s3.filonecontent.com/bucket/key`
   (virtual-hosted-style URLs are not supported)
 - Access keys are scoped to ONE region and cannot be used against another
 - Region, versioning, Object Lock and retention are fixed at bucket creation and
@@ -169,9 +169,9 @@ aws configure set aws_secret_access_key YOUR_SECRET_KEY
 aws configure set default.region eu-west-1
 
 aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 
-aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 ### Python (boto3)
@@ -181,7 +181,7 @@ import boto3
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
 )
@@ -200,7 +200,7 @@ import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/clien
 import { readFileSync } from "fs";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.fil.one",
+  endpoint: "https://eu-west-1.s3.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -239,7 +239,7 @@ import (
 
 func main() {
     client := s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -286,13 +286,13 @@ aws configure
 # Enter your Fil One access key and secret key. Set region to eu-west-1.
 
 # Upload
-aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
 
 # List
-aws s3 ls s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
 
 # Download
-aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 Tip: Set up a named profile to avoid repeating --endpoint-url:
@@ -300,7 +300,7 @@ Tip: Set up a named profile to avoid repeating --endpoint-url:
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.fil.one
+endpoint_url = https://eu-west-1.s3.filonecontent.com
 region = eu-west-1
 ```
 
@@ -330,7 +330,7 @@ default region these examples use.
 
 Note: the endpoint depends on your bucket's region. These examples use
 eu-west-1, the default. For a bucket in us-east-1, use
-https://us-east-1.s3.fil.one and region us-east-1. The endpoint, the region, and
+https://us-east-1.s3.filonecontent.com and region us-east-1. The endpoint, the region, and
 your access key must all refer to the same region.
 
 ## Python
@@ -345,7 +345,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
     region_name="eu-west-1",
@@ -372,7 +372,7 @@ import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/clien
 import { readFileSync } from "fs";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.fil.one",
+  endpoint: "https://eu-west-1.s3.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -418,7 +418,7 @@ import (
 
 func main() {
     client := s3.New(s3.Options{
-        BaseEndpoint:  aws.String("https://eu-west-1.s3.fil.one"),
+        BaseEndpoint:  aws.String("https://eu-west-1.s3.filonecontent.com"),
         Region:        "eu-west-1",
         UsePathStyle:  true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -488,7 +488,7 @@ Every bucket is created with encryption enabled automatically.
 ## Listing buckets
 
 ```bash
-aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 ```python
@@ -529,11 +529,11 @@ a key (the file path/name), and metadata.
 ```bash
 # Upload a single file
 aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 
 # Upload a directory
 aws s3 sync ./local-folder s3://my-bucket/folder/ \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 ```python
@@ -555,7 +555,7 @@ For very large objects (above the single-PUT limit — the standard S3 5 GB, not
 
 ```bash
 aws s3 cp s3://my-bucket/my-file.txt ./my-file.txt \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 ```python
@@ -565,7 +565,7 @@ s3.download_file("my-bucket", "my-file.txt", "my-file.txt")
 ## Listing objects
 
 ```bash
-aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 Programmatic listing with pagination:
@@ -581,7 +581,7 @@ for page in paginator.paginate(Bucket="my-bucket"):
 
 ```bash
 aws s3 rm s3://my-bucket/my-file.txt \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 On a bucket without versioning, deletion is immediate — the object disappears from
@@ -632,7 +632,7 @@ The AWS CLI handles multipart uploads automatically for large files:
 
 ```bash
 aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 
 # Configure thresholds
 aws configure set s3.multipart_threshold 100MB
@@ -667,13 +667,13 @@ s3.upload_file("large-file.zip", "my-bucket", "large-file.zip", Config=config)
 ```bash
 aws s3api list-multipart-uploads \
   --bucket my-bucket \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 
 aws s3api abort-multipart-upload \
   --bucket my-bucket \
   --key large-file.zip \
   --upload-id YOUR_UPLOAD_ID \
-  --endpoint-url https://eu-west-1.s3.fil.one
+  --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 
@@ -950,7 +950,7 @@ aws s3api put-object-retention \
   --key important-record.pdf \
   --version-id YOUR_VERSION_ID \
   --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-  --endpoint-url https://us-east-1.s3.fil.one
+  --endpoint-url https://us-east-1.s3.filonecontent.com
 ```
 
 ```python
@@ -981,7 +981,7 @@ available over the S3 API:
 aws s3api get-object-retention \
   --bucket my-compliance-bucket \
   --key important-record.pdf \
-  --endpoint-url https://us-east-1.s3.fil.one
+  --endpoint-url https://us-east-1.s3.filonecontent.com
 ```
 
 ## Deleting locked objects
@@ -1156,7 +1156,7 @@ Named profile (recommended):
 ```ini
 # ~/.aws/config  (AWS CLI v2 — v1 ignores endpoint_url)
 [profile filone]
-endpoint_url = https://eu-west-1.s3.fil.one
+endpoint_url = https://eu-west-1.s3.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -1176,7 +1176,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -1190,7 +1190,7 @@ s3 = boto3.client(
 import { S3Client } from "@aws-sdk/client-s3";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.fil.one",
+  endpoint: "https://eu-west-1.s3.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -1205,7 +1205,7 @@ const client = new S3Client({
 ```go
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -1297,8 +1297,8 @@ regional operator and is not documented here.
 
 ## Encryption in transit
 
-All connections to the regional endpoints (https://eu-west-1.s3.fil.one,
-https://us-east-1.s3.fil.one) use TLS. HTTP connections are rejected.
+All connections to the regional endpoints (https://eu-west-1.s3.filonecontent.com,
+https://us-east-1.s3.filonecontent.com) use TLS. HTTP connections are rejected.
 Applies to all API operations including uploads, downloads, presigned URLs,
 and metadata requests.
 
@@ -1944,7 +1944,7 @@ Source: https://docs.fil.one/reference/overview
 ## Base endpoint
 
 ```
-https://eu-west-1.s3.fil.one
+https://eu-west-1.s3.filonecontent.com
 ```
 
 All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4).
@@ -1954,10 +1954,10 @@ All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4
 Use path-style addressing:
 
 ```
-https://eu-west-1.s3.fil.one/my-bucket/my-key
+https://eu-west-1.s3.filonecontent.com/my-bucket/my-key
 ```
 
-Virtual-hosted-style URLs (https://my-bucket.s3.fil.one/my-key) are not supported.
+Virtual-hosted-style URLs (https://my-bucket.s3.filonecontent.com/my-key) are not supported.
 Configure your S3 client to use path-style requests:
 - boto3: set `config=Config(s3={"addressing_style": "path"})` — path-style is NOT the default, even with a custom endpoint, and requests fail without it
 - AWS CLI: set `s3.addressing_style = path` in the profile (or `aws configure set default.s3.addressing_style path`)
@@ -1983,7 +1983,7 @@ endpoint and authenticate with your API keys.
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | https://<region>.s3.fil.one — region-specific |
+| Endpoint | https://<region>.s3.filonecontent.com — region-specific |
 | Region | eu-west-1 (Europe, France, default) or us-east-1 (US East, Michigan) |
 | Signature version | SigV4 |
 | Path style | Required |
@@ -2240,7 +2240,7 @@ Fil One works with any tool or library that supports the S3 API.
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | https://eu-west-1.s3.fil.one |
+| Endpoint | https://eu-west-1.s3.filonecontent.com |
 | Region | eu-west-1 |
 | Credentials | Access Key ID + Secret Access Key from dashboard |
 
@@ -2263,8 +2263,8 @@ specific setup notes:
 
 - **rclone**: Sync files with `rclone config` using S3 provider type.
 - **Cyberduck**: Add S3 connection with the Fil One endpoint.
-- **s3cmd**: Configure with `s3cmd --configure`, set host to eu-west-1.s3.fil.one.
-- **MinIO Client**: `mc alias set filone https://eu-west-1.s3.fil.one YOUR_KEY YOUR_SECRET`
+- **s3cmd**: Configure with `s3cmd --configure`, set host to eu-west-1.s3.filonecontent.com.
+- **MinIO Client**: `mc alias set filone https://eu-west-1.s3.filonecontent.com YOUR_KEY YOUR_SECRET`
 
 
 ---
@@ -2285,7 +2285,7 @@ import os
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.fil.one",
+    endpoint_url="https://eu-west-1.s3.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -2376,7 +2376,7 @@ npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 import { S3Client } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
-  endpoint: "https://eu-west-1.s3.fil.one",
+  endpoint: "https://eu-west-1.s3.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,  // required
   credentials: {
@@ -2474,7 +2474,7 @@ go get github.com/aws/aws-sdk-go-v2/service/s3
 ```go
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,  // required
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -2551,12 +2551,12 @@ uploadReq, _ := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 Source: https://docs.fil.one/sdk/cli
 
 The AWS CLI works with Fil One out of the box. Install it, configure
-credentials, and use --endpoint-url https://<region>.s3.fil.one on every command
+credentials, and use --endpoint-url https://<region>.s3.filonecontent.com on every command
 — or set it as a profile default.
 
 Note: the endpoint depends on your bucket's region. Examples here use
 eu-west-1, the default. For a bucket in us-east-1, use
-https://us-east-1.s3.fil.one and region us-east-1. The endpoint, the region, and
+https://us-east-1.s3.filonecontent.com and region us-east-1. The endpoint, the region, and
 your access key must all refer to the same region — set up one profile per
 region if you use both.
 
@@ -2579,7 +2579,7 @@ aws --version   # should print aws-cli/2.x
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.fil.one
+endpoint_url = https://eu-west-1.s3.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -2624,7 +2624,7 @@ aws configure set default.s3.addressing_style path
 Then pass --endpoint-url on each command:
 
 ```bash
-aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 ## Core operations
@@ -2713,7 +2713,7 @@ Source: https://docs.fil.one/faq
 
 **Is Fil One S3-compatible?**
 Yes. Any application, SDK, or tool that works with AWS S3 works with Fil One by
-changing the endpoint URL to https://eu-west-1.s3.fil.one.
+changing the endpoint URL to https://eu-west-1.s3.filonecontent.com.
 
 **Do I need to know anything about blockchain or cryptocurrency?**
 No. Fil One is a standard cloud storage service. You sign up with an email, store
