@@ -69,7 +69,7 @@ Object Lock buckets are always versioned, so a retention call should target a sp
       --key important-record.pdf \
       --version-id YOUR_VERSION_ID \
       --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-      --endpoint-url https://us-east-1.s3.fil.one
+      --endpoint-url https://us-east-1.s3.filonecontent.com
     ```
   </TabItem>
   <TabItem value="python-boto3" label="Python (boto3)">
@@ -97,7 +97,7 @@ The object detail page in the dashboard shows an object's retention status, and 
 aws s3api get-object-retention \
   --bucket my-compliance-bucket \
   --key important-record.pdf \
-  --endpoint-url https://us-east-1.s3.fil.one
+  --endpoint-url https://us-east-1.s3.filonecontent.com
 ```
 
 Returns:

@@ -3,10 +3,10 @@ title: AWS CLI
 description: Using the AWS CLI with Fil One for object storage operations.
 ---
 
-The [AWS CLI](https://aws.amazon.com/cli/) works with Fil One out of the box. Install it, configure your credentials, and use `--endpoint-url https://<region>.s3.fil.one` on every command — or set it as a profile default so you never have to type it.
+The [AWS CLI](https://aws.amazon.com/cli/) works with Fil One out of the box. Install it, configure your credentials, and use `--endpoint-url https://<region>.s3.filonecontent.com` on every command — or set it as a profile default so you never have to type it.
 
 :::note The endpoint depends on your bucket's region
-Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region — set up one profile per region if you use both.
+Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region — set up one profile per region if you use both.
 :::
 
 ## Installation
@@ -34,7 +34,7 @@ Add a `filone` profile to your AWS config files so you don't have to pass `--end
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.fil.one
+endpoint_url = https://eu-west-1.s3.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -79,7 +79,7 @@ aws configure set default.s3.addressing_style path
 Then pass `--endpoint-url` on each command:
 
 ```bash
-aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+aws s3 ls --endpoint-url https://eu-west-1.s3.filonecontent.com
 ```
 
 ## Core operations

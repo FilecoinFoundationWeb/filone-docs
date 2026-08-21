@@ -22,7 +22,7 @@ Set up a named profile so you don't have to pass `--endpoint-url` on every comma
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.fil.one
+endpoint_url = https://eu-west-1.s3.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -31,7 +31,7 @@ s3 =
 The `addressing_style = path` line is required — Fil One only supports path-style URLs, and the CLI otherwise defaults to virtual-hosted style, which fails.
 
 :::note The endpoint depends on your bucket's region
-The example above uses `eu-west-1`, the default region. If your bucket is in `us-east-1`, use `https://us-east-1.s3.fil.one` and `region = us-east-1` instead. The endpoint and the region must both match the bucket you are working with, and your access key has to belong to that region too.
+The example above uses `eu-west-1`, the default region. If your bucket is in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and `region = us-east-1` instead. The endpoint and the region must both match the bucket you are working with, and your access key has to belong to that region too.
 
 If you use both regions, set up a profile per region (`[profile filone-eu]`, `[profile filone-us]`) and pick with `--profile`.
 :::

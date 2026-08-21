@@ -6,7 +6,7 @@ description: Using the AWS SDK for Go v2 with Fil One.
 Fil One works with [aws-sdk-go-v2](https://github.com/aws/aws-sdk-go-v2) — it is S3-API compatible. Configure the client to point at the Fil One endpoint with `UsePathStyle: true` and use the standard S3 API. A few S3 operations are not supported; see [S3 Compatibility](/reference/s3-compatibility) for the exceptions.
 
 :::note The endpoint depends on your bucket's region
-Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and `Region: "us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
+Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and `Region: "us-east-1"`. The endpoint, the region, and your access key must all refer to the same region.
 :::
 
 ## Installation
@@ -33,7 +33,7 @@ import (
 
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.fil.one"),
+        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
         Region:       "eu-west-1",
         Credentials: credentials.NewStaticCredentialsProvider(
             os.Getenv("FIL_ACCESS_KEY"),

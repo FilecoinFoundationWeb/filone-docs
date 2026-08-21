@@ -9,8 +9,8 @@ The endpoint is region-specific. Use the one for the region your bucket is in:
 
 | Region | Endpoint |
 |--------|----------|
-| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.fil.one` |
-| US East (Michigan) `us-east-1` | `https://us-east-1.s3.fil.one` |
+| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.filonecontent.com` |
+| US East (Michigan) `us-east-1` | `https://us-east-1.s3.filonecontent.com` |
 
 All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4). Examples on this page and elsewhere in the docs use `eu-west-1` because it is the default region — substitute your own where it differs. Access keys are scoped to a single region and must match the endpoint you call.
 
@@ -20,10 +20,10 @@ Fil One accepts standard S3 API requests. Use path-style addressing:
 
 ```
 # Path style
-https://eu-west-1.s3.fil.one/my-bucket/my-key
+https://eu-west-1.s3.filonecontent.com/my-bucket/my-key
 ```
 
-Virtual-hosted-style URLs (`https://my-bucket.s3.fil.one/my-key`) are not supported. Configure your S3 client to use path-style requests (see [SDK guides](/sdk/overview)).
+Virtual-hosted-style URLs (`https://my-bucket.s3.filonecontent.com/my-key`) are not supported. Configure your S3 client to use path-style requests (see [SDK guides](/sdk/overview)).
 
 ## Authentication
 
