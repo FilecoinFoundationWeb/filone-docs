@@ -12,7 +12,7 @@
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
   in us-east-1, unavailable in eu-west-1 (use the dashboard there)
-- Path-style addressing required: `https://eu-west-1.s3.filonecontent.com/bucket/key`
+- Path-style addressing required: `https://s3.eu-west-1.filonecontent.com/bucket/key`
   (virtual-hosted-style URLs are not supported)
 - Access keys are scoped to ONE region and cannot be used against another
 - Region, versioning, Object Lock and retention are fixed at bucket creation and
