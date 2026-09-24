@@ -2192,8 +2192,8 @@ with two plans:
   with capacity assurance and deployment SLAs. "Contact sales team" opens a sales
   contact form.
 
-The payment form takes card number, expiry, CVC, and an optional PROMO CODE (3
-to 40 letters, digits, or hyphens). "Start subscription" activates the plan.
+The payment form takes card number, expiry, and CVC. "Start subscription"
+activates the plan.
 When reactivating with a card already on file, the Pay as you go button reads
 "Reactivate" and uses that card, with a "Use a different card" link.
 

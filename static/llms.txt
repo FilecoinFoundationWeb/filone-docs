@@ -289,7 +289,7 @@ Security, Billing) hold the concepts and code samples.
   paid) and an "Estimated total" on per-TB plans. Payment method: "No card on
   file", card brand and last four, or "Billed by invoice". "Choose your plan":
   Pay as you go ($4.99/TB/month, $4.99 minimum) or Business plan (custom
-  pricing, 1, 3, or 5-year terms); optional promo code. Invoices list shows the
+  pricing, 1, 3, or 5-year terms). Invoices list shows the
   12 most recent issued invoices, INCLUDING UNPAID (drafts not shown). Card
   details live in the Stripe portal, which is also where cancellation happens
 - [App - Settings](https://docs.fil.one/app/settings): Profile fields (full name
