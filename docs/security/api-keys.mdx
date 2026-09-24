@@ -12,12 +12,12 @@ API keys authenticate your requests to the Fil One S3 API. Each key consists of 
 
 1. Go to **API Keys** in the left menu of the dashboard.
 2. Click **Create new key** (this opens a dedicated page).
-3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`). Names are limited to 64 characters (letters, numbers, spaces, and `_ - .`).
-4. Choose the key's **region** (see [Region scope](#region-scope)). This is required and fixed for the life of the key.
-5. Set the key's permissions and bucket scope (see below). At least one permission is required.
-6. Optionally set an expiration: **Never**, **30 days**, or a **Custom** date.
-7. Click **Create key**.
-8. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, you must create a new key.
+3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`). Names are limited to 64 characters (letters, numbers, spaces, and `_ - .`), and names starting with `filone-console` (in any capitalization) are reserved.
+4. Choose the key's **region** (see [Region scope](#region-scope)). It is pre-set to `eu-west-1`, and it is fixed for the life of the key.
+5. Set the key's permissions and bucket scope (see below). At least one permission is required, and you can only grant permissions your role holds (see [Who can create and manage keys](#who-can-create-and-manage-keys)).
+6. Optionally set an expiration: **Never expires**, **30 days**, or a **Custom** date.
+7. Click **Create API key**.
+8. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, [rotate the key](#rotating-a-key) to get a new one.
 
 ## Key permissions
 
@@ -27,18 +27,20 @@ Each key can be granted a combination of the following object-level permissions:
 
 | Permission | What it allows |
 |------------|----------------|
-| **Read** | `GetObject` (and `HeadObject`, which uses the same underlying permission), `ListMultipartUploadParts` |
+| **Read** | `GetObject` (and `HeadObject`, which uses the same underlying permission), `ListMultipartUploadParts`. In `us-east-1`, also `ListBucket` |
 | **Write** | `PutObject`, `AbortMultipartUpload` |
 | **List** | `ListObjectsV2` / `ListBucket`, and listing in-progress multipart uploads (`ListBucketMultipartUploads`) |
 | **Delete** | `DeleteObject` |
 
-You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload but not remove data.
+You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload new objects and overwrite existing ones, but cannot delete them.
+
+The **Read** grant differs by region. In `us-east-1` it also includes `ListBucket`, so a key with **Read** but not **List** can still list object names there. In `eu-west-1`, **Read** does not include listing.
 
 Listing the *names* of your buckets (`ListAllMyBuckets`) is granted to every key automatically and is not one of the permissions above. Note that the operator's documented **Write** grant covers `PutObject` and `AbortMultipartUpload`; the `CreateMultipartUpload` / `UploadPart` / `CompleteMultipartUpload` operations are not separately enumerated in the grant map.
 
 ### Bucket management permissions
 
-These are standalone permissions — they do not require any object permission. They are only offered in regions where bucket management is available through the S3 API, so they cannot be granted on an `eu-west-1` key. See [Buckets](/storage/buckets).
+These are standalone permissions — they do not require any object permission. They can only be granted in regions where bucket management is available through the S3 API. In `eu-west-1` they appear on the create form but are disabled, with the tooltip **Not supported in Europe (France)**, so they cannot be granted on an `eu-west-1` key. See [Buckets](/storage/buckets).
 
 | Permission | What it allows |
 |------------|----------------|
@@ -49,7 +51,7 @@ Listing buckets is always permitted and is not a separate, configurable permissi
 
 ### Bucket configuration permissions
 
-These read a bucket's settings and are selectable in every region, including `eu-west-1`. They are **not** granted automatically — add them if your key needs them.
+These read a bucket's settings and are selectable in every region, including `eu-west-1`. The create form in the console pre-selects both, so untick them if your key doesn't need them.
 
 | Permission | What it allows |
 |------------|----------------|
@@ -72,6 +74,8 @@ You can enable additional granular permissions on top of the basic object permis
 
 Granular permissions are additive — a key must have the corresponding basic permission before a granular permission can be granted. For example, `PutObjectRetention` requires the **Write** basic permission.
 
+`PutObjectRetention` and `PutObjectLegalHold` (**Set retention** and **Set legal hold** in the console) can only be granted by an Owner. For other roles, the create form doesn't show them.
+
 :::note
 Granting `PutObjectRetention` makes the permission available on the key. Gateway support for per-object retention calls is confirmed in `us-east-1`; it has not yet been verified in `eu-west-1` — see [S3 Compatibility](/reference/s3-compatibility#object-lock).
 :::
@@ -79,6 +83,16 @@ Granting `PutObjectRetention` makes the permission available on the key. Gateway
 :::note
 `GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key. Legal Hold operations are confirmed working through the S3 API in `us-east-1`; they have not yet been verified in `eu-west-1`. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
 :::
+
+## Who can create and manage keys
+
+A key can only carry permissions that your [role](/app/organization#roles-and-permissions) in the organization holds, and the create form only offers those. What each role can do with keys:
+
+- **Read only** members cannot create keys and don't see the key list.
+- **Members** can create keys, and see, rotate, and delete only the keys they created.
+- **Admins** and **Owners** can create keys and see, rotate, and delete every key in the organization.
+
+Keys follow the person who created them. If a member's role is narrowed, any key they created that the new role couldn't create is revoked. Removing a member from the organization revokes the keys they created.
 
 ## Region scope
 
@@ -106,21 +120,33 @@ Expiring keys are useful for:
 
 ## Viewing and managing keys
 
-Go to **API Keys** in the left menu to see all your active keys. The list shows:
+Go to **API Keys** in the left menu to see your keys. The list shows:
 
 | Column | Description |
 |--------|-------------|
 | Name | The label you gave the key at creation, with the Access Key ID shown beneath it |
+| Region | The region the key belongs to (hidden on narrow screens) |
 | Buckets | Which buckets the key can access (all, or a specific set) |
 | Permissions | The permissions granted to the key |
-| Status | The key's current status (for example, active or expired) |
-| Last Used | When the key last successfully authenticated a request (or "Never") |
+| Created by | Who created the key, and who rotated it and when. Shown when your organization has more than one member |
+| Status | Currently always **Active** |
+| Last Used | Currently always **Never** |
 
-You cannot view the Secret Access Key after creation.
+**Status** and **Last Used** are placeholders for now, and the list doesn't show a key's expiry date, so keep your own record of when each key expires. You cannot view the Secret Access Key after creation.
 
-:::note
-The key list does **not** show a key's region. Because keys are region-scoped, record which region you created each key in — a key used against the wrong region's endpoint returns `403`.
-:::
+## Rotating a key
+
+Rotation gives a key a new Access Key ID and Secret Access Key and keeps everything else: its name, permissions, bucket scope, region, and expiry date.
+
+1. Find the key in **API Keys**, open its **⋯** action menu, and choose **Rotate**.
+2. Confirm with **Rotate key** in the **Rotate access key** dialog.
+3. Copy or download the new credentials from the **Save your credentials** dialog. As at creation, the secret is shown only once.
+
+The old secret stops working as soon as the new one is issued, so update your applications right away. If the old key couldn't be revoked, the console tells you it is still active; delete it from the list yourself.
+
+You can't rotate an expired key; create a new one instead. **Rotate** only appears on keys your current role could still create.
+
+To move an application onto a key with different permissions or buckets, create the new key, switch the application over, then delete the old key.
 
 ## Revoking a key
 
@@ -132,7 +158,7 @@ Find the key in **API Keys**, open its **⋯** action menu, and choose **Delete*
 - **Use the minimum permissions required.** A key that only needs to read objects should not have Write or Delete permissions.
 - **Scope keys to specific buckets** when possible, especially for external integrations.
 - **Set expiration dates** on keys that are only needed temporarily.
-- **Rotate keys periodically.** Create a new key, update your application, then delete the old key.
+- **Rotate keys periodically.** Use **Rotate** on the key, then update your application with the new credentials. See [Rotating a key](#rotating-a-key).
 - **Revoke keys immediately** if you suspect compromise, and rotate anything that depended on them. Revocation is forwarded to the storage operator, so treat it as effective quickly rather than assuming a precise cut-off instant.
 - **Never hardcode credentials** in source code. Use environment variables or a secrets manager.
 

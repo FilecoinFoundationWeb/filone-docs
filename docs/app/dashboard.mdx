@@ -3,7 +3,7 @@ title: Dashboard
 description: What the Fil One dashboard home page shows, and how to read its usage figures.
 ---
 
-The dashboard at [app.fil.one](https://app.fil.one) is the home page of the console, reached from **Dashboard** at the top of the left sidebar. It summarises your plan, usage, and recent activity.
+The dashboard at [app.fil.one](https://app.fil.one) is the home page of the console, reached from **Dashboard** at the top of the left sidebar. It summarises your plan, usage, and recent activity. A **New bucket** button sits in the header, and during the trial a banner shows the days left with an **Upgrade** button.
 
 For sign-in methods, email verification, two-factor authentication, and passkeys, see [Account Security](/security/account-security).
 
@@ -21,10 +21,10 @@ The card disappears once all three are complete.
 
 ## Plan, storage, and egress
 
-Three cards sit below the header:
+Three cards sit below the header. The **PLAN** card is only shown to roles that can view billing (Owner and Admin), so other roles see just the storage and egress cards. See [Roles and permissions](/app/organization#roles-and-permissions).
 
 - **PLAN** shows your plan name and a status badge (**Active**, **Past Due**, **Grace Period**, **Canceled**, or **No plan**). During the trial the badge counts down as *n* **days left**, and hovering it shows the exact expiry time. The footer link goes to Billing.
-- **STORAGE** shows how much you are storing. On the trial it adds a **/ 1 TB** suffix and a progress bar. On a paid plan it instead shows an **Est. monthly cost** row.
+- **STORAGE** shows how much you are storing. On the trial it adds a **/ 1 TB** suffix and a progress bar. On a paid plan with a per-TB rate it instead shows an **Est. monthly cost** row.
 - **EGRESS** shows your egress. On the trial it adds a **/ 2 TB** suffix and a progress bar. On a paid plan it reads **No egress fees · unlimited**.
 
 Below those, a strip shows your **BUCKETS**, **OBJECTS**, and **API KEYS** totals, with **View all** links for buckets and API keys.
@@ -36,24 +36,20 @@ Below those, a strip shows your **BUCKETS**, **OBJECTS**, and **API KEYS** total
 
 **Egress is a rolling 30-day total** rather than a calendar-month figure, so it moves with the trailing month instead of resetting on the 1st.
 
-**Est. monthly cost is a guide.** It applies $4.99/TB to your latest storage reading, with your monthly minimum as the floor. Your invoice is calculated from your average storage across the month, so expect the two to differ. See [Pricing](/billing/pricing).
+**Est. monthly cost is a guide.** It applies your plan's per-TB price to your latest storage reading, with your monthly minimum as the floor. It is not shown when your plan has no per-TB rate. Your invoice is calculated from your average storage across the month, so expect the two to differ. See [Pricing](/billing/pricing).
 :::
 
 ## Usage Trends
 
-**Usage Trends** charts your history over a **7 days** or **30 days** window, defaulting to 7. Storage is an area chart and objects is a bar chart.
+**Usage Trends** charts your history over a **7 days** or **30 days** window, defaulting to 7. **Storage** is an area chart, and the figure above it is the most recent reading. **Egress** is a bar chart, and the figure above it is the total egress across the window.
 
 Each point is a daily reading. Days without a reading are plotted as zero, so a gap in the data appears as a dip to zero.
-
-:::note Which object number to use
-The figure above the **OBJECTS** chart is the sum of the daily readings across the window, so it runs higher than your current object count. For the number of objects you hold right now, use the **OBJECTS** total in the summary strip, and read the chart for the trend.
-:::
 
 ## Recent Activity
 
 **Recent Activity** lists your five most recent events, each with a relative timestamp such as `5m ago` or `2d ago`.
 
-The feed currently covers bucket and key creation, shown as **bucket created** and **key created**. Object-level events are not included yet, so open a bucket to confirm an upload rather than looking for it here. With no activity yet the card reads **No activity yet** and offers a **Create bucket** button.
+The feed currently covers bucket and key creation. Each row shows the resource name with a **bucket** or **key** badge and the label **Created**. Object-level events are not included yet, so open a bucket to confirm an upload rather than looking for it here. With no activity yet the card reads **No activity yet** and offers a **Create bucket** button.
 
 ## Account state banners
 
@@ -64,5 +60,7 @@ When your account is restricted, a banner appears above the page on every screen
 | Trial storage cap reached | **Storage limit exceeded. Uploads are disabled. Delete files or upgrade to resume.** |
 | Trial expired, in grace period | That the trial has expired, with the days left to upgrade or download your data |
 | Account disabled | **Account disabled. Visit billing to restore access.** |
+
+Roles that cannot view billing see a shorter banner that leaves out the cause: when writes are paused it says uploads are disabled for this organization, and when the account is disabled it says so. Both ask you to contact an organization owner.
 
 Reads keep working while writes are paused, so your data stays available to download throughout. See [Trial & Billing](/billing/trial) for the full lifecycle and [Usage](/billing/usage) for how the caps are applied.

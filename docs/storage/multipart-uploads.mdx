@@ -72,6 +72,12 @@ These are the standard AWS S3 multipart limits. Fil One's storage gateway is exp
 
 Incomplete multipart uploads are generally expected to consume storage until aborted. Fil One has **no lifecycle-rule mechanism** to expire them automatically (there is no `AbortIncompleteMultipartUpload` lifecycle support), so you must list and abort stale uploads yourself:
 
+:::note Key permissions for cleanup
+Listing in-progress uploads needs the **List** permission on your access key, and aborting one needs **Write**. Listing the parts of an upload goes with **Read**.
+
+In `us-east-1`, access keys created before 26 August 2026 do not carry these multipart actions, so `list-multipart-uploads` and `abort-multipart-upload` fail with `403`. Existing keys cannot be updated: delete the key and create a new one to pick them up. See [API Keys](/security/api-keys).
+:::
+
 ```bash
 aws s3api list-multipart-uploads \
   --bucket my-bucket \

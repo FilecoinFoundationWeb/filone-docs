@@ -1,0 +1,203 @@
+---
+title: Organization
+description: Members, roles, invitations, the audit log, and billing for your Fil One organization. Beta.
+---
+
+:::info Beta
+Organizations are in **beta**. Inviting teammates is switched on by Fil One for selected organizations, so what you see on this page depends on whether yours is one of them. Details may change before general availability.
+:::
+
+Every Fil One account starts as a one-person organization, with you as its **Owner**. The **Organization** page is where you rename that organization, bring other people into it, decide what each of them can do, and review what has happened in it.
+
+## When the page appears
+
+**Organization** appears in the left sidebar, next to Settings, when either of these is true:
+
+- your organization is in the organizations beta, or
+- you belong to more than one organization.
+
+When it appears, billing moves inside it as the **Billing** tab, and opening `/billing` takes you there. Otherwise there is no Organization entry, **Billing** stays a standalone sidebar item, and opening `/organization` directly shows "Inviting teammates is not enabled for this organization yet."
+
+The beta gates one thing: **sending invitations**. If you belong to several organizations, you see the Organization page in each of them, but **Add member** only appears in organizations that are in the beta. To ask about access, email [support@fil.one](mailto:support@fil.one).
+
+## The page
+
+The header reads **Organization**, with "Manage *your organization's name* and who has access to it." underneath. Two buttons sit beside it:
+
+- **Edit** opens **Edit organization**, where you rename the organization. The name must be 2 to 100 characters, using letters, numbers, spaces, hyphens, and periods only. Shown to Owners and Admins.
+- **Add member** opens the invitation form (see [Invitations](#invitations)). Shown to Owners and Admins, and only in organizations in the beta.
+
+Below the header are up to four tabs. You only see the tabs your role can open:
+
+| Tab | What it holds | Who sees it |
+|-----|---------------|-------------|
+| **Members** | Everyone in the organization and their role | Every role |
+| **Invitations** | Invitations that have been sent but not yet accepted | Owner, Admin |
+| **Audit log** | A record of membership, key, and organization changes | Owner, Admin |
+| **Billing** | Your plan, usage, payment method, and invoices | Owner, Admin |
+
+The **Members** and **Invitations** tabs show a count beside their label.
+
+## Roles and permissions
+
+Every member holds exactly one of four roles. The role picker describes them like this:
+
+| Role | Description |
+|------|-------------|
+| **Owner** | Can do everything, including billing and owning the organization. |
+| **Admin** | Can manage members, buckets, and keys, but not billing or owners. |
+| **Member** | Can read and write objects, and create buckets and their own keys. |
+| **Read only** | Can read buckets and objects, but can't make changes. |
+
+The full set of capabilities:
+
+| Capability | Owner | Admin | Member | Read only |
+|------------|:-----:|:-----:|:------:|:---------:|
+| See the member list | ✅ | ✅ | ✅ | ✅ |
+| Invite members, change roles, and remove members (Admin and below) | ✅ | ✅ | — | — |
+| Make someone an Owner, change an Owner's role, or remove an Owner | ✅ | — | — | — |
+| Transfer ownership | ✅ | — | — | — |
+| Rename the organization | ✅ | ✅ | — | — |
+| View billing (plan, usage, invoices) | ✅ | ✅ | — | — |
+| Manage billing (plan, payment method, Stripe portal) | ✅ | — | — | — |
+| View and export the audit log | ✅ | ✅ | — | — |
+| List buckets and read their settings | ✅ | ✅ | ✅ | ✅ |
+| Create buckets | ✅ | ✅ | ✅ | — |
+| Delete buckets | ✅ | ✅ | — | — |
+| View and download objects | ✅ | ✅ | ✅ | ✅ |
+| Upload objects | ✅ | ✅ | ✅ | — |
+| Delete objects | ✅ | ✅ | ✅ | — |
+| Create access keys | ✅ | ✅ | ✅ | — |
+| See and revoke the keys you created | ✅ | ✅ | ✅ | — |
+| See and revoke every key in the organization | ✅ | ✅ | — | — |
+| Create keys with the `PutObjectRetention` or `PutObjectLegalHold` permission | ✅ | — | — | — |
+
+Read only members don't see **API Keys** in the sidebar, because they can't create or manage keys.
+
+:::note Roles apply in the console. Access keys carry their own permissions.
+The S3 API has no users or roles. A request made with an access key is allowed or refused by that key's own permissions and [bucket scope](/security/api-keys#bucket-scope), whoever created it. What keeps keys in line with roles is a cap at creation: a key can only carry permissions its creator's role holds. For example, a Member can't create a key with `DeleteBucket`, and only an Owner can create one with `PutObjectRetention` or `PutObjectLegalHold`. When a member's role narrows, keys that go beyond the new role are revoked (see [Changing a role](#changing-a-role)).
+:::
+
+## Members
+
+The **Members** tab lists everyone in the organization:
+
+| Column | What it holds |
+|--------|---------------|
+| **Member** | The member's name, a **You** badge on your own row, and their user ID underneath |
+| **Role** | A role picker, if you can change this member's role, or a role badge otherwise |
+| **Joined** | When they joined, with how: **Signed up**, **Original account**, or **Invited** (hidden on narrow screens) |
+| **⋯** | **Transfer ownership** and **Remove**, for the members you can act on |
+
+With 5 or more members, a search box and a role filter appear above the table.
+
+### Changing a role
+
+Owners and Admins change a role from the picker in the **Role** column. The picker only offers roles you're allowed to assign: an Admin can move people between Admin, Member, and Read only, but can't change an Owner's role or make anyone an Owner.
+
+- **Making someone an Owner** asks you to confirm first, because they'll be able to manage billing, every member, and the organization itself, including removing you.
+- **Moving someone to a role with fewer permissions** opens a preview of their access keys first. Any key that carries more than the new role allows is listed, and the confirm button becomes **Change role and revoke**. Those keys stop working straight away. To keep a client running, create a replacement key with the narrower permissions first, then change the role. Moving someone to Read only revokes every key they created, since Read only can't hold keys.
+- **Moving someone to a role with more permissions** takes effect immediately.
+
+You can change your own role too. The dialog warns you if the change takes away your ability to manage members or billing.
+
+### Removing a member
+
+Choose **Remove** from the row's **⋯** menu and confirm with **Remove member**. The person loses access to the organization, and **every access key they created is revoked**, so anything still using one stops working straight away. Invitations they sent that are still pending are withdrawn too.
+
+Admins can remove Admins, Members, and Read only members. Only an Owner can remove an Owner. Owners and Admins can remove themselves. Members and Read only members can't remove themselves, so ask an Owner or Admin.
+
+### At least one Owner
+
+An organization always keeps at least one Owner. A role change or removal that would leave it with none is refused, and the page shows **An organization keeps at least one owner**. Make someone else an Owner, or [transfer ownership](#transferring-ownership), first.
+
+### Transferring ownership
+
+An Owner can hand the Owner seat to another member with **Transfer ownership** in that member's **⋯** menu.
+
+1. The dialog explains that the other member becomes Owner and **you move to Admin**, and that you can't take ownership back yourself.
+2. If any of your access keys carry permissions an Admin can't hold (such as `PutObjectRetention` or `PutObjectLegalHold`), the dialog lists them. They're revoked as part of the transfer.
+3. Type the organization's name to confirm, then click **Transfer ownership**. This cannot be undone.
+
+Transferring needs a recent sign-in. If you haven't signed in within the last five minutes, the console sends you through sign-in again, including your two-factor check if you have one set up, and then reopens the dialog.
+
+Billing is not affected: the subscription belongs to the organization, not to the Owner.
+
+## Invitations
+
+Invitations are how anyone else joins your organization. Sending them needs an Owner or Admin role, and an organization in the beta.
+
+### Sending an invitation
+
+1. Click **Add member** at the top of the page.
+2. Enter the person's **Email address**.
+3. Choose a **Role**. Each role is listed with its description, and the list only includes roles you can assign: an Admin can invite Admins, Members, and Read only members, and an Owner can also invite Owners. **Member** is selected by default.
+4. Click **Send invitation**.
+
+The person joins as soon as they accept, at the role you chose. The invitation link can only be used once, and expires in **14 days**.
+
+An organization can have at most **25** invitations pending at once. At the limit, revoke one to send another. Inviting an address that already has a pending invitation replaces the old one rather than taking a second slot.
+
+If the invitation was created but the email couldn't be sent, the tab says so and offers **Send again**.
+
+### The Invitations tab
+
+| Column | What it holds |
+|--------|---------------|
+| **Email** | The address invited, and when |
+| **Role** | The role they'll join at |
+| **Status** | **Waiting**, **Not delivered** (the email couldn't be sent), or **Expired** |
+| **Expires** | When the link stops working (hidden on narrow screens) |
+
+**Revoke** withdraws an invitation, and the link stops working. **Resend** appears on invitations whose email was not delivered. You can only act on invitations for roles you're allowed to assign.
+
+### Accepting an invitation
+
+The invitation email links to `app.fil.one/invite/accept`. If you're not signed in, you're asked to sign in first and then brought back. The page then shows one of these:
+
+| Outcome | What it means |
+|---------|---------------|
+| **Welcome to** *organization* | You've joined. The page shows your role and what it lets you do, with **Continue to** *organization*. |
+| **You're already in** *organization* | You were already a member. |
+| **Wrong account signed in** | The invitation was sent to a different address than the one you're signed in with. Log out, sign in with the right address, and open the link again. |
+| **Verify your email address first** | Your email isn't verified yet. Verify it, and you're brought back to accept. |
+| **This invitation is no longer valid** | The link has already been used, was revoked, or has expired. Ask an administrator for a new invitation. |
+
+## Switching organizations
+
+If you belong to more than one organization, the user menu lists them under **Organization**, sorted by name, with a check mark on the one you're in. Choosing another reloads the console in that organization. With only one membership, the switcher doesn't appear.
+
+The choice is kept per browser tab, so two tabs can be in different organizations at the same time. The page header names the organization you're in, so check it before removing people or transferring ownership.
+
+## Audit log
+
+The **Audit log** tab, for Owners and Admins, records changes to the organization:
+
+| Column | What it holds |
+|--------|---------------|
+| **Event** | What happened |
+| **Member** | Who did it |
+| **Subject** | What it was done to (hidden on narrow screens) |
+| **When** | When it happened |
+
+Expand a row to see its details. Filter by date range (**From**, **To**), by event type (**All events** by default), and by member (**Anyone** by default).
+
+Events recorded:
+
+- Organization created, and organization renamed
+- Member invited, invitation revoked, and invitation accepted
+- Role changed, member removed, and ownership transferred
+- Key created, key deleted, and key rotated
+- Audit log exported
+
+**Download CSV** exports the events that match your current filters. An export can hold up to 20,000 rows. A larger one is refused rather than cut short, so narrow the date range or filter by event type or member.
+
+Events are kept for **90 days**. If you ask for a range that reaches further back, the tab tells you the older events have been removed.
+
+## Billing
+
+The **Billing** tab is the billing page, for Owners and Admins. See [Billing](/app/billing).
+
+## Deleting an organization
+
+Deleting an organization is not available yet. To delete one, email [support@fil.one](mailto:support@fil.one).

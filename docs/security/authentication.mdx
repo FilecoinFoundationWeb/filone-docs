@@ -26,7 +26,7 @@ Each API key consists of two parts:
 | **Access Key ID** | Identifies your account. Included in request headers. | `FHXXXXXXXXXXXXXXXX` |
 | **Secret Access Key** | Signs your requests. Never sent over the wire. | `EXAMPLEfakeSECRETkeyDoNotUse...` |
 
-Your secret key is displayed **once** at creation time. Store it securely. If you lose it, you will need to create a new key pair.
+Your secret key is displayed **once** at creation time. Store it securely. If you lose it, [rotate the key](/security/api-keys#rotating-a-key) to get a new key pair.
 
 ## Creating an API key
 
@@ -36,12 +36,13 @@ Your secret key is displayed **once** at creation time. Store it securely. If yo
     2. Click **Create new key** (this opens a dedicated page).
     3. Give the key a descriptive name (e.g., `production-backend`, `local-dev`). Names are limited to 64 characters.
     4. Choose the **Region** the key belongs to. This is required and cannot be changed later. A key only authenticates against its own region's endpoint — a key created in the wrong region fails with `403`, which is the single most common first-run mistake.
-    5. Select at least one permission (Read, Write, List, Delete), and optionally restrict the key to specific buckets and set an expiration (Never, 30 days, or a custom date).
-    6. Copy both the Access Key ID and Secret Access Key immediately — the secret is shown only once.
+    5. Select at least one permission (Read, Write, List, Delete), and optionally restrict the key to specific buckets and set an expiration (Never expires, 30 days, or a custom date).
+    6. Click **Create API key**.
+    7. Copy both the Access Key ID and Secret Access Key immediately — the secret is shown only once.
   </TabItem>
 </Tabs>
 
-You can create multiple API keys per account. See [API Keys](/security/api-keys) for details on configuring key permissions.
+You can create multiple API keys per account. A key can only carry permissions your role in the organization holds, and Read only members cannot create keys. See [API Keys](/security/api-keys) for details on configuring key permissions.
 
 ## Revoking an API key
 
@@ -153,5 +154,5 @@ func newClient() *s3.Client {
 
 - **Do not hardcode credentials** in source code. Use environment variables, a secrets manager, or credential files.
 - **Create separate keys** for different environments (development, staging, production).
-- **Rotate keys periodically.** Delete old keys after deploying new ones.
+- **Rotate keys periodically.** Use **Rotate** in the key's **⋯** menu, then deploy the new credentials. The old secret stops working as soon as the new one is issued. See [Rotating a key](/security/api-keys#rotating-a-key).
 - **Revoke keys immediately** if you suspect they have been compromised.

@@ -36,8 +36,8 @@ The three object settings nest, so you enable them in order:
 1. **Versioning** — turn this on first. Object Lock stays greyed out until you do.
 2. **Object Lock** — becomes available once versioning is on. Retention stays greyed out until you enable it.
 3. **Retention** — becomes available once Object Lock is on. Choose a mode and a duration:
-   - **Governance** (the default) — users with special permissions can delete or modify protected objects.
-   - **Compliance** — no one can delete or modify objects until the retention period expires.
+   - **Governance** (the default): in standard S3, a caller with a bypass permission can override it. Fil One does not currently expose a grantable bypass permission, so in practice protected objects cannot be deleted or modified until the retention period expires. See [Object Lock](/storage/object-lock).
+   - **Compliance**: no one can delete or modify objects until the retention period expires.
 
    The duration can be set in days or years, from 1 day up to 100 years.
 
