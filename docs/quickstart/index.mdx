@@ -36,8 +36,8 @@ The three object settings nest, so you enable them in order:
 1. **Versioning** — turn this on first. Object Lock stays greyed out until you do.
 2. **Object Lock** — becomes available once versioning is on. Retention stays greyed out until you enable it.
 3. **Retention** — becomes available once Object Lock is on. Choose a mode and a duration:
-   - **Governance** (the default) — users with special permissions can delete or modify protected objects.
-   - **Compliance** — no one can delete or modify objects until the retention period expires.
+   - **Governance** (the default): in standard S3, a caller with a bypass permission can override it. Fil One does not currently expose a grantable bypass permission, so in practice protected objects cannot be deleted or modified until the retention period expires. See [Object Lock](/storage/object-lock).
+   - **Compliance**: no one can delete or modify objects until the retention period expires.
 
    The duration can be set in days or years, from 1 day up to 100 years.
 
@@ -53,12 +53,12 @@ Choose your preferred method. The App requires no API key. For CLI and SDK acces
 - **Secret Access Key** — authenticates your requests (treat like a password)
 
 :::note
-Your secret key is shown once. Copy it and store it securely. If you lose it, you'll need to generate a new key pair.
+Your secret key is shown once. Copy it and store it securely. If you lose it, rotate the key from its **⋯** menu in **API Keys** to get a new secret. See [API Keys](/app/api-keys#rotating-a-key).
 
 A key also belongs to a single region, so create it in the same region as your bucket.
 :::
 
-The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and region `us-east-1` instead.
+The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1` instead.
 
 <Tabs>
   <TabItem value="app-ui" label="App">
@@ -83,13 +83,13 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
 
     ```bash
     aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-      --endpoint-url https://eu-west-1.s3.filonecontent.com
+      --endpoint-url https://s3.eu-west-1.filonecontent.com
     ```
 
     Verify it's there:
 
     ```bash
-    aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
+    aws s3 ls s3://my-bucket/ --endpoint-url https://s3.eu-west-1.filonecontent.com
     ```
   </TabItem>
 
@@ -100,7 +100,7 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
 
     s3 = boto3.client(
         "s3",
-        endpoint_url="https://eu-west-1.s3.filonecontent.com",
+        endpoint_url="https://s3.eu-west-1.filonecontent.com",
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
         region_name="eu-west-1",
@@ -123,7 +123,7 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
     import { readFileSync } from "fs";
 
     const client = new S3Client({
-      endpoint: "https://eu-west-1.s3.filonecontent.com",
+      endpoint: "https://s3.eu-west-1.filonecontent.com",
       region: "eu-west-1",
       forcePathStyle: true,
       credentials: {

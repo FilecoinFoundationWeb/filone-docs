@@ -9,7 +9,7 @@ description: Frequently asked questions about Fil One.
 <summary>Is Fil One S3-compatible?</summary>
 <div>
 
-Yes. Fil One provides an S3-compatible API. Any application, SDK, or tool that works with AWS S3 works with Fil One by changing the endpoint URL to your region's endpoint — `https://eu-west-1.s3.filonecontent.com` or `https://us-east-1.s3.filonecontent.com`. See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.
+Yes. Fil One provides an S3-compatible API. Any application, SDK, or tool that works with AWS S3 works with Fil One by changing the endpoint URL to your region's endpoint — `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`. See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.
 
 </div>
 </details>
@@ -40,7 +40,7 @@ Within a region, storage is fulfilled by a distributed network of storage provid
 
 On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
 
-On a bucket **with versioning enabled**, a plain delete places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. See [Versioning](/storage/versioning).
+On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](/storage/versioning).
 
 </div>
 </details>
@@ -80,7 +80,7 @@ The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimit
 
 Fil One exposes an S3-compatible API, so backup software that targets S3 generally works — but check your tool's requirements first. We have not verified specific backup products, and three of the documented gaps are ones backup tools commonly depend on:
 
-- **No server-side copy in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1` but not in `eu-west-1`; some tools use it for renames, moves, and deduplication.
+- **Server-side copy of a specific version is unverified in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1`, and plain server-side copy works in `eu-west-1`, but copying a specific `VersionId` has not been verified there. Some tools use `CopyObject` for renames, moves, and deduplication.
 - **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the dashboard first.
 - **No lifecycle rules.** Retention-based pruning has to be handled by the tool itself.
 
@@ -102,7 +102,9 @@ Fil One is designed for high durability through distributed storage across multi
 <summary>Can multiple users access the same account?</summary>
 <div>
 
-Currently, Fil One accounts are single-user. Each account has one login and one set of API keys. Multi-user organization accounts with role-based access are planned for a future release. In the meantime, you can create multiple API keys scoped to specific buckets and permissions to share limited access with other services or team members.
+Yes, through organizations, which are in beta and not yet enabled for every account. An organization can have several members, each with a role: **Owner**, **Admin**, **Member**, or **Read only**. See [Organization](/app/organization) and [Roles and permissions](/app/organization#roles-and-permissions).
+
+Access through the S3 API is still per access key. There are no IAM users or bucket policies, so to share limited access with other services, create API keys scoped to specific buckets and permissions.
 
 </div>
 </details>

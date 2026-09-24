@@ -14,7 +14,7 @@ This page is about signing **API requests**. For the account you log into the da
 :::
 
 :::note Keys and endpoints are region-specific
-Every access key belongs to a **single region**, chosen when you create it, and it only authenticates requests to that region's endpoint. Examples below use `eu-west-1`, the default region — for `us-east-1`, use `https://us-east-1.s3.filonecontent.com` and region `us-east-1`. If you store data in both regions you need a key for each.
+Every access key belongs to a **single region**, chosen when you create it, and it only authenticates requests to that region's endpoint. Examples below use `eu-west-1`, the default region — for `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1`. If you store data in both regions you need a key for each.
 :::
 
 ## API keys
@@ -26,7 +26,7 @@ Each API key consists of two parts:
 | **Access Key ID** | Identifies your account. Included in request headers. | `FHXXXXXXXXXXXXXXXX` |
 | **Secret Access Key** | Signs your requests. Never sent over the wire. | `EXAMPLEfakeSECRETkeyDoNotUse...` |
 
-Your secret key is displayed **once** at creation time. Store it securely. If you lose it, you will need to create a new key pair.
+Your secret key is displayed **once** at creation time. Store it securely. If you lose it, [rotate the key](/security/api-keys#rotating-a-key) to get a new key pair.
 
 ## Creating an API key
 
@@ -36,12 +36,13 @@ Your secret key is displayed **once** at creation time. Store it securely. If yo
     2. Click **Create new key** (this opens a dedicated page).
     3. Give the key a descriptive name (e.g., `production-backend`, `local-dev`). Names are limited to 64 characters.
     4. Choose the **Region** the key belongs to. This is required and cannot be changed later. A key only authenticates against its own region's endpoint — a key created in the wrong region fails with `403`, which is the single most common first-run mistake.
-    5. Select at least one permission (Read, Write, List, Delete), and optionally restrict the key to specific buckets and set an expiration (Never, 30 days, or a custom date).
-    6. Copy both the Access Key ID and Secret Access Key immediately — the secret is shown only once.
+    5. Select at least one permission (Read, Write, List, Delete), and optionally restrict the key to specific buckets and set an expiration (Never expires, 30 days, or a custom date).
+    6. Click **Create API key**.
+    7. Copy both the Access Key ID and Secret Access Key immediately — the secret is shown only once.
   </TabItem>
 </Tabs>
 
-You can create multiple API keys per account. See [API Keys](/security/api-keys) for details on configuring key permissions.
+You can create multiple API keys per account. A key can only carry permissions your role in the organization holds, and Read only members cannot create keys. See [API Keys](/security/api-keys) for details on configuring key permissions.
 
 ## Revoking an API key
 
@@ -62,7 +63,7 @@ When prompted, enter your Access Key ID, Secret Access Key, and `eu-west-1` as t
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.filonecontent.com
+endpoint_url = https://s3.eu-west-1.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -81,7 +82,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.filonecontent.com",
+    endpoint_url="https://s3.eu-west-1.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -97,7 +98,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.filonecontent.com",
+    endpoint_url="https://s3.eu-west-1.filonecontent.com",
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
     region_name="eu-west-1",
@@ -111,7 +112,7 @@ s3 = boto3.client(
 import { S3Client } from "@aws-sdk/client-s3";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.filonecontent.com",
+  endpoint: "https://s3.eu-west-1.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -137,7 +138,7 @@ import (
 
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
+        BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -153,5 +154,5 @@ func newClient() *s3.Client {
 
 - **Do not hardcode credentials** in source code. Use environment variables, a secrets manager, or credential files.
 - **Create separate keys** for different environments (development, staging, production).
-- **Rotate keys periodically.** Delete old keys after deploying new ones.
+- **Rotate keys periodically.** Use **Rotate** in the key's **⋯** menu, then deploy the new credentials. The old secret stops working as soon as the new one is issued. See [Rotating a key](/security/api-keys#rotating-a-key).
 - **Revoke keys immediately** if you suspect they have been compromised.

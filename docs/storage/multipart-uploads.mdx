@@ -24,7 +24,7 @@ The AWS CLI handles multipart uploads automatically for large files:
 ```bash
 # The AWS CLI switches to multipart above its own client-side threshold (8 MB by default)
 aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 To control thresholds:
@@ -72,14 +72,20 @@ These are the standard AWS S3 multipart limits. Fil One's storage gateway is exp
 
 Incomplete multipart uploads are generally expected to consume storage until aborted. Fil One has **no lifecycle-rule mechanism** to expire them automatically (there is no `AbortIncompleteMultipartUpload` lifecycle support), so you must list and abort stale uploads yourself:
 
+:::note Key permissions for cleanup
+Listing in-progress uploads needs the **List** permission on your access key, and aborting one needs **Write**. Listing the parts of an upload goes with **Read**.
+
+In `us-east-1`, access keys created before 26 August 2026 do not carry these multipart actions, so `list-multipart-uploads` and `abort-multipart-upload` fail with `403`. Existing keys cannot be updated: delete the key and create a new one to pick them up. See [API Keys](/security/api-keys).
+:::
+
 ```bash
 aws s3api list-multipart-uploads \
   --bucket my-bucket \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 aws s3api abort-multipart-upload \
   --bucket my-bucket \
   --key large-file.zip \
   --upload-id YOUR_UPLOAD_ID \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```

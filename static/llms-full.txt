@@ -6,13 +6,15 @@
 > committed to store. No egress fees on paid plans, no per-request charges,
 > $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
-> `https://<region>.s3.filonecontent.com`, with standard Access Key ID / Secret Access Key
+> `https://s3.<region>.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
-  in us-east-1, unavailable in eu-west-1 (use the dashboard there)
-- Path-style addressing required: `https://eu-west-1.s3.filonecontent.com/bucket/key`
+  in us-east-1, unavailable in eu-west-1 (use the dashboard there). The dashboard
+  can delete a bucket in EVERY region, including eu-west-1, but only for Owner
+  and Admin roles and only once the bucket is EMPTY (no objects or versions)
+- Path-style addressing required: `https://s3.eu-west-1.filonecontent.com/bucket/key`
   (virtual-hosted-style URLs are not supported)
 - Access keys are scoped to ONE region and cannot be used against another
 - Region, versioning, Object Lock and retention are fixed at bucket creation and
@@ -29,8 +31,10 @@ Critical integration notes for developers:
   so no encryption configuration can be read or written there
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
-  On versioned buckets a plain delete places a delete marker and prior versions
-  are retained and still billed
+  On versioned buckets an S3-API delete WITHOUT a version ID places a delete
+  marker and prior versions are retained and still billed. The DASHBOARD NEVER
+  WRITES A DELETE MARKER: a console delete (single or bulk) permanently removes
+  the specific version on the row chosen, even on a versioned bucket
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is UNVERIFIED
@@ -38,24 +42,34 @@ Critical integration notes for developers:
   re-upload is the fallback. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
-- Paid past_due status is READ-ONLY immediately: writes are blocked from the
-  moment a payment fails, not after a later deadline; the ~30-day window is
-  retrieval-only before the account is disabled
+- A failed payment (past_due) makes the DASHBOARD READ-ONLY from the moment the
+  payment fails, not after a later deadline; Stripe retries the charge
 - Trial caps are enforcement thresholds, not allowances: storage reaching 1 TB
-  WRITE-LOCKS the account; egress reaching 2 TB DISABLES it entirely. Trial
-  egress is a single cumulative budget over the 30 days. Enforced by a
-  twice-daily job (~07:00/19:00 UTC), not in real time
+  WRITE-LOCKS the account (lifted on the next usage run once storage is back
+  under 1 TB); egress reaching 2 TB DISABLES it entirely, with NO read-only grace
+  period first. Trial egress is a single cumulative budget over the 30 days.
+  Enforced by a twice-daily job (~07:00/19:00 UTC), not in real time
 - Storage is DECIMAL: 1 TB = 1,000 GB, 1 GB = 1,000,000,000 bytes
 - Governance Object Lock has NO grantable bypass permission in the product
-- PutObjectRetention (per-object retention) is offered as a key permission and
-  is confirmed working in us-east-1 (including Governance-mode bypass); not
-  yet confirmed in eu-west-1 — use the bucket-level default retention there
-- Legal Hold (GetObjectLegalHold/PutObjectLegalHold) is confirmed working in
-  us-east-1, incl. blocking delete while a hold is active; not yet confirmed
-  in eu-west-1
+- PutObjectRetention (per-object retention) and Legal Hold
+  (Get/PutObjectLegalHold) work in BOTH REGIONS, including Governance-mode bypass
+  and blocking delete while a hold is active. Both need the matching granular key
+  permission, which is never granted automatically, and only an organization
+  OWNER can create a key with PutObjectRetention or PutObjectLegalHold.
+  Evidence differs by region: us-east-1 from the automated compatibility suite,
+  eu-west-1 from engineering testing (the suite could not create a lock-enabled
+  bucket there)
+- The S3 API has NO IAM users, roles, or bucket policies: each request is allowed
+  or refused by the access key's own permissions and bucket scope. The CONSOLE
+  has organizations (BETA) with four member roles (Owner, Admin, Member, Read
+  only); a key can only carry permissions its creator's role holds
+- Access keys can be ROTATED in the dashboard (new Access Key ID and secret,
+  same name/permissions/buckets/region/expiry; old secret stops working at once)
 - Object/part size limits (5 TB object, 5 GB single-PUT, 10,000 parts, 5 MB min
   part) are standard AWS S3 values, NOT independently confirmed for Fil One
-- Bucket names forbid dots (unlike AWS S3); object key max is 1,024 bytes
+- Bucket names forbid dots (unlike AWS S3); object keys are capped at 1,024
+  CHARACTERS for dashboard uploads (code-backed); through the S3 API the standard
+  S3 limit of 1,024 bytes applies but is NOT independently confirmed
 - In eu-west-1, UNIMPLEMENTED OPERATIONS RETURN AccessDenied (403), NOT
   NotImplemented (501), and a bucket/key you cannot see returns 403 instead of
   404. A 403 from PutBucketVersioning, PutBucketPolicy, PutBucketAcl,
@@ -74,7 +88,6 @@ Critical integration notes for developers:
   EncodingType=url encodes a space as "+" not "%20"; additional-checksum
   operations are unreliable (ChecksumType may be missing from
   CompleteMultipartUpload responses)
-- Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
 
 
 ---
@@ -100,8 +113,9 @@ cannot be independently audited by the customer today.
 **No egress fees on paid plans.** On a paid plan there are no data-transfer
 charges. (The free trial has a 2 TB egress cap.)
 
-**Simple, flat pricing.** $4.99 / TB / month, with a $4.99 / month minimum. No
-per-request charges, no hidden fees, no tiered pricing.
+**Simple, flat pricing.** Pay as you go at $4.99 / TB / month, with a $4.99 /
+month minimum. No per-request charges, no hidden fees, no tiered pricing. For
+volume pricing on 1, 3, or 5-year terms, talk to sales about the Business plan.
 
 **30-day free trial.** 1 TB of storage and 2 TB of bandwidth, no credit card
 required.
@@ -159,7 +173,7 @@ Go to **API Keys** in the left menu and click **Create new key**. You'll get two
 - **Secret Access Key** — authenticates your requests (treat like a password)
 
 Your secret key is shown once. Copy it and store it securely. If you lose it,
-you'll need to generate a new key pair.
+rotate the key from its ⋯ menu in API Keys to get a new secret.
 
 ### AWS CLI
 
@@ -169,9 +183,9 @@ aws configure set aws_secret_access_key YOUR_SECRET_KEY
 aws configure set default.region eu-west-1
 
 aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 
-aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 ls s3://my-bucket/ --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 ### Python (boto3)
@@ -181,7 +195,7 @@ import boto3
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.filonecontent.com",
+    endpoint_url="https://s3.eu-west-1.filonecontent.com",
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
 )
@@ -200,7 +214,7 @@ import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/clien
 import { readFileSync } from "fs";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.filonecontent.com",
+  endpoint: "https://s3.eu-west-1.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -239,7 +253,7 @@ import (
 
 func main() {
     client := s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
+        BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -286,13 +300,13 @@ aws configure
 # Enter your Fil One access key and secret key. Set region to eu-west-1.
 
 # Upload
-aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 cp my-file.txt s3://my-first-bucket/ --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 # List
-aws s3 ls s3://my-first-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 ls s3://my-first-bucket/ --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 # Download
-aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 Tip: Set up a named profile to avoid repeating --endpoint-url:
@@ -300,7 +314,7 @@ Tip: Set up a named profile to avoid repeating --endpoint-url:
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.filonecontent.com
+endpoint_url = https://s3.eu-west-1.filonecontent.com
 region = eu-west-1
 ```
 
@@ -330,7 +344,7 @@ default region these examples use.
 
 Note: the endpoint depends on your bucket's region. These examples use
 eu-west-1, the default. For a bucket in us-east-1, use
-https://us-east-1.s3.filonecontent.com and region us-east-1. The endpoint, the region, and
+https://s3.us-east-1.filonecontent.com and region us-east-1. The endpoint, the region, and
 your access key must all refer to the same region.
 
 ## Python
@@ -345,7 +359,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.filonecontent.com",
+    endpoint_url="https://s3.eu-west-1.filonecontent.com",
     aws_access_key_id="YOUR_ACCESS_KEY",
     aws_secret_access_key="YOUR_SECRET_KEY",
     region_name="eu-west-1",
@@ -372,7 +386,7 @@ import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/clien
 import { readFileSync } from "fs";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.filonecontent.com",
+  endpoint: "https://s3.eu-west-1.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -418,7 +432,7 @@ import (
 
 func main() {
     client := s3.New(s3.Options{
-        BaseEndpoint:  aws.String("https://eu-west-1.s3.filonecontent.com"),
+        BaseEndpoint:  aws.String("https://s3.eu-west-1.filonecontent.com"),
         Region:        "eu-west-1",
         UsePathStyle:  true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -481,14 +495,15 @@ DeleteBucket with an access key, grant the key that permission at creation.
 1. From the dashboard, click **New bucket**, then **Create bucket**.
 2. Enter a bucket name.
 3. Choose a region, and optionally enable versioning → Object Lock → retention (all permanent), and create or configure an API key.
-4. Click **Create bucket**.
+4. Click **Create bucket** (it reads **Create bucket and API key** if you expanded
+   the key section). The dashboard then opens the new bucket's page.
 
 Every bucket is created with encryption enabled automatically.
 
 ## Listing buckets
 
 ```bash
-aws s3 ls --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 ls --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 ```python
@@ -499,13 +514,20 @@ for bucket in response["Buckets"]:
 
 ## Deleting a bucket
 
-Deleting a bucket from the dashboard is not yet available. The delete button is
-visible but disabled while the underlying storage layer completes support for
-this operation, and it will be enabled in a future release.
+A bucket must be EMPTY before it can be deleted, with no objects or object
+versions left in it.
 
-In the meantime you can delete a bucket through the S3 API in us-east-1, using a
-key that has the DeleteBucket permission. The bucket must be empty. DeleteBucket
-is not available in eu-west-1.
+- Dashboard: open **Buckets**, choose **Delete bucket** from the bucket's actions
+  menu, and confirm. If the bucket still holds objects, the dashboard says it is
+  not empty; open the bucket and use **Empty bucket** to remove everything first.
+  Dashboard deletion works in EVERY region, including eu-west-1. Only the Owner
+  and Admin roles can delete buckets.
+- S3 API: DeleteBucket works in us-east-1, using a key that has the DeleteBucket
+  permission. It is NOT available in eu-west-1, so use the dashboard there.
+
+```bash
+aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com
+```
 
 Note: When you delete a bucket and its objects, the data is immediately removed
 from your Fil One account. Because Filecoin stores data in sealed sectors, the
@@ -529,11 +551,11 @@ a key (the file path/name), and metadata.
 ```bash
 # Upload a single file
 aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 # Upload a directory
 aws s3 sync ./local-folder s3://my-bucket/folder/ \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 ```python
@@ -551,11 +573,14 @@ s3.put_object(
 
 For very large objects (above the single-PUT limit — the standard S3 5 GB, not independently confirmed for Fil One), use multipart upload.
 
+In the dashboard, folder uploads skip system files such as `.DS_Store`,
+`Thumbs.db`, dot-files, and `__MACOSX` folders, and tell you how many were skipped.
+
 ## Downloading objects
 
 ```bash
 aws s3 cp s3://my-bucket/my-file.txt ./my-file.txt \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 ```python
@@ -565,7 +590,7 @@ s3.download_file("my-bucket", "my-file.txt", "my-file.txt")
 ## Listing objects
 
 ```bash
-aws s3 ls s3://my-bucket/ --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 ls s3://my-bucket/ --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 Programmatic listing with pagination:
@@ -581,13 +606,21 @@ for page in paginator.paginate(Bucket="my-bucket"):
 
 ```bash
 aws s3 rm s3://my-bucket/my-file.txt \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
+
+In the dashboard: click the trash icon on an object's row and confirm. To delete
+several at once, tick their checkboxes and click **Delete** in the selection bar.
+To remove everything, including every earlier version, open the bucket and click
+**Empty bucket**.
 
 On a bucket without versioning, deletion is immediate — the object disappears from
 the dashboard and API instantly, and there is no recycle bin or soft-delete. On a
-versioned bucket a plain delete places a delete marker instead: prior versions are
-retained, downloadable by version ID, and still counted as stored storage.
+versioned bucket, a delete over the S3 API WITHOUT a version ID places a delete
+marker instead: prior versions are retained, downloadable by version ID, and still
+counted as stored storage. The DASHBOARD deletes the specific version on the row
+you chose, so on a versioned bucket it removes that version PERMANENTLY rather
+than writing a delete marker.
 
 ## Presigned URLs
 
@@ -632,7 +665,7 @@ The AWS CLI handles multipart uploads automatically for large files:
 
 ```bash
 aws s3 cp large-file.zip s3://my-bucket/large-file.zip \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 # Configure thresholds
 aws configure set s3.multipart_threshold 100MB
@@ -664,16 +697,22 @@ s3.upload_file("large-file.zip", "my-bucket", "large-file.zip", Config=config)
 
 ## Cleaning up incomplete uploads
 
+Key permissions for cleanup: listing in-progress uploads needs **List**, aborting
+one needs **Write**, and listing the parts of an upload goes with **Read**. In
+us-east-1, access keys created before 26 August 2026 do NOT carry these multipart
+actions, so list-multipart-uploads and abort-multipart-upload fail with 403.
+Existing keys cannot be updated: delete the key and create a new one.
+
 ```bash
 aws s3api list-multipart-uploads \
   --bucket my-bucket \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 aws s3api abort-multipart-upload \
   --bucket my-bucket \
   --key large-file.zip \
   --upload-id YOUR_UPLOAD_ID \
-  --endpoint-url https://eu-west-1.s3.filonecontent.com
+  --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 
@@ -692,9 +731,26 @@ Versioning is required for Object Lock.
 ## How versions work
 
 The first upload of `reports/q1.pdf` creates version v1; a later upload of the
-same key creates v2 and leaves v1 intact. Deleting the object places a delete
-marker at the current version — the object appears deleted, but all previous
-versions are still retrievable.
+same key creates v2 and leaves v1 intact. Deleting the object over the S3 API
+WITHOUT a version ID places a delete marker at the current version — the object
+appears deleted, but all previous versions are still retrievable.
+
+WARNING: DELETING IN THE DASHBOARD REMOVES A VERSION PERMANENTLY. The dashboard
+never writes a delete marker. Deleting an object there, one at a time or in bulk,
+permanently deletes the specific version on the row you chose; deleting the
+current version's row removes that version and leaves the earlier versions as
+they are. **Empty bucket** removes every version and delete marker in the bucket.
+
+## Access key permissions for versions
+
+Version-specific operations are separate granular key permissions, none granted
+automatically. Select them under the matching base permission:
+
+| To do this | Grant | Under |
+|------------|-------|-------|
+| List object versions (list-object-versions) | List object versions (ListBucketVersions) | List |
+| Download a specific version (--version-id on get-object) | Read object versions (GetObjectVersion) | Read |
+| Delete a specific version or a delete marker | Delete object versions (DeleteObjectVersion) | Delete |
 
 ## Billing implications
 
@@ -922,23 +978,23 @@ lock rather than a routinely-overridable one.
 
 Note: choose the retention mode carefully at bucket creation — it is fixed for
 the life of the bucket. There is no update-bucket operation, so a Governance
-bucket cannot be converted into a Compliance one later, or objects migrated
-between them without a full download and re-upload. Compliance retention
-periods, once set, cannot be shortened or removed.
+bucket cannot be converted into a Compliance one later. Moving objects into a
+bucket with a different mode means copying them into it with CopyObject over the
+S3 API or downloading and re-uploading them. Compliance retention periods, once
+set, cannot be shortened or removed.
 
 ## Setting per-object retention
 
 The default retention period set at bucket creation is applied automatically to
 every object uploaded to that bucket.
 
-Note: PutObjectRetention is region-dependent. Setting or changing retention on
-an individual object version via PutObjectRetention is offered as a grantable
-access-key permission. It is confirmed working in us-east-1 — including
-extending a retention period and, using the standard S3
-bypass-governance-retention mechanism, shortening one (a protocol-level
-capability of the gateway, NOT a permission Fil One's own access keys can
-grant). It has not yet been confirmed in eu-west-1 — until then, rely on the
-bucket-level default set at creation for guaranteed retention there.
+Note: PutObjectRetention needs a granted permission. Setting or changing
+retention on an individual object version via PutObjectRetention works in BOTH
+REGIONS, but only with the matching granular access-key permission, which is
+never granted automatically. Extending a retention period is straightforward.
+Shortening one uses the standard S3 bypass-governance-retention mechanism (a
+protocol-level capability of the gateway, NOT a permission Fil One's own access
+keys can grant).
 
 Object Lock buckets are always versioned, so a retention call should target a
 specific version with --version-id; without it the call targets whatever the
@@ -950,7 +1006,7 @@ aws s3api put-object-retention \
   --key important-record.pdf \
   --version-id YOUR_VERSION_ID \
   --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-  --endpoint-url https://us-east-1.s3.filonecontent.com
+  --endpoint-url https://s3.us-east-1.filonecontent.com
 ```
 
 ```python
@@ -981,7 +1037,7 @@ available over the S3 API:
 aws s3api get-object-retention \
   --bucket my-compliance-bucket \
   --key important-record.pdf \
-  --endpoint-url https://us-east-1.s3.filonecontent.com
+  --endpoint-url https://s3.us-east-1.filonecontent.com
 ```
 
 ## Deleting locked objects
@@ -993,12 +1049,15 @@ protected and intact until retention expires.
 
 ## Deleting buckets with locked objects
 
-Bucket deletion is currently restricted regardless of retention state. The
-dashboard delete button is disabled while the underlying storage layer completes
-support for this operation, and over the S3 API DeleteBucket is only available in
-us-east-1 (not eu-west-1). Active Compliance retention is one more reason a
-bucket cannot be removed, but it is not the only one — do not assume a bucket
-becomes freely deletable simply because its retention periods have expired.
+A bucket can only be deleted once it is empty, and objects under active
+retention cannot be deleted, so a bucket holding locked versions cannot be
+removed until their retention expires and you delete them. **Empty bucket** in
+the dashboard reports locked objects as ones it could not delete and leaves them
+in place.
+
+Once the bucket is empty, delete it from the dashboard in either region (Owner
+and Admin roles only), or over the S3 API with DeleteBucket in us-east-1.
+DeleteBucket is not available over the S3 API in eu-west-1.
 
 ## Object Lock and API keys
 
@@ -1056,8 +1115,10 @@ regimes call for. However:
 
 - Fil One holds NO third-party compliance attestation (for example, an SEC
   17a-4 assessment) for this feature.
-- Retention enforcement at the storage gateway is confirmed in us-east-1 and NOT
-  yet independently verified in eu-west-1.
+- Retention enforcement at the storage gateway is confirmed in both regions, but
+  by different means: us-east-1 by an automated compatibility suite, eu-west-1 by
+  engineering testing rather than that suite. If a specific obligation depends on
+  it, validate the exact behaviour you need.
 - The product surfaces NO per-object cryptographic proof (no CID, deal ID, or
   seal state) that could be presented to an auditor to demonstrate integrity.
 
@@ -1093,13 +1154,15 @@ Opt-in per user, managed from Settings > Security. Three factor types:
 
 SMS and email codes are DELIBERATELY NOT OFFERED (SIM-swap and
 mailbox-compromise risk). Only device- or app-bound factors are supported. More
-than one factor can be enrolled, and individual ones removed.
+than one factor can be enrolled, and individual ones removed. Signing in with a
+passkey counts as a strong factor, so no second factor is asked for on top of it.
 
 ## Passkeys
 
 Listed separately from two-factor methods, under Settings > Passkeys. With none
 enrolled, the dashboard prompts to add one on next sign-in. Limit is 20 passkeys
-per account.
+per account. Accounts that sign in with Google or GitHub don't see the Passkeys
+section.
 
 ## Recovery codes
 
@@ -1109,16 +1172,24 @@ Generating a new code invalidates the previous one.
 
 ## Step-up re-authentication
 
-Four actions require a fresh two-factor check even within a signed-in session:
-removing a two-factor method, removing all two-factor methods, removing a
-passkey, and regenerating a recovery code. A session not established with a
-strong factor is sent back through sign-in first, so someone with access to an
-open session cannot quietly strip the account's protections.
+Four actions require a session that was signed in with two-factor
+authentication or a passkey, even within an already signed-in session: removing
+a two-factor method, removing all two-factor methods, removing a passkey, and
+regenerating a recovery code. If the current session wasn't, the dashboard sends
+you back through sign-in to step up first, so a session signed in with a password
+alone cannot strip the account's protections.
+
+Transferring ownership of an organization has a stricter check: you must have
+signed in within the last five minutes, and if you have two-factor authentication
+set up, that sign-in must include it or use a passkey. Otherwise the dashboard
+sends you back through sign-in first.
 
 ## Changing your password
 
 Settings > Security > Password > Change sends a password-reset email to the
-registered address.
+registered address. Google or GitHub sign-ins have no Fil One password to change:
+Settings shows the password as Managed by Google (or GitHub), with a link to
+update it with that provider.
 
 
 ---
@@ -1137,8 +1208,11 @@ All API requests to Fil One must be authenticated using AWS Signature Version 4
 | Access Key ID | Identifies your account. Included in request headers. Format: FHXXXXXXXXXXXXXXXX |
 | Secret Access Key | Signs your requests. Never sent over the wire. |
 
-Your secret key is displayed once at creation time. If you lose it, you must
-create a new key pair.
+Your secret key is displayed once at creation time. If you lose it, rotate the
+key (see API Keys) to get a new key pair.
+
+You can create multiple API keys per account. A key can only carry permissions
+your role in the organization holds, and Read only members cannot create keys.
 
 ## Configuring your client
 
@@ -1156,7 +1230,7 @@ Named profile (recommended):
 ```ini
 # ~/.aws/config  (AWS CLI v2 — v1 ignores endpoint_url)
 [profile filone]
-endpoint_url = https://eu-west-1.s3.filonecontent.com
+endpoint_url = https://s3.eu-west-1.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -1176,7 +1250,7 @@ from botocore.config import Config
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.filonecontent.com",
+    endpoint_url="https://s3.eu-west-1.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -1190,7 +1264,7 @@ s3 = boto3.client(
 import { S3Client } from "@aws-sdk/client-s3";
 
 const client = new S3Client({
-  endpoint: "https://eu-west-1.s3.filonecontent.com",
+  endpoint: "https://s3.eu-west-1.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,
   credentials: {
@@ -1205,7 +1279,7 @@ const client = new S3Client({
 ```go
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
+        BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -1222,7 +1296,8 @@ func newClient() *s3.Client {
 - Do not hardcode credentials in source code. Use environment variables or a
   secrets manager.
 - Create separate keys for different environments.
-- Rotate keys periodically.
+- Rotate keys periodically: use Rotate in the key's ⋯ menu, then deploy the new
+  credentials. The old secret stops working as soon as the new one is issued.
 - Revoke keys immediately if compromised.
 
 
@@ -1239,22 +1314,34 @@ an Access Key ID (public identifier) and a Secret Access Key (used to sign reque
 
 1. Go to **API Keys** in the left menu of the dashboard.
 2. Click **Create new key** (opens a dedicated page).
-3. Give the key a descriptive name (e.g., production-backend, ci-pipeline). Max 64 chars.
-4. Choose the key's region (required, fixed) and set permissions and bucket scope. At least one permission is required.
-5. Optionally set an expiration: Never, 30 days, or a Custom date.
-6. Click **Create key**.
-7. **Copy the Secret Access Key immediately.** It is shown only once.
+3. Give the key a descriptive name (e.g., production-backend, ci-pipeline). Max 64 chars (letters, numbers, spaces, and `_ - .`); names starting with `filone-console` (any capitalization) are RESERVED.
+4. Choose the key's region (pre-set to eu-west-1, fixed for the life of the key) and set permissions and bucket scope. At least one permission is required, and you can only grant permissions your role holds.
+5. Optionally set an expiration: Never expires, 30 days, or a Custom date.
+6. Click **Create API key**.
+7. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, rotate the key to get a new one.
 
 ## Key permissions
 
 | Permission | What it allows |
 |------------|----------------|
-| Read | GetObject (and HeadObject, same underlying permission), ListMultipartUploadParts |
+| Read | GetObject (and HeadObject, same underlying permission), ListMultipartUploadParts. In us-east-1, also ListBucket |
 | Write | PutObject, AbortMultipartUpload |
 | List | ListObjectsV2 / ListBucket, ListBucketMultipartUploads |
 | Delete | DeleteObject |
 
-Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Governance Object Lock has no grantable bypass permission in the product. PutObjectRetention and Legal Hold (GetObjectLegalHold/PutObjectLegalHold) are grantable and confirmed working in us-east-1; neither has yet been verified in eu-west-1. The key list in the dashboard has no Region column — record each key's region yourself.
+A key with Read and List only suits read-only access (CDN, analytics). A key with Write but not Delete can upload new objects AND OVERWRITE existing ones, but cannot delete them. The Read grant DIFFERS BY REGION: in us-east-1 it also includes ListBucket, so a key with Read but not List can still list object names there; in eu-west-1, Read does not include listing.
+
+Listing your bucket names (ListAllMyBuckets) is granted to every key automatically and is not one of the permissions above. Bucket management permissions (CreateBucket/DeleteBucket) appear on the eu-west-1 create form but are disabled ("Not supported in Europe (France)"). The bucket configuration permissions (GetBucketVersioning/GetBucketObjectLockConfiguration) are selectable in every region, and the console create form PRE-SELECTS both, so untick them if not needed. Governance Object Lock has no grantable bypass permission in the product. PutObjectRetention and PutObjectLegalHold (Set retention / Set legal hold in the console) can only be granted by an OWNER; for other roles the create form doesn't show them. PutObjectRetention and Legal Hold (GetObjectLegalHold/PutObjectLegalHold) are grantable and work in both regions.
+
+## Who can create and manage keys
+
+A key can only carry permissions your organization role holds, and the create form only offers those:
+
+- Read only members cannot create keys and don't see the key list.
+- Members can create keys, and see, rotate, and delete only the keys they created.
+- Admins and Owners can create keys and see, rotate, and delete every key in the organization.
+
+Keys follow the person who created them. If a member's role is narrowed, any key they created that the new role couldn't create is revoked. Removing a member from the organization revokes the keys they created.
 
 ## Bucket scope
 
@@ -1268,13 +1355,40 @@ longer authenticates and requests fail with a 403 (typically AccessDenied or
 InvalidAccessKeyId). Revocation/deletion is forwarded to the regional operator;
 treat it as effective quickly rather than at a guaranteed instant.
 
+## Viewing and managing keys
+
+The API Keys list shows: Name (with the Access Key ID beneath), Region (hidden on
+narrow screens), Buckets, Permissions, Created by (who created the key, and who
+rotated it and when; shown when the organization has more than one member),
+Status (currently ALWAYS "Active"), Last Used (currently ALWAYS "Never"). Status
+and Last Used are placeholders, and the list doesn't show a key's expiry date, so
+keep your own record of when each key expires. You cannot view the Secret Access
+Key after creation.
+
+## Rotating a key
+
+Rotation gives a key a new Access Key ID and Secret Access Key and keeps
+everything else: name, permissions, bucket scope, region, and expiry date.
+
+1. In API Keys, open the key's ⋯ menu and choose **Rotate**.
+2. Confirm with **Rotate key** in the **Rotate access key** dialog.
+3. Copy or download the new credentials from **Save your credentials**; the
+   secret is shown only once.
+
+The old secret stops working as soon as the new one is issued. If the old key
+couldn't be revoked, the console says it is still active; delete it yourself. An
+EXPIRED key can't be rotated (create a new one). Rotate only appears on keys your
+current role could still create. To move an application onto a key with
+different permissions or buckets, create the new key, switch over, then delete
+the old key.
+
 ## Security best practices
 
 - Use separate keys per environment (development, staging, production).
 - Use the minimum permissions required.
 - Scope keys to specific buckets when possible.
 - Set expiration dates on temporary keys.
-- Rotate keys periodically.
+- Rotate keys periodically: use Rotate on the key, then update your application.
 - Revoke immediately if compromised.
 - Never hardcode credentials in source code.
 
@@ -1297,8 +1411,8 @@ regional operator and is not documented here.
 
 ## Encryption in transit
 
-All connections to the regional endpoints (https://eu-west-1.s3.filonecontent.com,
-https://us-east-1.s3.filonecontent.com) use TLS. HTTP connections are rejected.
+All connections to the regional endpoints (https://s3.eu-west-1.filonecontent.com,
+https://s3.us-east-1.filonecontent.com) use TLS. HTTP connections are rejected.
 Applies to all API operations including uploads, downloads, presigned URLs,
 and metadata requests.
 
@@ -1322,11 +1436,15 @@ Fil One is priced at **$4.99 / TB / month**, with a **$4.99 / month minimum**. I
 
 No egress fees, no per-request charges, no hidden costs.
 
+This is the self-service **Pay as you go** plan. For volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team.
+
 ## How billing is calculated
 
-Your bill is based on the average amount of data you store over the billing period. Stored bytes are sampled by a metering job that runs twice a day (~07:00 and 19:00 UTC) and averaged. Storage is charged at a single flat rate of $4.99 per TB per month with a $4.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
+Your bill is based on the average amount of data you store over the billing period. Stored bytes are measured as daily readings and averaged across the billing period; a metering job reports the running average twice a day (~07:00 and 19:00 UTC). Storage is charged at a single flat rate of $4.99 per TB per month with a $4.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
 
 Illustrative figures (steady amount stored for the full month, at $4.99/TB with the $4.99 minimum applied): 500 GB ≈ $4.99 (minimum applies); 1 TB (1,000 GB) ≈ $4.99; 1.5 TB ≈ $7.49; 2 TB ≈ $9.98. These are illustrative — your invoice on the Billing page is the source of truth for exact amounts. Storage that changes during the month is averaged first.
+
+Accounts created before the $4.99 minimum was introduced stay on per-unit pricing with no monthly minimum. The Billing page shows your own rate.
 
 
 ---
@@ -1337,16 +1455,19 @@ Source: https://docs.fil.one/billing/trial
 
 ## Free trial
 
-Every new account starts with a 30-day free trial. No credit card required.
+Every new account starts with a 30-day free trial. No credit card required. The
+trial starts once you have VERIFIED YOUR EMAIL ADDRESS, and each email address
+gets ONE trial. Members invited to someone else's organization do not get a trial
+of their own.
 
 | Included | Amount |
 |----------|--------|
 | Storage | 1 TB (1,000 GB) |
 | Egress bandwidth | 2 TB (cumulative over the trial) |
 | API operations | Unlimited |
-| Duration | 30 days from account creation |
+| Duration | 30 days from when the trial starts |
 
-The two caps are enforcement thresholds, not soft allowances, and behave differently: reaching the storage cap (1 TB) WRITE-LOCKS the account (reads still work), while reaching the egress cap (2 TB) DISABLES it entirely (no access), the same state as trial expiry. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (~07:00/19:00 UTC), so a cap can be exceeded for a few hours before access changes. Generating shareable links and viewing invoice history are the two features reserved for paid plans.
+The two caps are enforcement thresholds, not soft allowances, and behave differently: reaching the storage cap (1 TB) WRITE-LOCKS the account (reads still work), while reaching the egress cap (2 TB) DISABLES it entirely (no access), the same state as an account whose grace period has ended, with NO read-only grace period first. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (~07:00/19:00 UTC), so a cap can be exceeded for a few hours before access changes. Generating shareable links and viewing invoice history are the two features reserved for paid plans.
 
 ## What happens when the trial ends
 
@@ -1366,7 +1487,11 @@ You can upgrade to a paid plan at any time during the trial or grace period. Dis
 | Egress bandwidth | No charge |
 | API operations | Included |
 
-Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. No contract or term commitment. If a payment fails, the account enters **past due** and writes are blocked immediately (reads continue); the ~30-day past-due window is retrieval-only before the account is disabled. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
+Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. **Pay as you go** has no contract or term commitment; for volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team.
+
+Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, which is either **Billing** in the left sidebar or the **Billing** tab of the Organization page. Usage details are visible on the Billing page to Owners and Admins.
+
+If a payment fails, the account enters **past due** and Stripe automatically retries the charge. The DASHBOARD BECOMES READ-ONLY from the moment the payment fails, and the Billing page shows "Your last payment failed" with an "Update payment" button. If all retries are exhausted and Stripe cancels the subscription, the account moves to the paid grace period. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
 
 
 ---
@@ -1376,7 +1501,7 @@ Billed on average daily usage, with a $4.99 / month minimum. If you store less t
 Source: https://docs.fil.one/billing/usage
 
 The Billing page in the dashboard shows current usage for the active billing
-period.
+period. It is visible to organization Owners and Admins.
 
 ## What is measured
 
@@ -1397,10 +1522,11 @@ trial, egress is capped.
 During the free trial, usage is capped at:
 
 - Storage — 1 TB (1,000 GB): reaching this limit WRITE-LOCKS the account. Reads
-  and downloads still work; new uploads are rejected.
+  and downloads still work; new uploads are rejected. If you delete data and
+  storage drops back under 1 TB, the write lock lifts on the next usage run.
 - Egress — 2 TB (2,000 GB), cumulative over the whole trial: reaching this limit
-  DISABLES the account entirely — no read or write access — the same state as
-  trial expiry. This is a single budget for the full 30 days, not a monthly
+  DISABLES the account entirely — no read or write access — the same state as an
+  account whose grace period has ended, with no read-only grace period first. This is a single budget for the full 30 days, not a monthly
   amount that resets.
 
 These caps are enforced by a usage job that runs twice a day (around 07:00 and
@@ -1428,7 +1554,9 @@ each new billing period.
 Source: https://docs.fil.one/app/dashboard
 
 The console home page, reached from "Dashboard" at the top of the left sidebar.
-Sign-in, email verification, MFA and passkeys are covered on Account Security.
+A "New bucket" button sits in the header, and during the trial a banner shows the
+days left with an "Upgrade" button. Sign-in, email verification, MFA and passkeys
+are covered on Account Security.
 
 ## Quick setup
 
@@ -1437,11 +1565,14 @@ Create a bucket, Upload an object, Generate API key. It disappears when complete
 
 ## Plan, storage and egress cards
 
+The PLAN card is only shown to roles that can view billing (Owner and Admin);
+other roles see just the storage and egress cards.
+
 - PLAN: plan name plus status badge (Active / Past Due / Grace Period /
   Canceled / No plan). On trial the badge counts down "n days left" and hovering
   shows the exact expiry. Footer link goes to Billing.
-- STORAGE: usage; on trial adds "/ 1 TB" and a progress bar, on paid shows an
-  "Est. monthly cost" row instead.
+- STORAGE: usage; on trial adds "/ 1 TB" and a progress bar, on a paid plan
+  with a per-TB rate shows an "Est. monthly cost" row instead.
 - EGRESS: usage; on trial adds "/ 2 TB" and a progress bar, on paid reads
   "No egress fees · unlimited".
 - A strip below shows BUCKETS / OBJECTS / API KEYS totals, with "View all" links
@@ -1453,26 +1584,25 @@ How to read the numbers:
   or delete may not be reflected yet.
 - EGRESS IS A ROLLING 30-DAY TOTAL, not a calendar month, so it does not reset on
   the 1st.
-- "Est. monthly cost" applies $4.99/TB to the latest storage reading, with the
-  account's monthly minimum as the floor. THE INVOICE IS CALCULATED FROM AVERAGE
+- "Est. monthly cost" applies your plan's per-TB price to the latest storage
+  reading, with the account's monthly minimum as the floor. It is not shown when
+  the plan has no per-TB rate. THE INVOICE IS CALCULATED FROM AVERAGE
   STORAGE over the month, so the two figures differ. The estimate excludes egress
   (free on paid plans).
 
 ## Usage Trends
 
-Charts a 7-day (default) or 30-day window: storage as an area chart, objects as a
-bar chart. Each point is a daily reading, and days without a reading are plotted
-as zero, so a data gap appears as a dip to zero.
-
-NOTE: the figure above the OBJECTS chart is the SUM of the daily readings across
-the window, so it runs higher than the current object count. The OBJECTS total in
-the summary strip is the current count; the chart shows the trend.
+Charts a 7-day (default) or 30-day window. STORAGE is an area chart, and the
+figure above it is the most recent reading. EGRESS is a bar chart, and the figure
+above it is the total egress across the window. Each point is a daily reading,
+and days without a reading are plotted as zero, so a data gap appears as a dip to
+zero.
 
 ## Recent Activity
 
 The five most recent events with relative timestamps ("5m ago", "2d ago").
-The feed currently covers bucket-created and key-created events, shown as
-"bucket created" and "key created". OBJECT-LEVEL EVENTS ARE NOT INCLUDED YET, so
+The feed currently covers bucket and key creation: each row shows the resource
+name with a "bucket" or "key" badge and the label "Created". OBJECT-LEVEL EVENTS ARE NOT INCLUDED YET, so
 confirm an upload by opening the bucket rather than by reading this feed. Empty
 state: "No activity yet" plus a "Create bucket" button.
 
@@ -1483,6 +1613,11 @@ state: "No activity yet" plus a "Create bucket" button.
 - Trial expired, in grace: says the trial expired with days left to upgrade or
   download data.
 - Account disabled: "Account disabled. Visit billing to restore access."
+
+Roles that cannot view billing see a shorter banner that leaves out the cause:
+when writes are paused it says uploads are disabled for this organization, and
+when the account is disabled it says so. Both ask you to contact an organization
+owner.
 
 Reads keep working while writes are paused, so data stays available to download.
 
@@ -1498,15 +1633,25 @@ Objects, Versioning and Object Lock.
 
 ## Bucket list
 
-Columns: Name, Region (label plus region id), Created, Visibility, Features
-(Versioned / Object Lock badges). All buckets are listed together in API order;
-there is no search, filter or sort control. Empty state: "No buckets yet" plus
-"Create bucket".
+Columns: Name, Region (label plus region id), Created. Under each name a second
+line gives the bucket's storage used and object count, and an icon marks the
+bucket as private. All buckets are listed together, SORTED BY NAME. With 5 OR
+MORE BUCKETS a "Search buckets" box appears, the column headers become sortable,
+and a region filter appears when buckets span more than one region. Empty state:
+"No buckets yet" plus "Create bucket". If one region cannot be reached, an amber
+notice names it and buckets in the other regions are still listed.
 
-BUCKET DELETION RUNS THROUGH THE S3 API, NOT THE CONSOLE: the per-row trash icon
-is disabled with tooltip "Deleting buckets is not available yet". Over the API it
-works in us-east-1 (bucket must be empty); DeleteBucket is unavailable in
-eu-west-1.
+Each row has an actions menu: Browse objects, Copy bucket name, Copy S3 endpoint,
+Delete bucket.
+
+## Deleting a bucket
+
+"Delete bucket" from the row's actions menu, then confirm. ONLY EMPTY BUCKETS can
+be deleted: if the bucket still holds objects or object versions, the console
+says it is not empty and links to how to empty it. Use "Empty bucket" first, then
+delete. Deletion is permanent. "Delete bucket" is shown ONLY TO OWNERS AND
+ADMINS. It works in EVERY REGION, INCLUDING eu-west-1, where DeleteBucket is not
+available over the S3 API (over the API it works in us-east-1 only).
 
 ## Creating a bucket
 
@@ -1522,7 +1667,8 @@ eu-west-1.
 
 An optional "Create new key" section creates an access key alongside the bucket,
 pre-scoped to that bucket and region; the submit button becomes "Create bucket
-and API key" and the secret is shown once in a dialog.
+and API key" and the secret is shown once in a dialog. The console then opens the
+new bucket's page.
 
 An "Included by default" panel states: all data encrypted at rest, and every
 bucket private (access requires an API key).
@@ -1533,21 +1679,29 @@ Create a new bucket for a different configuration.
 
 ## Inside a bucket
 
-Header shows region, storage used, creation time. Property cards: Versioning,
-Object Lock, Encryption (always "Enabled"), and Default Retention when set.
+Header shows region, storage used, creation time. THREE property cards:
+Versioning and Object Lock (each "Enabled" or "Disabled"), and Retention (the
+default retention policy, e.g. "Compliance · 15 days", or "None"). Encryption is
+on for every bucket, so it has NO CARD of its own. Once the bucket holds objects,
+"Empty bucket" and "Upload object" buttons appear in the header; while it is
+empty, the upload button sits in the empty state instead.
 Tabs: "Objects (N)" and "API Keys (N)". The API Keys tab includes an "Access
-endpoints" block with copyable S3 Endpoint, S3 Path and Region.
+endpoints" block with copyable S3 Endpoint, S3 Path and Region, and is hidden for
+the Read-only role.
 
 Object table columns: Name, Size, Last Modified, plus Version and Status when
 versioning is on. Keys containing "/" group into clickable folder rows with a
 breadcrumb. On versioned buckets a key with >1 version gets an expander and an
 "n versions" pill; badges are "Latest" and "Delete marker". Per-row icon buttons
-download or delete one object at a time; there are no bulk/multi-select actions.
+download or delete a single object, and a checkbox on each row (and on the
+header) lets you SELECT SEVERAL AT ONCE.
 
-LARGE BUCKETS: the browser shows the FIRST PAGE of results (~1,000 entries). The
-"Objects (N)" tab count comes from bucket analytics and stays accurate, so on a
-large bucket that count is higher than the rows in view. Page through a full
-listing with the CLI or an SDK.
+LARGE BUCKETS: the browser shows the FIRST PAGE of results (~1,000 entries). When
+there are more, an amber "Showing the first n" notice appears, and selecting and
+deleting apply only to the objects listed. The "Objects (N)" tab count then comes
+from bucket analytics, a DAILY READING THAT CAN LAG recent changes, so expect it
+to be higher than the rows in view. Page through a full listing with the CLI or
+an SDK, or use "Empty bucket" to remove everything.
 
 ## Uploading
 
@@ -1559,6 +1713,11 @@ selected. Folder-selected files keep their own relative paths, which take the
 place of the prefix. The prefix starts empty each time rather than carrying over
 from the folder being browsed.
 
+Folder uploads SKIP SYSTEM FILES: .DS_Store, Thumbs.db, desktop.ini, anything
+whose path contains a segment starting with a dot, and __MACOSX folders. A
+"Skipped n system files" message says how many were left out. A file selected on
+its own is always uploaded, whatever its name.
+
 Selecting files does not upload them; click "Upload n file(s)". A failure gives a
 "Retry n failed" button that retries only those files.
 
@@ -1568,7 +1727,9 @@ ceiling. Use the CLI or an SDK with multipart support above that.
 ## Object detail page
 
 Shows Name, Size, Bucket, S3 Path, ETag, and where applicable Version ID,
-Retention, Description and Tags. Compliance-mode retention adds a "Compliance
+Retention, Description and Tags. Description and Tags are read from the object's
+"description" and "tags" USER METADATA, NOT from S3 object tagging, and the
+console upload flow does not set them. Compliance-mode retention adds a "Compliance
 retention lock" notice with the date before which deletion is not permitted.
 
 A "Version history" card appears when the object has more than one version,
@@ -1589,13 +1750,37 @@ PAID-PLAN FEATURE: on trial the button is disabled with an upgrade tooltip.
 
 ## Deleting objects
 
-Trash icon on a row, or "Delete object" on the detail page, then confirm. ONE
-OBJECT AT A TIME. Permanent on non-versioned buckets. On versioned buckets a
-plain delete writes a delete marker and prior versions are retained and still
-billed; deleting a specific version removes only that version.
+Trash icon on a row, or "Delete object" on the detail page, then confirm. To
+delete several at once, tick their checkboxes; a bar shows "n selected" with
+"Clear" and "Delete". Ticking a folder row selects everything under it, and the
+header checkbox selects everything at the current level.
+
+CONSOLE DELETES ARE PERMANENT, INCLUDING ON VERSIONED BUCKETS. The console always
+deletes the specific version on the row chosen and NEVER WRITES A DELETE MARKER.
+On a versioned bucket, deleting the row for the current version permanently
+removes that version, and the earlier versions are left as they are. To hide an
+object behind a delete marker instead, delete it over the S3 API without a
+version ID.
 
 An object under active retention or a legal hold is protected, and a delete
-attempt returns that protection as an error. While an account is past due or in a
+attempt returns that protection as an error.
+
+## Emptying a bucket
+
+"Empty bucket" on the bucket page removes EVERY object in the bucket, including
+every earlier version and delete marker. Type the bucket name to confirm, then
+"Delete everything". The deletion runs ON THE SERVER, so it is not limited to the
+objects listed on screen, and it keeps running if the dialog is closed. When it
+finishes the dialog reports "Bucket empty", "Some objects remain" (with how many
+could not be deleted, e.g. under active retention), or "Deletion stopped" if the
+job could not complete.
+
+Deleting objects (bulk or single) and emptying a bucket need a role that can
+delete objects. Uploading and creating buckets need a role that can write objects
+and create buckets. Controls you cannot use are hidden, and opening the upload or
+create page directly explains that the action is not part of your role.
+
+While an account is past due or in a
 grace period, access is read-only and writes resume once payment succeeds.
 
 
@@ -1611,23 +1796,44 @@ Keys and Authentication.
 ## Key list
 
 Tabs "API keys" and "Connection details". Columns: Name (with Access Key ID and a
-copy button), Buckets ("All Buckets" or per-bucket badges), Permissions (badges,
-with finer-grained ones grouped as "Data protection" / "Bucket management" /
-"Bucket info"), Status, Last Used. Empty state: "No API keys yet" plus "Create
-your first key".
+copy button), Region (e.g. eu-west-1; hidden on narrow screens), Buckets ("All
+Buckets" or per-bucket badges), Permissions (badges, with finer-grained ones
+grouped as "Data protection" / "Bucket management" / "Bucket info"), Created by
+(the member who created the key, plus "Rotated by … on …" once rotated; shown
+when the organization has more than one member), Status, Last Used, and a "⋯"
+menu with Rotate and Delete for the keys you can act on. Empty state: "No API
+keys yet" plus "Create your first key". If the account is disabled, the page
+shows only a notice asking you to reactivate your subscription, with no keys,
+tabs, or "Create new key" button.
 
 PLACEHOLDER COLUMNS: "Last Used" reads "Never" and "Status" reads "Active" for
 every key, and the expiry date set at creation is not shown in this list. Do not
 infer from these columns whether a key is in use or still valid; advise keeping
 an external record and using descriptive key names.
 
+## Who can manage keys
+
+Depends on the member's organization role:
+- READ ONLY members cannot create keys. The API keys tab explains that keys are
+  managed by members who can create them; the Connection details tab is still
+  available.
+- MEMBERS see, rotate, and delete only the keys they created themselves.
+- ADMINS and OWNERS see and manage every key in the organization.
+
+ROLE CEILING: a key can only carry permissions the creator's role holds, and the
+form hides the ones it doesn't. "Set retention" and "Set legal hold" are
+OWNER-ONLY, so they appear only for Owners. If a member's role is narrowed, any
+key they created that the new role couldn't create is revoked, and removing a
+member revokes the keys they created.
+
 ## Creating a key
 
 Dedicated page via "Create new key".
 
 - Key name: up to 64 chars, letters/numbers/spaces/underscores/hyphens/periods,
-  unique within a region.
-- Region: REQUIRED. A key is scoped to its region, and each region has its own
+  unique within a region. Names starting with "filone-console" (any
+  capitalization) are RESERVED.
+- Region: REQUIRED, pre-set to eu-west-1. A key is scoped to its region, and each region has its own
   endpoint, so endpoint + region + key must agree. Storing in both regions needs
   one key per region.
 - Object permissions: Read (download/retrieve), Write (upload/overwrite), List
@@ -1649,105 +1855,41 @@ Dedicated page via "Create new key".
   or "Specific buckets", listed filtered to the selected region.
 - Expiration: "Never expires" (default), "30 days", or "Custom" date. Enforced by
   the storage layer.
+- Click "Create API key" to create it.
 
 ## The secret
 
 A "Save your credentials" dialog shows the Access Key ID and the Secret Access
 Key (masked until revealed), with copy buttons and .csv / .env downloads.
-FIL ONE NEVER STORES THE SECRET, which is why it appears only at creation and
-cannot be retrieved later. Lose it and the key is deleted and replaced.
+FIL ONE NEVER STORES THE SECRET, which is why it appears only when a key is
+created or rotated and cannot be retrieved later. Lose it and ROTATE the key to
+get a new secret.
+
+## Rotating a key
+
+Row "⋯" menu, then "Rotate". The "Rotate access key" dialog explains the key
+keeps its name, permissions, and buckets and gets a NEW ACCESS KEY ID AND SECRET;
+region and expiry date carry over too. Confirm with "Rotate key" and the "Save
+your credentials" dialog opens with the new pair, shown once as at creation.
+
+The OLD SECRET STOPS WORKING as soon as the new one is issued, so update anything
+that uses the key. If the old key can't be revoked, a message says the new
+credentials are ready but the key they replace is still active; delete the old
+key from the list yourself in that case. An EXPIRED key can't be rotated (create
+a new key instead). "Rotate" only appears on keys your current role could still
+create. After a rotation, the "Created by" column shows who rotated the key and
+when.
 
 ## Revoking
 
 Row "⋯" menu, then "Delete": the key is permanently revoked and applications
-using it lose access immediately. Deletion IS the revocation; to rotate, create
-the replacement, migrate, then delete the old key. Revocation is confirmed with
+using it lose access immediately. Deletion IS the revocation. To move an
+application onto a key with different permissions or buckets, create the new key
+first, switch the application over, then delete the old one. Revocation is confirmed with
 the storage operator BEFORE the key leaves the list, so a listed key is a live
 key and the list stays a truthful picture of access.
 
 A bucket's "API Keys" tab lists the keys that can reach that one bucket.
-
-## Bucket Intelligence keys are separate
-
-Keys for querying an indexed bucket are a different credential, not managed here:
-bearer tokens that authorize only the query endpoint and cannot read or write
-bucket contents.
-
-
----
-
-# App: Bucket Intelligence
-
-Source: https://docs.fil.one/app/bucket-intelligence
-
-Console-specific, under the "AI Tools" sidebar group. Indexing mechanics, file
-types, models and the query API live on Bucket Intelligence.
-
-EARLY ACCESS, ENABLED PER ACCOUNT. Without access the menu item opens a "Coming
-Soon" page describing the feature plus a "Join the waitlist" form (use case,
-timeline, team size). The nav item itself is always visible.
-
-## Overview strip and tabs
-
-Three tiles: "Files indexed" (with the bucket count they span), "Index size",
-"API keys". A tile reads "Unavailable" if the figures fail to load, which does
-not affect indexing or querying. Two tabs: "Buckets" and "API Keys".
-
-## Indexing a bucket
-
-Per-row "Index" button (label becomes "Starting…" in flight), then a confirm
-dialog stating "Ready in" up to 6 hours (scheduled, NOT on upload) and what is
-indexed (PDF, Word, PowerPoint, Markdown, HTML, plain text; other files skipped
-and left untouched). Confirm with "Start indexing".
-
-To stop: the bucket's actions menu, "Stop indexing". FILES AND THE EXISTING INDEX
-ARE KEPT, so indexing can be started again later.
-
-Five status states:
-
-| Status | Meaning |
-|--------|---------|
-| Not indexed | Indexing not turned on for this bucket |
-| Indexing | First pass running; row adds "Up to 6 hours until the first results" |
-| Indexing | Later pass running, checking for new and changed files |
-| Failed | Last run did not complete; the row shows the reason |
-| Ready | Queryable, with file count, index size and last sync time |
-
-A FAILED RUN DOES NOT TURN INDEXING OFF or discard what is already indexed; the
-next scheduled pass picks the bucket up again and the console keeps refreshing.
-
-## Asking a question
-
-A "Ready" bucket's button reads "Ask questions" and opens a panel with an "Ask a
-question" box. Before the first pass it reads "View details" and the box is
-DISABLED, with a note that questions become available after the first pass.
-
-Answers list the objects they drew on, each linking to that object. ONE BUCKET
-PER QUERY; query each bucket in turn to cover several.
-
-A "Query from code" block in the same panel holds a ready-made curl call with the
-bucket and region already filled in; create a key and export it as
-FILONE_RAG_KEY.
-
-## API keys tab
-
-Bearer tokens that authorize the QUERY ENDPOINT ONLY and cannot read or write
-bucket contents; separate from S3 access keys. "Create API key" takes a "Name"
-and a "Scope" of "All buckets" or "Specific buckets", where the bucket list
-offers ALREADY-INDEXED buckets only (index one first if it is empty).
-
-The token appears once in a "Save your API key" dialog (only a hash is stored),
-with copy, "Download .env" and "Download .csv". Table columns: Name, Prefix,
-Scope, Created, Last used. Deleting takes effect immediately.
-
-"LAST USED" COUNTS KEY CALLS ONLY. Asking questions in the console uses the
-signed-in session rather than a key, so console exploration does not move it.
-
-## Reference block
-
-Below the keys table: the query endpoint with placeholders, the models in use
-(Titan Text Embeddings V2 for indexing, Claude Opus 4.8 for answers, both marked
-"Managed"), and a link to these docs. Bring-your-own-model is marked coming soon.
 
 
 ---
@@ -1756,7 +1898,7 @@ Below the keys table: the query endpoint with placeholders, the models in use
 
 Source: https://docs.fil.one/app/ai-agent-toolkit
 
-Under the "AI Tools" sidebar group, next to Bucket Intelligence.
+Under the "AI Tools" sidebar group.
 
 NOT RELEASED. The page is marked "Coming Soon": it introduces what the toolkit
 will offer and collects waitlist interest, so THERE IS NOTHING TO SET UP on it
@@ -1775,14 +1917,198 @@ tool at the region's endpoint with path-style addressing. Frameworks that read
 and write object storage directly (LangChain, LlamaIndex, Vercel AI SDK, CrewAI)
 connect this way, and a single-bucket key keeps an agent in its own workspace.
 
-For question-answering over a bucket's contents, that exists today as Bucket
-Intelligence, a separate early-access feature with its own query API.
-
 Treat the access-key route above as the supported way to connect AI tools today.
 
 
 ---
 
+# App: Organization
+
+Source: https://docs.fil.one/app/organization
+
+BETA. Organizations are in beta. Inviting teammates is switched on by Fil One for
+selected organizations, so what you see depends on whether yours is one of them.
+Details may change before general availability.
+
+Every Fil One account starts as a ONE-PERSON ORGANIZATION, with you as its
+OWNER. The Organization page is where you rename the organization, bring other
+people into it, decide what each can do, and review what has happened in it.
+
+## When the page appears
+
+"Organization" appears in the left sidebar, next to Settings, when EITHER your
+organization is in the organizations beta OR you belong to more than one
+organization. When it appears, BILLING MOVES INSIDE IT as the "Billing" tab, and
+opening /billing takes you there. Otherwise there is no Organization entry,
+"Billing" stays a standalone sidebar item, and opening /organization directly
+shows "Inviting teammates is not enabled for this organization yet."
+
+The beta gates ONE THING: SENDING INVITATIONS. If you belong to several
+organizations you see the Organization page in each, but "Add member" only
+appears in organizations in the beta. To ask about access, email support@fil.one.
+
+## The page
+
+Header "Organization", with "Manage <your organization's name> and who has access
+to it." Two buttons:
+- "Edit" opens "Edit organization" to rename it: 2 to 100 characters, letters,
+  numbers, spaces, hyphens, periods only. Owners and Admins.
+- "Add member" opens the invitation form. Owners and Admins, and only in
+  organizations in the beta.
+
+Up to four tabs; you only see the tabs your role can open:
+
+| Tab | What it holds | Who sees it |
+|-----|---------------|-------------|
+| Members | Everyone in the organization and their role | Every role |
+| Invitations | Invitations sent but not yet accepted | Owner, Admin |
+| Audit log | Membership, key, and organization changes | Owner, Admin |
+| Billing | Plan, usage, payment method, invoices | Owner, Admin |
+
+Members and Invitations show a count beside their label.
+
+## Roles and permissions
+
+Every member holds EXACTLY ONE of four roles:
+
+| Role | Description |
+|------|-------------|
+| Owner | Can do everything, including billing and owning the organization. |
+| Admin | Can manage members, buckets, and keys, but not billing or owners. |
+| Member | Can read and write objects, and create buckets and their own keys. |
+| Read only | Can read buckets and objects, but can't make changes. |
+
+| Capability | Owner | Admin | Member | Read only |
+|------------|-------|-------|--------|-----------|
+| See the member list | yes | yes | yes | yes |
+| Invite members, change roles, remove members (Admin and below) | yes | yes | no | no |
+| Make someone an Owner, change an Owner's role, remove an Owner | yes | no | no | no |
+| Transfer ownership | yes | no | no | no |
+| Rename the organization | yes | yes | no | no |
+| View billing (plan, usage, invoices) | yes | yes | no | no |
+| Manage billing (plan, payment method, Stripe portal) | yes | no | no | no |
+| View and export the audit log | yes | yes | no | no |
+| List buckets and read their settings | yes | yes | yes | yes |
+| Create buckets | yes | yes | yes | no |
+| Delete buckets | yes | yes | no | no |
+| View and download objects | yes | yes | yes | yes |
+| Upload objects | yes | yes | yes | no |
+| Delete objects | yes | yes | yes | no |
+| Create access keys | yes | yes | yes | no |
+| See and revoke the keys you created | yes | yes | yes | no |
+| See and revoke every key in the organization | yes | yes | no | no |
+| Create keys with PutObjectRetention or PutObjectLegalHold | yes | no | no | no |
+
+Read only members don't see "API Keys" in the sidebar.
+
+ROLES APPLY IN THE CONSOLE; ACCESS KEYS CARRY THEIR OWN PERMISSIONS. The S3 API
+has no users or roles. A request made with an access key is allowed or refused by
+that key's own permissions and bucket scope, whoever created it. What keeps keys
+in line with roles is a CAP AT CREATION: a key can only carry permissions its
+creator's role holds (e.g. a Member can't create a key with DeleteBucket, and
+only an Owner can create one with PutObjectRetention or PutObjectLegalHold). When
+a member's role narrows, keys that go beyond the new role are revoked.
+
+## Members
+
+Columns: Member (name, a "You" badge on your own row, user ID underneath), Role
+(a role picker if you can change this member's role, otherwise a badge), Joined
+(when, and how: "Signed up", "Original account", or "Invited"; hidden on narrow
+screens), and a "⋯" menu with "Transfer ownership" and "Remove" for members you
+can act on. With 5 or more members, a search box and a role filter appear.
+
+Changing a role: Owners and Admins use the picker in the Role column, which only
+offers roles you're allowed to assign. An Admin can move people between Admin,
+Member, and Read only, but can't change an Owner's role or make anyone an Owner.
+- Making someone an Owner asks you to confirm first (they'll be able to manage
+  billing, every member, and the organization itself, including removing you).
+- Moving someone to a role with FEWER permissions opens a preview of their access
+  keys. Any key that carries more than the new role allows is listed, and the
+  confirm button becomes "Change role and revoke". THOSE KEYS STOP WORKING
+  STRAIGHT AWAY; to keep a client running, create a narrower replacement key
+  first. Moving someone to Read only revokes EVERY key they created.
+- Moving someone to a role with more permissions takes effect immediately.
+You can change your own role too; the dialog warns you if the change takes away
+your ability to manage members or billing.
+
+Removing a member: "Remove" in the row's "⋯" menu, confirm with "Remove member".
+The person loses access, and EVERY ACCESS KEY THEY CREATED IS REVOKED. Their
+pending invitations are withdrawn too. Admins can remove Admins, Members, and
+Read only members; only an Owner can remove an Owner. Owners and Admins can
+remove themselves; Members and Read only members can't.
+
+AT LEAST ONE OWNER: a role change or removal that would leave the organization
+with no Owner is refused ("An organization keeps at least one owner").
+
+Transferring ownership: an Owner uses "Transfer ownership" in another member's
+"⋯" menu. The other member becomes Owner and YOU MOVE TO ADMIN, and you can't
+take ownership back yourself. Any of your keys carrying permissions an Admin
+can't hold (e.g. PutObjectRetention, PutObjectLegalHold) are listed and REVOKED
+as part of the transfer. Type the organization's name to confirm, then "Transfer
+ownership"; this cannot be undone. Needs a RECENT SIGN-IN: if you haven't signed
+in within the last five minutes, the console sends you through sign-in again
+(including your two-factor check if set up) and reopens the dialog. Billing is
+not affected: the subscription belongs to the organization, not the Owner.
+
+## Invitations
+
+Sending needs an Owner or Admin role AND an organization in the beta.
+1. "Add member". 2. Enter the Email address. 3. Choose a Role (only roles you
+can assign: an Admin can invite Admins, Members, and Read only; an Owner can
+also invite Owners; "Member" is the default). 4. "Send invitation".
+
+The person joins as soon as they accept, at the chosen role. The link is
+SINGLE-USE and EXPIRES IN 14 DAYS. At most 25 PENDING INVITATIONS per
+organization; revoke one to send another. Re-inviting an address with a pending
+invitation replaces the old one. If the email couldn't be sent, the tab says so
+and offers "Send again".
+
+Invitations tab columns: Email (and when invited), Role, Status ("Waiting", "Not
+delivered", or "Expired"), Expires (hidden on narrow screens). "Revoke"
+withdraws an invitation; "Resend" appears on undelivered ones. You can only act
+on invitations for roles you're allowed to assign.
+
+Accepting: the email links to app.fil.one/invite/accept (sign in first if
+needed). Outcomes: "Welcome to <organization>" (joined, with your role and
+"Continue to <organization>"); "You're already in <organization>"; "Wrong
+account signed in" (sign out and sign in with the invited address); "Verify your
+email address first"; "This invitation is no longer valid" (used, revoked, or
+expired; ask for a new one).
+
+## Switching organizations
+
+With more than one membership, the user menu lists your organizations under
+"Organization", sorted by name, with a check mark on the current one; choosing
+another reloads the console in it. With one membership there is no switcher.
+The choice is kept PER BROWSER TAB, so two tabs can be in different
+organizations. The page header names the current organization; check it before
+removing people or transferring ownership.
+
+## Audit log
+
+Owners and Admins. Columns: Event, Member, Subject (hidden on narrow screens),
+When; expand a row for details. Filter by date range (From, To), event type
+("All events"), and member ("Anyone").
+
+Events recorded: organization created / renamed; member invited, invitation
+revoked, invitation accepted; role changed, member removed, ownership
+transferred; key created, key deleted, key rotated; audit log exported.
+
+"Download CSV" exports events matching the current filters, UP TO 20,000 ROWS; a
+larger export is REFUSED rather than cut short, so narrow the filters. Events are
+KEPT FOR 90 DAYS; a range reaching further back says the older events have been
+removed.
+
+## Billing
+
+The Billing tab is the billing page, for Owners and Admins (see App: Billing).
+
+## Deleting an organization
+
+Not available yet. Email support@fil.one to delete one.
+
+
+---
 
 # App: Billing
 
@@ -1791,61 +2117,106 @@ Source: https://docs.fil.one/app/billing
 Console-specific. Trial lifecycle, pricing model and measurement live on Trial &
 Billing, Pricing and Usage.
 
+WHERE BILLING LIVES DEPENDS ON YOUR ORGANIZATION: if it has an Organization page,
+billing is its "Billing" tab and /billing takes you there; otherwise "Billing" is
+at the bottom of the left sidebar, next to Settings.
+
+VISIBLE TO OWNERS AND ADMINS. Every action on it (choosing or changing a plan,
+adding or updating a card, opening the Stripe portal) is OWNER-ONLY, so an Admin
+sees the same figures without the buttons. Members and Read only users see
+"Billing is managed by your organization's owners and admins" instead.
+
 ## Plan card
 
-| Status | Badge | Card text |
-|--------|-------|-----------|
-| Trial | Active | "Free Trial", days remaining, 1 TB included |
-| Paid | Active | "Pay-as-you-go", billed for what you use, monthly minimum in brackets |
-| Payment failed | Active | "Pay-as-you-go"; the notice is in the top banner |
-| Grace period | Grace Period | "Read-only access", days remaining |
-| Canceled | Canceled | "Subscription inactive" |
-| No plan | No plan | "Choose a plan to start storing data" |
+| Status | Badge | Plan name and detail line |
+|--------|-------|---------------------------|
+| Trial | Trial | "Free trial", "1 TB of storage included", days until the trial ends |
+| Paid | Active | "Pay as you go", per-TB rate, renewal date |
+| Payment failed | Payment failed (amber) | Plan name, rate, renewal date, as for a paid plan |
+| Grace period | Grace period | Plan name and rate, days until access ends |
+| Canceled | Canceled | Plan name and rate, date it was canceled |
+| No plan | None | "No plan", "Choose a plan to start storing data" |
 
-A FAILED PAYMENT APPEARS IN THE TOP BANNER, NOT THE BADGE, which continues to
-read "Active". The account becomes READ-ONLY from the moment payment fails, so
-writes stop; they resume once payment succeeds.
+A plan set up with the sales team shows the name on your agreement, and "Custom
+pricing" where there is no single per-TB rate.
 
-Button is "Upgrade" on trial, "Manage plan" on paid, "Reactivate" once lapsed.
+Button: "Upgrade" on trial, "Manage plan" on a paid plan (INCLUDING ONE WHOSE
+PAYMENT FAILED), "Reactivate" once canceled, "Choose a plan" during the grace
+period or with no plan.
 
-## Current usage
+Banners above the cards: "Your last payment failed" (button "Update payment");
+"This organization is read-only" (grace period; "Choose a plan"); "This
+subscription is canceled" ("Reactivate").
 
-"Storage used" always shows; against the 1 TB cap with a progress bar on trial,
-figure alone on paid (no cap). "Egress used" is shown against the 2 TB cap ON
-TRIAL ONLY; paid plans have no egress fees and no egress figure on this page.
-"Estimated monthly cost" appears on paid plans only.
+A FAILED PAYMENT MAKES THE DASHBOARD READ-ONLY. Check the banner and update the
+payment method to resume.
 
-THE ESTIMATE IS A GUIDE, NOT THE INVOICE: it applies $4.99/TB to the most recent
-storage reading with the monthly minimum as the floor, while the invoice uses
-AVERAGE storage across the month, metered twice daily. The estimate excludes
+## Usage
+
+Headed "Usage during your trial" on the trial and "Usage this billing period"
+otherwise, with the period dates and days left.
+
+"Storage" always appears: against the 1 TB cap with a progress bar on trial,
+figure alone on paid (no cap). "Egress" also always appears: against the 2 TB cap
+with a progress bar on trial, labelled "Free" on paid (no egress fees).
+"Estimated total" appears on a paid plan with a per-TB rate; where the monthly
+minimum is higher than usage, it shows the minimum, captioned "Your monthly
+minimum". Plans with custom pricing show no estimate, and the card says the total
+for the period is in Stripe.
+
+THE ESTIMATE IS A GUIDE, NOT THE INVOICE: it applies your plan's per-TB rate to
+the most recent storage reading with the monthly minimum as the floor, while the
+invoice uses AVERAGE storage across the billing period. The estimate excludes
 egress. Sizes are decimal (1 TB = 1,000 GB).
 
 ## Payment method
 
-Shows last four digits and expiry with "Update", or "No payment method added"
-with "Add". "Update" and "Manage plan" both open the STRIPE CUSTOMER PORTAL,
-where card details are entered and stored; FIL ONE DOES NOT HOLD THE CARD NUMBER.
-First-time setup goes through "Choose your plan": "Pay-as-you-go" is
-self-service, "Business plan" routes to a sales contact form.
+| What you see | Button |
+|--------------|--------|
+| "No card on file", "Needed before your trial ends" | Add card |
+| Card brand and last four digits, with expiry date | Update |
+| "Billed by invoice" (paid plan with no card on file) | Manage |
+
+"Update", "Manage" and "Manage plan" open the STRIPE CUSTOMER PORTAL, where card
+details are entered and stored; FIL ONE DOES NOT HOLD THE CARD NUMBER.
 
 CANCELLATION IS HANDLED IN THE STRIPE PORTAL, via "Manage plan".
 
-## Invoice history
+## Choosing a plan
 
-Date, status, amount and a "PDF" link per invoice. The card appears once on a
-paid plan (nothing to show during trial), and lists THE THREE MOST RECENT PAID
-INVOICES. Full history, including anything open or in draft, is in the Stripe
-portal.
+"Add card", "Upgrade", "Choose a plan" and "Reactivate" open "Choose your plan",
+with two plans:
+- "Pay as you go": $4.99 per TB per month, $4.99 monthly minimum, no egress fees,
+  no API request fees. "Upgrade now" goes to the payment form.
+- "Business plan": "Custom pricing", purchased in 1, 3, or 5-year increments,
+  with capacity assurance and deployment SLAs. "Contact sales team" opens a sales
+  contact form.
 
-## Pricing panel
+The payment form takes card number, expiry, and CVC. "Start subscription"
+activates the plan.
+When reactivating with a card already on file, the Pay as you go button reads
+"Reactivate" and uses that card, with a "Use a different card" link.
 
-$4.99 per TB per month, the monthly minimum where one applies, no egress fees, no
-API request fees. "Need more?" links to a Business-plan sales form.
+## Invoices
+
+Date, status, amount and a "PDF" link per invoice. Statuses: Paid, Due, Void,
+Unpaid. Not shown during the trial or with no plan; before the first invoice it
+reads "No invoices yet". Shows the 12 MOST RECENT ISSUED INVOICES, INCLUDING ANY
+STILL UNPAID; drafts are not shown. "View all" opens the Stripe portal for full
+history and appears for Owners only.
+
+## Need help?
+
+The panel beside the cards offers "Billing questions" (links to "Contact
+support" for invoice, payment, or plan questions). On the trial or with no plan,
+it also offers "Volume pricing", where "Talk to sales" opens the sales contact
+form.
 
 THE MONTHLY MINIMUM IS NOT UNIVERSAL: accounts predating it stay on per-unit
-pricing with no minimum, and the plan card and pricing panel reflect that. The
-upgrade dialog shows the standard "$4.99/month minimum" wording regardless, so
-the plan card and pricing panel are authoritative per account.
+pricing with no minimum. The plan card shows your per-TB rate, and your estimate
+is not raised to a minimum. The "Choose your plan" dialog shows the standard
+"$4.99/month minimum" wording regardless, so the plan card is authoritative per
+account.
 
 
 ---
@@ -1854,15 +2225,14 @@ the plan card and pricing panel are authoritative per account.
 
 Source: https://docs.fil.one/app/settings
 
-Bottom of the left sidebar next to Billing: profile, notification preferences and
-account security.
+Bottom of the left sidebar: profile, notification preferences and account
+security. Every member of an organization has their own Settings.
 
 ## Profile
 
 | Field | Rules |
 |-------|-------|
 | Full name | Cannot be empty, up to 200 characters |
-| Company name | 2 to 100 characters, letters, numbers, spaces, hyphens, periods only |
 | Email | Must be a valid address; disposable addresses are rejected |
 
 "Save changes" is disabled until a field is edited, and a note beside it lists
@@ -1876,8 +2246,11 @@ recoverable.
 
 GOOGLE AND GITHUB SIGN-INS MANAGE NAME AND EMAIL AT THE PROVIDER. Both fields are
 read-only in Fil One, labelled "Managed by Google" / "Managed by GitHub" with a
-link to that provider's profile page. COMPANY NAME STAYS EDITABLE on every
-account type.
+link to that provider's profile page.
+
+The profile holds only Full name and Email: the organization's name is not part
+of your profile. Owners and Admins rename it with "Edit" on the Organization page (2 to
+100 characters, letters, numbers, spaces, hyphens, periods only).
 
 ## Notifications
 
@@ -1885,11 +2258,9 @@ account type.
 reflects the current subscription status, is off until turned on, and saves on
 flip with no Save button.
 
-"EMAIL NOTIFICATIONS" IS MARKED COMING SOON AND IS NOT ACTIVE YET. The row ("Get
-notified about your uploads and when approaching storage limits") is visible but
-disabled, and these emails are NOT SENT TODAY, including as a trial cap
-approaches. Direct users to the Dashboard usage cards to track storage and egress
-against the caps.
+THERE IS NO NOTIFICATION SETTING FOR UPLOADS OR STORAGE LIMITS. Direct users to
+the Dashboard usage cards to track storage and egress against the trial caps,
+where reaching a cap changes what the account can do.
 
 ## Security
 
@@ -1897,9 +2268,11 @@ Two-factor authentication, passkeys, recovery codes and password changes are all
 under Settings > Security (see Account Security). Password is managed by the
 provider on Google and GitHub accounts, so no Change button appears.
 
-## Deleting your account
+## Delete organization
 
-Handled by the team: email support@fil.one. Not self-service in the console.
+The last card on the page is "Delete organization". Its "Delete" button is
+DISABLED and the card reads "Not available yet", with a link to email
+support@fil.one to delete your organization. Not self-service in the console.
 
 
 ---
@@ -1931,8 +2304,9 @@ console does not show a ticket list or status view.
 - The sidebar links to the Fil One status page, the quickest check for whether an
   issue is already known.
 - Account deletion is handled by email at support@fil.one.
-- Volume pricing, SLAs and the Business plan go through "Contact sales" on the
-  Billing page.
+- Volume pricing, SLAs and the Business plan go through "Contact sales team" in
+  the "Choose your plan" dialog on Billing. On the trial or with no plan, "Talk to
+  sales" in the "Need help?" panel beside the billing cards does the same.
 
 
 ---
@@ -1944,7 +2318,7 @@ Source: https://docs.fil.one/reference/overview
 ## Base endpoint
 
 ```
-https://eu-west-1.s3.filonecontent.com
+https://s3.eu-west-1.filonecontent.com
 ```
 
 All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4).
@@ -1954,10 +2328,10 @@ All requests must use HTTPS and authenticate with AWS Signature Version 4 (SigV4
 Use path-style addressing:
 
 ```
-https://eu-west-1.s3.filonecontent.com/my-bucket/my-key
+https://s3.eu-west-1.filonecontent.com/my-bucket/my-key
 ```
 
-Virtual-hosted-style URLs (https://my-bucket.s3.filonecontent.com/my-key) are not supported.
+Virtual-hosted-style URLs (https://my-bucket.s3.<region>.filonecontent.com/my-key) are not supported.
 Configure your S3 client to use path-style requests:
 - boto3: set `config=Config(s3={"addressing_style": "path"})` — path-style is NOT the default, even with a custom endpoint, and requests fail without it
 - AWS CLI: set `s3.addressing_style = path` in the profile (or `aws configure set default.s3.addressing_style path`)
@@ -1983,7 +2357,7 @@ endpoint and authenticate with your API keys.
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | https://<region>.s3.filonecontent.com — region-specific |
+| Endpoint | https://s3.<region>.filonecontent.com — region-specific |
 | Region | eu-west-1 (Europe, France, default) or us-east-1 (US East, Michigan) |
 | Signature version | SigV4 |
 | Path style | Required |
@@ -2101,8 +2475,8 @@ request fails depends on how it is sent (confirmed in eu-west-1):
 
 So a tool that uploads with --acl public-read appears to work while a tool that
 sets ACLs as a separate step fails outright. Neither makes an object public. Use a
-presigned URL for unauthenticated access. Per-bucket access control via API key
-scoping is planned.
+presigned URL for unauthenticated access. To limit what a key can reach, scope it
+to specific buckets when you create it (see API Keys, Bucket scope).
 
 ### Known error-code deviations in eu-west-1
 
@@ -2146,8 +2520,11 @@ engineering issues, NOT intended behavior.
 
 Bucket/object ACLs, bucket policies, lifecycle rules (expiration,
 transitions), event notifications, object and bucket tagging, S3 Select, S3
-Inventory, S3 Batch Operations, IAM / multi-user accounts / RBAC, multiple
-storage classes, additional regions beyond eu-west-1 and us-east-1.
+Inventory, S3 Batch Operations, multiple storage classes, additional regions
+beyond eu-west-1 and us-east-1. IAM users, roles, and bucket policies on the S3
+API are NOT YET SUPPORTED: access is controlled by each access key's permissions
+and bucket scope. Team members and roles exist in the console, in beta (see App:
+Organization).
 
 ## Differences from AWS S3
 
@@ -2157,7 +2534,7 @@ storage classes, additional regions beyond eu-west-1 and us-east-1.
 | Server-side copy | CopyObject supported. | Confirmed working in us-east-1. In eu-west-1 plain copy works, but the version-id form (promoting an old version) is unverified. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys held by the regional storage operator; no customer-managed keys. |
 | Bucket management | CreateBucket and DeleteBucket via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in us-east-1; in eu-west-1 buckets are managed through the dashboard only. |
-| IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
+| IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles, in beta (see App: Organization). |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected and never make an object public. |
 | Error codes for missing features | NotImplemented (501). | AccessDenied (403) in eu-west-1. A 403 on a bucket-configuration call means the feature is absent, not that the key lacks permission. |
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
@@ -2213,6 +2590,16 @@ eu-west-1" under S3 Compatibility.
 | ServiceUnavailable | 503 | Temporarily unavailable. Check Retry-After header. |
 | SlowDown | 503 | Too many requests. Implement exponential backoff. |
 
+## Console errors
+
+These come from the Fil One console at app.fil.one, NOT from the S3 API.
+
+| Message | HTTP | What to do |
+|---------|------|------------|
+| "We are still setting up your account. Please try again in a moment." | 503 | Shown while a new account is being set up. Wait and retry. |
+| "We are still setting up the region for you. Please try again in a moment." | 503 | Shown while a region is being set up for your account. Wait and retry. |
+| A message that your role does not permit the action | 403 | Your organization role doesn't include this action. Ask an Owner or Admin. |
+
 ## Troubleshooting
 
 **SignatureDoesNotMatch**: Re-copy your secret key from the dashboard. Ensure your
@@ -2240,7 +2627,7 @@ Fil One works with any tool or library that supports the S3 API.
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | https://eu-west-1.s3.filonecontent.com |
+| Endpoint | https://s3.eu-west-1.filonecontent.com |
 | Region | eu-west-1 |
 | Credentials | Access Key ID + Secret Access Key from dashboard |
 
@@ -2263,8 +2650,8 @@ specific setup notes:
 
 - **rclone**: Sync files with `rclone config` using S3 provider type.
 - **Cyberduck**: Add S3 connection with the Fil One endpoint.
-- **s3cmd**: Configure with `s3cmd --configure`, set host to eu-west-1.s3.filonecontent.com.
-- **MinIO Client**: `mc alias set filone https://eu-west-1.s3.filonecontent.com YOUR_KEY YOUR_SECRET`
+- **s3cmd**: Configure with `s3cmd --configure`, set host to s3.eu-west-1.filonecontent.com.
+- **MinIO Client**: `mc alias set filone https://s3.eu-west-1.filonecontent.com YOUR_KEY YOUR_SECRET`
 
 
 ---
@@ -2285,7 +2672,7 @@ import os
 
 s3 = boto3.client(
     "s3",
-    endpoint_url="https://eu-west-1.s3.filonecontent.com",
+    endpoint_url="https://s3.eu-west-1.filonecontent.com",
     aws_access_key_id=os.environ["FIL_ACCESS_KEY"],
     aws_secret_access_key=os.environ["FIL_SECRET_KEY"],
     region_name="eu-west-1",
@@ -2376,7 +2763,7 @@ npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 import { S3Client } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
-  endpoint: "https://eu-west-1.s3.filonecontent.com",
+  endpoint: "https://s3.eu-west-1.filonecontent.com",
   region: "eu-west-1",
   forcePathStyle: true,  // required
   credentials: {
@@ -2474,7 +2861,7 @@ go get github.com/aws/aws-sdk-go-v2/service/s3
 ```go
 func newClient() *s3.Client {
     return s3.New(s3.Options{
-        BaseEndpoint: aws.String("https://eu-west-1.s3.filonecontent.com"),
+        BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
         Region:       "eu-west-1",
         UsePathStyle: true,  // required
         Credentials: credentials.NewStaticCredentialsProvider(
@@ -2551,12 +2938,12 @@ uploadReq, _ := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 Source: https://docs.fil.one/sdk/cli
 
 The AWS CLI works with Fil One out of the box. Install it, configure
-credentials, and use --endpoint-url https://<region>.s3.filonecontent.com on every command
+credentials, and use --endpoint-url https://s3.<region>.filonecontent.com on every command
 — or set it as a profile default.
 
 Note: the endpoint depends on your bucket's region. Examples here use
 eu-west-1, the default. For a bucket in us-east-1, use
-https://us-east-1.s3.filonecontent.com and region us-east-1. The endpoint, the region, and
+https://s3.us-east-1.filonecontent.com and region us-east-1. The endpoint, the region, and
 your access key must all refer to the same region — set up one profile per
 region if you use both.
 
@@ -2579,7 +2966,7 @@ aws --version   # should print aws-cli/2.x
 ```ini
 # ~/.aws/config
 [profile filone]
-endpoint_url = https://eu-west-1.s3.filonecontent.com
+endpoint_url = https://s3.eu-west-1.filonecontent.com
 region = eu-west-1
 s3 =
     addressing_style = path
@@ -2624,7 +3011,7 @@ aws configure set default.s3.addressing_style path
 Then pass --endpoint-url on each command:
 
 ```bash
-aws s3 ls --endpoint-url https://eu-west-1.s3.filonecontent.com
+aws s3 ls --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
 ## Core operations
@@ -2674,8 +3061,9 @@ removed with a key that has the DeleteBucket permission:
 aws s3 rb s3://my-bucket --profile filone
 ```
 
-In eu-west-1 the operation is not available, and dashboard deletion is not yet
-enabled either.
+In eu-west-1 the operation is not available over the S3 API. Delete the bucket
+from the Fil One dashboard instead, via the bucket's actions menu in Buckets
+(Owner and Admin roles only).
 
 ## Multipart uploads
 
@@ -2713,7 +3101,7 @@ Source: https://docs.fil.one/faq
 
 **Is Fil One S3-compatible?**
 Yes. Any application, SDK, or tool that works with AWS S3 works with Fil One by
-changing the endpoint URL to https://eu-west-1.s3.filonecontent.com.
+changing the endpoint URL to https://s3.eu-west-1.filonecontent.com.
 
 **Do I need to know anything about blockchain or cryptocurrency?**
 No. Fil One is a standard cloud storage service. You sign up with an email, store
@@ -2727,10 +3115,12 @@ of storage providers on Filecoin. All data is encrypted at rest.
 
 **What happens when I delete an object?**
 On a bucket WITHOUT versioning: it disappears immediately, no recycle bin or undo.
-On a bucket WITH versioning: a plain delete places a delete marker instead. The
-object stops appearing in listings but every prior version is kept, downloadable
-by version ID, and the object can be made visible again by deleting the delete
-marker. Retained versions still count as stored storage.
+On a bucket WITH versioning: a delete over the S3 API without a version ID places
+a delete marker instead. The object stops appearing in listings but every prior
+version is kept, downloadable by version ID, and the object can be made visible
+again by deleting the delete marker. Retained versions still count as stored
+storage. THE DASHBOARD IS DIFFERENT: it always permanently deletes the specific
+version you chose and never writes a delete marker.
 
 **Can I migrate from AWS S3?**
 Yes. Use aws s3 sync, rclone, or any S3-compatible transfer utility pointed at
@@ -2747,8 +3137,11 @@ card required.
 **Can I use Fil One for backups?**
 Fil One exposes an S3-compatible API, so backup software that targets S3
 generally works, but specific backup products have NOT been verified. Three
-documented gaps are ones backup tools commonly depend on: no server-side copy
-(CopyObject) in eu-west-1 (used by some tools for renames, moves, dedupe); no
+documented gaps are ones backup tools commonly depend on: server-side copy of a
+SPECIFIC VERSION is unverified in eu-west-1 (CopyObject is confirmed in
+us-east-1, and plain server-side copy works in eu-west-1, but copying a specific
+VersionId has not been verified there; some tools use CopyObject for renames,
+moves, dedupe); no
 CreateBucket over the API in eu-west-1 (a tool that provisions its own
 repository bucket needs it created in the dashboard first); and no lifecycle
 rules (retention-based pruning must be handled by the tool). Path-style
@@ -2774,8 +3167,12 @@ closure does NOT purge data — the account is disabled and access blocked, and
 no automatic purge runs; contact support to request removal.
 
 **Can multiple users access the same account?**
-Currently accounts are single-user. Multi-user organization accounts with RBAC
-are planned. You can create multiple scoped API keys to share limited access.
+Yes, through organizations, which are in BETA and not yet enabled for every
+account. An organization can have several members, each with a role: Owner,
+Admin, Member, or Read only (see App: Organization). Access through the S3 API is
+still per access key: there are no IAM users or bucket policies, so to share
+limited access with other services, create API keys scoped to specific buckets
+and permissions.
 
 
 ---
@@ -2819,12 +3216,14 @@ through the S3 API are available in us-east-1 but not in eu-west-1.
 | Maximum parts per multipart upload | 10,000 |
 | Minimum part size (multipart) | 5 MB |
 | Maximum part size (multipart) | 5 GB |
-| Maximum object key length | 1,024 bytes |
+| Maximum object key length | 1,024 characters in the dashboard; 1,024 bytes (standard S3 limit) through the API |
 | Maximum metadata size per object | 2 KB |
 
-Only the object key length (1,024 bytes) is code-backed for Fil One. The other
-values are standard AWS S3 limits that the gateway is expected to follow but that
-are NOT independently confirmed — treat them as guidance.
+Only the DASHBOARD key-length check is code-backed: the dashboard rejects object
+keys longer than 1,024 CHARACTERS on upload. The other values (the 1,024-byte key
+length through the S3 API, object and part sizes, part count, minimum part size,
+metadata size) are standard AWS S3 limits that the gateway is expected to follow
+but that are NOT independently confirmed — treat them as guidance.
 
 ## API rate limits
 
@@ -2837,79 +3236,9 @@ support if you are consistently hitting limits at scale.
 **Bucket names:** 3-63 characters, lowercase letters/numbers/hyphens (no dots,
 unlike AWS S3), must start and end with a letter or number, unique within Fil One.
 
-**Object keys:** Up to 1,024 bytes (UTF-8). Avoid control characters and characters
+**Object keys:** Up to 1,024 characters for dashboard uploads; through the S3
+API, the standard S3 limit of 1,024 bytes (UTF-8) applies but is not
+independently confirmed. Avoid control characters and characters
 requiring special URL encoding for best compatibility.
 
 ---
-
-# Bucket Intelligence
-
-Source: https://docs.fil.one/bucket-intelligence
-
-EARLY ACCESS — not generally available. Access is granted per account, so the
-feature is hidden in the dashboard unless the account has been enabled for it.
-FREE during early access; pricing after GA will be announced later.
-
-Turn a storage bucket into a queryable knowledge base: a background indexer keeps
-each enabled bucket's index in sync, and a query endpoint answers questions
-grounded in the bucket's objects, citing the source objects.
-
-Enable per bucket from the Bucket Intelligence page in the dashboard: Buckets
-tab, per-row "Index" button, confirm with "Start indexing" (see App: Bucket
-Intelligence for the console walkthrough). Available in eu-west-1 and us-east-1.
-
-## Indexing
-
-Indexing runs on a schedule, every 6 hours (03:00, 09:00, 15:00, 21:00 UTC). It
-is NOT triggered by uploads — allow up to 6 hours for a new file to become
-searchable. Each pass diffs object ETags: new objects are extracted, chunked,
-embedded and added; changed ETags are re-indexed; unchanged objects are skipped.
-Deletions reconcile on a full pass. Large buckets checkpoint and resume across
-runs. Chunks are ~1,000 characters with 200 characters of overlap.
-
-Supported file types: PDF, .txt, .md, .html/.htm, .docx, .pptx. Other types are
-ignored. NO OCR — scanned or image-only PDFs extract to nothing and are silently
-skipped with no error.
-
-## Models
-
-Managed by Fil One via Amazon Bedrock. Embeddings: Amazon Titan Text Embeddings
-V2 (1,024 dimensions). Answers: Anthropic Claude Opus 4.8. Bring-your-own models
-and custom embedding models are NOT supported.
-
-## RAG API keys
-
-Bearer tokens (sk_rag_ prefix) that authorize ONLY the query endpoint. They
-cannot read, write, list, or delete bucket contents, and they are not
-bring-your-own-LLM keys. Distinct from S3 access keys. Created from the API Keys
-tab; scoped to all buckets or a specific list (max 50, each named with its
-region). Shown once at creation — only a hash is stored. Keys have NO expiry and
-NO rotation mechanism; they stay valid until deleted. Deletion is immediate.
-
-## Querying
-
-POST https://app.fil.one/api/buckets/{bucket}/query?region={region}
-Authorization: Bearer $FILONE_RAG_KEY
-
-Body: query (string, required), top_k (default 10, max 100), model (optional,
-only the managed answer model is accepted). Query params: region (default
-eu-west-1), objectKey (optional, restricts search to one object).
-
-Response: { "answer": "...", "sources": ["key1", "key2"] }. If nothing relevant
-is found, the answer says so and sources is empty. A bucket that does not exist
-and a bucket outside the key's scope both return 404.
-
-The dashboard also has an "Ask a question" box in the per-bucket drawer.
-
-## Not available yet
-
-- MCP endpoint / MCP server for Claude, Cursor, etc: NOT built. Connecting AI
-  clients is what the AI Agent Toolkit will cover.
-- Bring-your-own LLM keys or custom embedding models — not implemented.
-- API key expiry and rotation — not implemented.
-- Upload-triggered or near-real-time indexing — not implemented.
-
-Embeddings and extracted chunk text are held in storage Fil One manages, separate
-from the bucket. Objects themselves are not moved or modified. Extracted chunk
-text is retained in the index so answers can quote it — enable Bucket
-Intelligence deliberately per bucket rather than across everything.

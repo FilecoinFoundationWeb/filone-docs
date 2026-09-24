@@ -5,14 +5,14 @@ description: What is included in your free trial, and how billing works when you
 
 ## Free trial
 
-Every new account starts with a 30-day free trial. No credit card is required.
+Every new account starts with a 30-day free trial. No credit card is required. The trial starts once you have verified your email address, and each email address gets one trial. Members invited to someone else's organization do not get a trial of their own.
 
 | Included | Amount |
 |----------|--------|
 | Storage | 1 TB (1,000 GB) |
 | Egress bandwidth | 2 TB (2,000 GB) |
 | API operations | Unlimited |
-| Duration | 30 days from account creation |
+| Duration | 30 days from when the trial starts |
 
 The trial gives you enough capacity to test real workloads, not just sample uploads. Almost everything works during the trial; the two exceptions are generating **shareable links** for objects and viewing **invoice history**, both of which unlock on a paid plan.
 
@@ -20,7 +20,7 @@ The trial gives you enough capacity to test real workloads, not just sample uplo
 The storage and egress figures above are hard limits, not soft allowances, and reaching them has different consequences:
 
 - **Storage reaching 1 TB** puts the account into a **write-locked** state — you can still read and download, but new uploads are rejected.
-- **Egress reaching 2 TB** **disables the account** — the same state as trial expiry, with no read or write access until you upgrade.
+- **Egress reaching 2 TB** **disables the account** — the same state as an account whose grace period has ended, with no read or write access until you upgrade. There is no read-only grace period first.
 
 Trial egress is a **single cumulative budget** across the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (around 07:00 and 19:00 UTC), so a cap may be exceeded for a few hours before access changes.
 :::
@@ -56,19 +56,19 @@ Disabling blocks all access to the account: your data is no longer reachable thr
 | Egress bandwidth | No charge | No egress fees. |
 | API operations | Included | No per-request charges. |
 
-Pricing is usage-based, measured as the average storage consumed across the billing period, with a **$4.99 / month minimum**. If your usage works out to less than $4.99 in a billing period, you are billed the $4.99 minimum. There is no contract or term commitment.
+Pricing is usage-based, measured as the average storage consumed across the billing period, with a **$4.99 / month minimum**. If your usage works out to less than $4.99 in a billing period, you are billed the $4.99 minimum. **Pay as you go** has no contract or term commitment. For volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team. See [Billing](/app/billing#choosing-a-plan).
 
 ## Payment
 
-Payments are processed through Stripe. You can add a credit card from **Billing** in the left sidebar of the dashboard.
+Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, which is either **Billing** in the left sidebar or the **Billing** tab of the [Organization](/app/organization) page. See [Billing](/app/billing).
 
 - Invoices are generated monthly.
-- Usage details are visible in **Billing** in the left sidebar.
+- Usage details are visible on the Billing page to Owners and Admins.
 - Payment is due on receipt of invoice.
 
 ## Payment failures
 
-If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. **New uploads and other write operations are blocked from the moment the payment fails** — not after some later deadline. Your existing data stays readable and downloadable throughout the past-due window, but you cannot write to it until a payment succeeds.
+If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. The **dashboard becomes read-only** from the moment the payment fails, and the Billing page shows **Your last payment failed** with an **Update payment** button.
 
 If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below). You will receive email notifications at each stage.
 

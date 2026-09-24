@@ -3,68 +3,98 @@ title: Billing
 description: Reading the Fil One billing page, adding a payment method, and finding your invoices.
 ---
 
-**Billing** sits at the bottom of the left sidebar, next to Settings.
+Where billing lives depends on your organization. If your organization has an [Organization](/app/organization) page, billing is its **Billing** tab, and opening `/billing` takes you there. Otherwise, **Billing** sits at the bottom of the left sidebar, next to Settings.
+
+Billing is visible to **Owners** and **Admins**. Every action on it (choosing or changing a plan, adding or updating a card, opening the Stripe portal) is for **Owners** only, so an Admin sees the same figures without the buttons. Members and Read only users see "Billing is managed by your organization's owners and admins" instead. See [Roles and permissions](/app/organization#roles-and-permissions).
 
 This page covers the console specifically. For the trial lifecycle, the pricing model, and how usage is measured, see [Trial & Billing](/billing/trial), [Pricing](/billing/pricing), and [Usage](/billing/usage).
 
 ## Your plan
 
-The first card names your plan and carries a status badge:
+The **Plan** card names your plan and carries a status badge:
 
-| Status | Badge | What the card says |
-|--------|-------|--------------------|
-| Trial | **Active** | **Free Trial**, with the days remaining and the 1 TB included |
-| Paid | **Active** | **Pay-as-you-go**, billed for what you use, with your monthly minimum in brackets |
-| Payment failed | **Active** | **Pay-as-you-go**. A banner at the top of the page carries the warning, not the badge |
-| Grace period | **Grace Period** | **Read-only access**, with the days remaining |
-| Canceled | **Canceled** | **Subscription inactive** |
-| No plan | **No plan** | **Choose a plan to start storing data** |
+| Status | Badge | Plan name and detail line |
+|--------|-------|---------------------------|
+| Trial | **Trial** | **Free trial**, with **1 TB of storage included** and how many days until the trial ends |
+| Paid | **Active** | **Pay as you go**, with your per-TB rate and the renewal date |
+| Payment failed | **Payment failed** (amber) | Your plan name, rate, and renewal date, as for a paid plan |
+| Grace period | **Grace period** | Your plan name and rate, and how many days until access ends |
+| Canceled | **Canceled** | Your plan name and rate, and the date it was canceled |
+| No plan | None | **No plan**, with **Choose a plan to start storing data** |
 
-:::note Where a failed payment shows up
-When a payment fails, the notice appears in the amber banner at the top of the page rather than in the plan badge, which continues to read **Active**. Your account becomes read-only at that point, so if uploads have stopped, check the banner and update your payment method to resume. See [Trial & Billing](/billing/trial).
+If your plan was set up with the sales team, the card shows the name on your agreement, and **Custom pricing** where there is no single per-TB rate to show.
+
+The button in this card is **Upgrade** on the trial, **Manage plan** on a paid plan (including one whose payment failed), **Reactivate** once the subscription is canceled, and **Choose a plan** during the grace period or with no plan.
+
+A banner above the cards flags a problem with the account:
+
+| Banner | Button |
+|--------|--------|
+| **Your last payment failed** | **Update payment** |
+| **This organization is read-only** (grace period) | **Choose a plan** |
+| **This subscription is canceled** | **Reactivate** |
+
+:::note A failed payment makes the dashboard read-only
+When a payment fails, the dashboard becomes read-only. Check the banner and update your payment method to resume. See [Trial & Billing](/billing/trial).
 :::
 
-The button in this card is **Upgrade** on the trial, **Manage plan** on a paid plan, and **Reactivate** once the subscription has lapsed.
+## Usage
 
-## Current usage
+The usage card is headed **Usage during your trial** on the trial and **Usage this billing period** otherwise, with the dates of the period and how many days are left.
 
-**Storage used** always appears. On the trial it is shown against the 1 TB cap with a progress bar; on a paid plan there is no cap, so you see the figure alone.
+**Storage** always appears. On the trial it is shown against the 1 TB cap with a progress bar; on a paid plan there is no cap, so you see the figure alone.
 
-**Egress used** is shown against the 2 TB cap during the trial only. Paid plans have no egress fees and no egress figure on this page.
+**Egress** also always appears. On the trial it is shown against the 2 TB cap with a progress bar. On a paid plan it is labelled **Free**, since there are no egress fees.
 
-**Estimated monthly cost** appears once you are on a paid plan.
+**Estimated total** appears on a paid plan with a per-TB rate. Where your monthly minimum is higher than your usage, the estimate shows the minimum, captioned **Your monthly minimum**. Plans with custom pricing show no estimate, and the card says the total for the period is in Stripe.
 
 :::info How the estimate is calculated
-The estimate applies $4.99/TB to your most recent storage reading, with your monthly minimum as the floor. Your invoice is calculated from your average storage across the month, metered twice a day, so treat the estimate as a guide to where you are heading rather than the final figure. Egress is not included, since it is free on paid plans.
+The estimate applies your plan's per-TB rate to your most recent storage reading, with your monthly minimum as the floor. Your invoice is calculated from your average storage across the billing period, so treat the estimate as a guide to where you are heading rather than the final figure. Egress is not included, since it is free on paid plans.
 
 Sizes here are decimal: 1 TB means 1,000 GB. See [Usage](/billing/usage).
 :::
 
 ## Payment method
 
-With a card on file this card shows the last four digits and the expiry, with an **Update** button. Without one it shows **No payment method added** and an **Add** button.
+The **Payment method** card shows one of three things:
 
-**Update** and **Manage plan** both open the Stripe customer portal, where the card details are entered and stored. Fil One does not hold your card number.
+| What you see | Button |
+|--------------|--------|
+| **No card on file**, "Needed before your trial ends" | **Add card** |
+| The card brand and last four digits, with the expiry date | **Update** |
+| **Billed by invoice**, for a paid plan with no card on file | **Manage** |
 
-Adding a payment method for the first time goes through **Choose your plan**, where **Pay-as-you-go** is the self-service option and **Business plan** routes to a sales contact form for volume pricing and SLAs.
+**Update**, **Manage**, and **Manage plan** open the Stripe customer portal, where the card details are entered and stored. Fil One does not hold your card number.
 
 :::note Cancelling
 Cancellation is handled in the Stripe portal, reached through **Manage plan**.
 :::
 
-## Invoice history
+## Choosing a plan
 
-The invoice list shows the date, status, amount, and a **PDF** link for each invoice.
+**Add card**, **Upgrade**, **Choose a plan**, and **Reactivate** open **Choose your plan**, which offers two plans:
 
-Two things to expect:
+- **Pay as you go**, at **$4.99** per TB per month with a $4.99 monthly minimum, no egress fees, and no API request fees. **Upgrade now** takes you to the payment form.
+- **Business plan**, with **Custom pricing**, purchased in 1, 3, or 5-year increments, with capacity assurance and deployment SLAs. **Contact sales team** opens a sales contact form.
 
-- The card appears once you are on a paid plan, so there is nothing to show during the trial.
-- It lists your three most recent paid invoices. For your full billing history, including anything still open or in draft, open the Stripe portal through **Manage plan**.
+The payment form takes your card number, expiry, and CVC. **Start subscription** activates the plan.
 
-## Pricing panel
+If you are reactivating and a card is already on file, the **Pay as you go** button reads **Reactivate** and uses that card, with a **Use a different card** link if you would rather enter a new one.
 
-The right-hand panel restates the plan: **$4.99** per TB per month, your monthly minimum where you have one, no egress fees, and no API request fees. **Need more?** links to a sales contact form for the Business plan.
+## Invoices
+
+The **Invoices** list shows the date, status, amount, and a **PDF** link for each invoice. Statuses are **Paid**, **Due**, **Void**, and **Unpaid**.
+
+Three things to expect:
+
+- The list does not appear during the trial or with no plan. Before your first invoice it reads **No invoices yet**.
+- It shows your 12 most recent issued invoices, including any that are still unpaid. Drafts are not shown.
+- **View all** opens the Stripe portal for your full billing history. It appears for Owners only.
+
+## Need help?
+
+The panel beside the cards offers **Billing questions**, which links to **Contact support** for questions about an invoice, a payment, or your plan. On the trial or with no plan, it also offers **Volume pricing**, where **Talk to sales** opens the sales contact form.
 
 :::note If your account predates the monthly minimum
-Accounts created before the minimum was introduced stay on per-unit pricing with no minimum, and the plan card and pricing panel reflect that for you. The upgrade dialog shows the standard $4.99/month wording, so take the plan card and pricing panel as the guide to your own terms. See [Pricing](/billing/pricing).
+Accounts created before the minimum was introduced stay on per-unit pricing with no minimum. The plan card shows your per-TB rate, and your estimate is not raised to a minimum. The **Choose your plan** dialog shows the standard $4.99/month minimum wording, so take the plan card as the guide to your own terms. See [Pricing](/billing/pricing).
 :::

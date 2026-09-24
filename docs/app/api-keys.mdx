@@ -14,24 +14,39 @@ The page has two tabs, **API keys** and **Connection details**. The table shows:
 | Column | What it holds |
 |--------|---------------|
 | **Name** | The key name, with the Access Key ID underneath and a copy button |
+| **Region** | The region the key belongs to, such as `eu-west-1` (hidden on narrow screens) |
 | **Buckets** | **All Buckets**, or one badge per bucket the key is scoped to |
 | **Permissions** | Badges for the object permissions, with the finer-grained ones grouped into **Data protection**, **Bucket management**, and **Bucket info** |
+| **Created by** | The member who created the key, and **Rotated by … on …** once it has been rotated. Shown when your organization has more than one member |
 | **Status** | **Active** |
 | **Last Used** | **Never** |
+| **⋯** | **Rotate** and **Delete**, for the keys you can act on |
 
 With no keys yet the page reads **No API keys yet** and offers **Create your first key**.
+
+If your account is disabled, the **API Keys** page shows only a notice asking you to reactivate your subscription, with no keys, tabs, or **Create new key** button.
 
 :::note Keep your own record of each key
 **Last Used** and **Status** are placeholders for now: every key reads **Never** and **Active**, and the expiry date you set is not shown in this list. Note down what each key is for and when it expires, and give keys descriptive names so the **Name** column carries that context for you.
 :::
 
+## Who can manage keys
+
+What you can do here depends on your [role](/app/organization#roles-and-permissions):
+
+- **Read only** members cannot create keys. The **API keys** tab explains that keys are managed by members who can create them, and the **Connection details** tab is still available.
+- **Members** see, rotate, and delete only the keys they created themselves.
+- **Admins** and **Owners** see and manage every key in the organization.
+
+A key can only carry permissions your role holds, and the form hides the ones it doesn't. **Set retention** and **Set legal hold** are Owner-only, so they appear only for Owners. If a member's role is narrowed, any key they created that the new role couldn't create is revoked, and removing a member revokes the keys they created.
+
 ## Creating a key
 
 Click **Create new key**, which opens a dedicated page.
 
-**Key name.** Up to 64 characters, using letters, numbers, spaces, underscores, hyphens, and periods. Names must be unique within a region.
+**Key name.** Up to 64 characters, using letters, numbers, spaces, underscores, hyphens, and periods. Names must be unique within a region, and names starting with `filone-console` (in any capitalization) are reserved.
 
-**Region.** Required. A key is scoped to the region you pick, and each region has its own endpoint, so the endpoint, the region, and the key all need to agree. If you store data in both regions, create a key for each.
+**Region.** Required, and pre-set to `eu-west-1`. A key is scoped to the region you pick, and each region has its own endpoint, so the endpoint, the region, and the key all need to agree. If you store data in both regions, create a key for each.
 
 **What can this key do?** Object permissions are:
 
@@ -63,26 +78,37 @@ A key with **Write** therefore needs **Set retention** ticked as well before it 
 
 **When should it expire?** **Never expires** (the default), **30 days**, or **Custom** with a date picker.
 
+Click **Create API key** to create it.
+
 ## Saving the secret
 
 On success a **Save your credentials** dialog shows the **Access Key ID** and the **Secret Access Key**, with the secret masked until you reveal it. You can copy either, or download the pair as a `.csv` or `.env` file.
 
 :::warning The secret is shown once
-Fil One never stores your secret, which is why it appears only at creation. Copy or download it before closing the dialog. If you lose it, delete the key and create a replacement.
+Fil One never stores your secret, which is why it appears only when a key is created or rotated. Copy or download it before closing the dialog. If you lose it, [rotate the key](#rotating-a-key) to get a new secret.
 :::
+
+## Rotating a key
+
+Open the **⋯** menu on the key's row and choose **Rotate**. The **Rotate access key** dialog explains that the key keeps its name, permissions, and buckets, and gets a new Access Key ID and secret. Its region and expiry date carry over too. Confirm with **Rotate key**, and the **Save your credentials** dialog opens with the new pair, shown once as at creation.
+
+The old secret stops working as soon as the new one is issued, so update anything that uses the key. If the old key can't be revoked, a message says the new credentials are ready but the key they replace is still active. Delete the old key from the list yourself in that case.
+
+A few limits apply:
+
+- An expired key can't be rotated. Create a new key instead.
+- **Rotate** only appears on keys your current role could still create. See [Who can manage keys](#who-can-manage-keys).
+
+After a rotation, the **Created by** column shows who rotated the key and when.
 
 ## Revoking a key
 
 Open the **⋯** menu on the key's row and choose **Delete**. The dialog warns that the key will be permanently revoked and that any application using it loses access immediately.
 
-Deleting a key is how you revoke it. To rotate credentials, create the replacement first, move your applications onto it, then delete the old key.
+Deleting a key is how you revoke it. To move an application onto a key with different permissions or buckets, create the new key first, switch the application over, then delete the old one.
 
 Revocation is confirmed with the storage operator before the key leaves your list, so a key that is still listed is a key that is still live. That ordering means the list stays a truthful picture of what has access.
 
 :::note Keys for a bucket
 A bucket's **API Keys** tab shows the keys that can reach that bucket, which is a quicker way to audit access for one bucket than reading down the full list.
 :::
-
-## Keys for Bucket Intelligence
-
-Keys for querying an indexed bucket are a different credential and are not managed here. They are bearer tokens that only authorize the query endpoint and cannot read or write bucket contents. See [Bucket Intelligence](/bucket-intelligence).
