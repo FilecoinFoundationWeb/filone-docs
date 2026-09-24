@@ -77,11 +77,11 @@ Granular permissions are additive — a key must have the corresponding basic pe
 `PutObjectRetention` and `PutObjectLegalHold` (**Set retention** and **Set legal hold** in the console) can only be granted by an Owner. For other roles, the create form doesn't show them.
 
 :::note
-Granting `PutObjectRetention` makes the permission available on the key. Gateway support for per-object retention calls is confirmed in `us-east-1`; it has not yet been verified in `eu-west-1` — see [S3 Compatibility](/reference/s3-compatibility#object-lock).
+Granting `PutObjectRetention` makes the permission available on the key. Per-object retention calls work in both regions. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
 :::
 
 :::note
-`GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key. Legal Hold operations are confirmed working through the S3 API in `us-east-1`; they have not yet been verified in `eu-west-1`. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
+`GetObjectLegalHold` and `PutObjectLegalHold` can be granted on a key. Legal Hold operations work through the S3 API in both regions. See [S3 Compatibility](/reference/s3-compatibility#object-lock).
 :::
 
 ## Who can create and manage keys

@@ -40,7 +40,7 @@ Within a region, storage is fulfilled by a distributed network of storage provid
 
 On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
 
-On a bucket **with versioning enabled**, a plain delete places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. See [Versioning](/storage/versioning).
+On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](/storage/versioning).
 
 </div>
 </details>
