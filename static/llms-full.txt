@@ -74,7 +74,6 @@ Critical integration notes for developers:
   EncodingType=url encodes a space as "+" not "%20"; additional-checksum
   operations are unreliable (ChecksumType may be missing from
   CompleteMultipartUpload responses)
-- Bucket Intelligence (RAG) is EARLY ACCESS and allowlisted, not GA
 
 
 ---
@@ -1667,96 +1666,11 @@ key and the list stays a truthful picture of access.
 
 A bucket's "API Keys" tab lists the keys that can reach that one bucket.
 
-## Bucket Intelligence keys are separate
-
-Keys for querying an indexed bucket are a different credential, not managed here:
-bearer tokens that authorize only the query endpoint and cannot read or write
-bucket contents.
-
-
----
-
-# App: Bucket Intelligence
-
-Source: https://docs.fil.one/app/bucket-intelligence
-
-Console-specific, under the "AI Tools" sidebar group. Indexing mechanics, file
-types, models and the query API live on Bucket Intelligence.
-
-EARLY ACCESS, ENABLED PER ACCOUNT. Without access the menu item opens a "Coming
-Soon" page describing the feature plus a "Join the waitlist" form (use case,
-timeline, team size). The nav item itself is always visible.
-
-## Overview strip and tabs
-
-Three tiles: "Files indexed" (with the bucket count they span), "Index size",
-"API keys". A tile reads "Unavailable" if the figures fail to load, which does
-not affect indexing or querying. Two tabs: "Buckets" and "API Keys".
-
-## Indexing a bucket
-
-Per-row "Index" button (label becomes "Starting…" in flight), then a confirm
-dialog stating "Ready in" up to 6 hours (scheduled, NOT on upload) and what is
-indexed (PDF, Word, PowerPoint, Markdown, HTML, plain text; other files skipped
-and left untouched). Confirm with "Start indexing".
-
-To stop: the bucket's actions menu, "Stop indexing". FILES AND THE EXISTING INDEX
-ARE KEPT, so indexing can be started again later.
-
-Five status states:
-
-| Status | Meaning |
-|--------|---------|
-| Not indexed | Indexing not turned on for this bucket |
-| Indexing | First pass running; row adds "Up to 6 hours until the first results" |
-| Indexing | Later pass running, checking for new and changed files |
-| Failed | Last run did not complete; the row shows the reason |
-| Ready | Queryable, with file count, index size and last sync time |
-
-A FAILED RUN DOES NOT TURN INDEXING OFF or discard what is already indexed; the
-next scheduled pass picks the bucket up again and the console keeps refreshing.
-
-## Asking a question
-
-A "Ready" bucket's button reads "Ask questions" and opens a panel with an "Ask a
-question" box. Before the first pass it reads "View details" and the box is
-DISABLED, with a note that questions become available after the first pass.
-
-Answers list the objects they drew on, each linking to that object. ONE BUCKET
-PER QUERY; query each bucket in turn to cover several.
-
-A "Query from code" block in the same panel holds a ready-made curl call with the
-bucket and region already filled in; create a key and export it as
-FILONE_RAG_KEY.
-
-## API keys tab
-
-Bearer tokens that authorize the QUERY ENDPOINT ONLY and cannot read or write
-bucket contents; separate from S3 access keys. "Create API key" takes a "Name"
-and a "Scope" of "All buckets" or "Specific buckets", where the bucket list
-offers ALREADY-INDEXED buckets only (index one first if it is empty).
-
-The token appears once in a "Save your API key" dialog (only a hash is stored),
-with copy, "Download .env" and "Download .csv". Table columns: Name, Prefix,
-Scope, Created, Last used. Deleting takes effect immediately.
-
-"LAST USED" COUNTS KEY CALLS ONLY. Asking questions in the console uses the
-signed-in session rather than a key, so console exploration does not move it.
-
-## Reference block
-
-Below the keys table: the query endpoint with placeholders, the models in use
-(Titan Text Embeddings V2 for indexing, Claude Opus 4.8 for answers, both marked
-"Managed"), and a link to these docs. Bring-your-own-model is marked coming soon.
-
-
----
-
 # App: AI Agent Toolkit
 
 Source: https://docs.fil.one/app/ai-agent-toolkit
 
-Under the "AI Tools" sidebar group, next to Bucket Intelligence.
+Under the "AI Tools" sidebar group.
 
 NOT RELEASED. The page is marked "Coming Soon": it introduces what the toolkit
 will offer and collects waitlist interest, so THERE IS NOTHING TO SET UP on it
@@ -1774,9 +1688,6 @@ create a key scoped to the buckets the application should reach, then point the
 tool at the region's endpoint with path-style addressing. Frameworks that read
 and write object storage directly (LangChain, LlamaIndex, Vercel AI SDK, CrewAI)
 connect this way, and a single-bucket key keeps an agent in its own workspace.
-
-For question-answering over a bucket's contents, that exists today as Bucket
-Intelligence, a separate early-access feature with its own query API.
 
 Treat the access-key route above as the supported way to connect AI tools today.
 
@@ -2841,75 +2752,3 @@ unlike AWS S3), must start and end with a letter or number, unique within Fil On
 requiring special URL encoding for best compatibility.
 
 ---
-
-# Bucket Intelligence
-
-Source: https://docs.fil.one/bucket-intelligence
-
-EARLY ACCESS — not generally available. Access is granted per account, so the
-feature is hidden in the dashboard unless the account has been enabled for it.
-FREE during early access; pricing after GA will be announced later.
-
-Turn a storage bucket into a queryable knowledge base: a background indexer keeps
-each enabled bucket's index in sync, and a query endpoint answers questions
-grounded in the bucket's objects, citing the source objects.
-
-Enable per bucket from the Bucket Intelligence page in the dashboard: Buckets
-tab, per-row "Index" button, confirm with "Start indexing" (see App: Bucket
-Intelligence for the console walkthrough). Available in eu-west-1 and us-east-1.
-
-## Indexing
-
-Indexing runs on a schedule, every 6 hours (03:00, 09:00, 15:00, 21:00 UTC). It
-is NOT triggered by uploads — allow up to 6 hours for a new file to become
-searchable. Each pass diffs object ETags: new objects are extracted, chunked,
-embedded and added; changed ETags are re-indexed; unchanged objects are skipped.
-Deletions reconcile on a full pass. Large buckets checkpoint and resume across
-runs. Chunks are ~1,000 characters with 200 characters of overlap.
-
-Supported file types: PDF, .txt, .md, .html/.htm, .docx, .pptx. Other types are
-ignored. NO OCR — scanned or image-only PDFs extract to nothing and are silently
-skipped with no error.
-
-## Models
-
-Managed by Fil One via Amazon Bedrock. Embeddings: Amazon Titan Text Embeddings
-V2 (1,024 dimensions). Answers: Anthropic Claude Opus 4.8. Bring-your-own models
-and custom embedding models are NOT supported.
-
-## RAG API keys
-
-Bearer tokens (sk_rag_ prefix) that authorize ONLY the query endpoint. They
-cannot read, write, list, or delete bucket contents, and they are not
-bring-your-own-LLM keys. Distinct from S3 access keys. Created from the API Keys
-tab; scoped to all buckets or a specific list (max 50, each named with its
-region). Shown once at creation — only a hash is stored. Keys have NO expiry and
-NO rotation mechanism; they stay valid until deleted. Deletion is immediate.
-
-## Querying
-
-POST https://app.fil.one/api/buckets/{bucket}/query?region={region}
-Authorization: Bearer $FILONE_RAG_KEY
-
-Body: query (string, required), top_k (default 10, max 100), model (optional,
-only the managed answer model is accepted). Query params: region (default
-eu-west-1), objectKey (optional, restricts search to one object).
-
-Response: { "answer": "...", "sources": ["key1", "key2"] }. If nothing relevant
-is found, the answer says so and sources is empty. A bucket that does not exist
-and a bucket outside the key's scope both return 404.
-
-The dashboard also has an "Ask a question" box in the per-bucket drawer.
-
-## Not available yet
-
-- MCP endpoint / MCP server for Claude, Cursor, etc: NOT built. Connecting AI
-  clients is what the AI Agent Toolkit will cover.
-- Bring-your-own LLM keys or custom embedding models — not implemented.
-- API key expiry and rotation — not implemented.
-- Upload-triggered or near-real-time indexing — not implemented.
-
-Embeddings and extracted chunk text are held in storage Fil One manages, separate
-from the bucket. Objects themselves are not moved or modified. Extracted chunk
-text is retained in the index so answers can quote it — enable Bucket
-Intelligence deliberately per bucket rather than across everything.

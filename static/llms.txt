@@ -103,12 +103,6 @@ Critical integration notes for developers:
   PutObjectRetention and Legal Hold work in both regions.
   Regulations (SEC 17a-4, FINRA, HIPAA) are illustrative
   use cases, not a certification claim
-- [Bucket Intelligence](https://docs.fil.one/bucket-intelligence): EARLY ACCESS,
-  allowlisted, free during early access. Turn a bucket into a queryable
-  knowledge base. Indexing runs on a 6-hourly cron (NOT upload-triggered).
-  Managed models only (Titan Text Embeddings V2, Claude Opus 4.8 via Bedrock).
-  sk_rag_ bearer keys authorize only the query endpoint and never expire.
-  Types: PDF/txt/md/html/docx/pptx, no OCR. MCP endpoint is NOT built
 
 ## Security
 
@@ -205,22 +199,11 @@ Security, Billing) hold the concepts and code samples.
   shown ONCE and never stored. Deletion is the revocation (no disable/rotate).
   "Last Used" and "Status" are placeholder columns reading "Never"/"Active" for
   every key, and expiry is not shown after creation
-- [App - Bucket Intelligence](https://docs.fil.one/app/bucket-intelligence):
-  Console side of the early-access feature, under the "AI Tools" sidebar group.
-  ENABLED PER ACCOUNT; without access the menu item opens a "Coming Soon" page
-  with a waitlist form, though the nav item is always visible. Per-row "Index"
-  button plus a confirm dialog; five statuses (Not indexed / Indexing / Indexing
-  / Failed / Ready). A FAILED RUN DOES NOT TURN INDEXING OFF and the next
-  scheduled pass retries. "Stop indexing" keeps the files and the existing index.
-  Asking questions needs the first pass done (box disabled until then), covers ONE
-  BUCKET PER QUERY, and cites source objects as links. Key scope lists
-  already-indexed buckets only. "Last used" counts key calls, so console
-  questions do not move it
 - [App - AI Agent Toolkit](https://docs.fil.one/app/ai-agent-toolkit): NOT
   RELEASED. A "Coming Soon" page introducing the toolkit plus a waitlist form, so
   there is nothing to set up on it yet. What DOES work today: ordinary S3 access
   keys scoped to a bucket, which is how LangChain, LlamaIndex, Vercel AI SDK and
-  CrewAI connect. For Q&A over a bucket, that is Bucket Intelligence
+  CrewAI connect
 - [App - Billing](https://docs.fil.one/app/billing): Plan card, current usage,
   payment method, invoice history, pricing panel. A FAILED PAYMENT APPEARS IN THE
   TOP BANNER, NOT THE BADGE (still "Active"), and the account is read-only from
