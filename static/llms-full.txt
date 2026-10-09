@@ -4,7 +4,7 @@
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees on paid plans, no per-request charges,
-> $4.99/TB/month with a $4.99/month minimum.
+> $5.99/TB/month with a $5.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://s3.<region>.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -100,7 +100,7 @@ cannot be independently audited by the customer today.
 **No egress fees on paid plans.** On a paid plan there are no data-transfer
 charges. (The free trial has a 2 TB egress cap.)
 
-**Simple, flat pricing.** $4.99 / TB / month, with a $4.99 / month minimum. No
+**Simple, flat pricing.** $5.99 / TB / month, with a $5.99 / month minimum. No
 per-request charges, no hidden fees, no tiered pricing.
 
 **30-day free trial.** 1 TB of storage and 2 TB of bandwidth, no credit card
@@ -1318,15 +1318,15 @@ applies automatically.
 
 Source: https://docs.fil.one/billing/pricing
 
-Fil One is priced at **$4.99 / TB / month**, with a **$4.99 / month minimum**. If you store less than 1 TB, you are billed the $4.99 minimum.
+Fil One is priced at **$5.99 / TB / month**, with a **$5.99 / month minimum**. If you store less than 1 TB, you are billed the $5.99 minimum. Accounts subscribed before this price took effect keep their existing rate and minimum, and the Billing page shows their own terms.
 
 No egress fees, no per-request charges, no hidden costs.
 
 ## How billing is calculated
 
-Your bill is based on the average amount of data you store over the billing period. Stored bytes are sampled by a metering job that runs twice a day (~07:00 and 19:00 UTC) and averaged. Storage is charged at a single flat rate of $4.99 per TB per month with a $4.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
+Your bill is based on the average amount of data you store over the billing period. Stored bytes are sampled by a metering job that runs twice a day (~07:00 and 19:00 UTC) and averaged. Storage is charged at a single flat rate of $5.99 per TB per month with a $5.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
 
-Illustrative figures (steady amount stored for the full month, at $4.99/TB with the $4.99 minimum applied): 500 GB ≈ $4.99 (minimum applies); 1 TB (1,000 GB) ≈ $4.99; 1.5 TB ≈ $7.49; 2 TB ≈ $9.98. These are illustrative — your invoice on the Billing page is the source of truth for exact amounts. Storage that changes during the month is averaged first.
+Illustrative figures (steady amount stored for the full month, at $5.99/TB with the $5.99 minimum applied): 500 GB ≈ $5.99 (minimum applies); 1 TB (1,000 GB) ≈ $5.99; 1.5 TB ≈ $8.99; 2 TB ≈ $11.98. These are illustrative — your invoice on the Billing page is the source of truth for exact amounts. Storage that changes during the month is averaged first.
 
 
 ---
@@ -1362,11 +1362,11 @@ You can upgrade to a paid plan at any time during the trial or grace period. Dis
 
 | Component | Price |
 |-----------|-------|
-| Storage | $4.99 / TB / month |
+| Storage | $5.99 / TB / month |
 | Egress bandwidth | No charge |
 | API operations | Included |
 
-Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. No contract or term commitment. If a payment fails, the account enters **past due** and writes are blocked immediately (reads continue); the ~30-day past-due window is retrieval-only before the account is disabled. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
+Billed on average daily usage, with a $5.99 / month minimum. If you store less than 1 TB, you are billed the $5.99 minimum. No contract or term commitment. If a payment fails, the account enters **past due** and writes are blocked immediately (reads continue); the ~30-day past-due window is retrieval-only before the account is disabled. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
 
 
 ---
@@ -1453,7 +1453,7 @@ How to read the numbers:
   or delete may not be reflected yet.
 - EGRESS IS A ROLLING 30-DAY TOTAL, not a calendar month, so it does not reset on
   the 1st.
-- "Est. monthly cost" applies $4.99/TB to the latest storage reading, with the
+- "Est. monthly cost" applies the plan's per-TB rate to the latest storage reading, with the
   account's monthly minimum as the floor. THE INVOICE IS CALCULATED FROM AVERAGE
   STORAGE over the month, so the two figures differ. The estimate excludes egress
   (free on paid plans).
@@ -1815,7 +1815,7 @@ figure alone on paid (no cap). "Egress used" is shown against the 2 TB cap ON
 TRIAL ONLY; paid plans have no egress fees and no egress figure on this page.
 "Estimated monthly cost" appears on paid plans only.
 
-THE ESTIMATE IS A GUIDE, NOT THE INVOICE: it applies $4.99/TB to the most recent
+THE ESTIMATE IS A GUIDE, NOT THE INVOICE: it applies the plan's per-TB rate to the most recent
 storage reading with the monthly minimum as the floor, while the invoice uses
 AVERAGE storage across the month, metered twice daily. The estimate excludes
 egress. Sizes are decimal (1 TB = 1,000 GB).
@@ -1839,12 +1839,13 @@ portal.
 
 ## Pricing panel
 
-$4.99 per TB per month, the monthly minimum where one applies, no egress fees, no
+The account's per-TB rate, the monthly minimum where one applies, no egress fees, no
 API request fees. "Need more?" links to a Business-plan sales form.
 
-THE MONTHLY MINIMUM IS NOT UNIVERSAL: accounts predating it stay on per-unit
-pricing with no minimum, and the plan card and pricing panel reflect that. The
-upgrade dialog shows the standard "$4.99/month minimum" wording regardless, so
+THE PRICE IS NOT UNIVERSAL: accounts on the earlier $4.99/TB plan keep that rate
+and its $4.99/month minimum, and accounts predating the minimum stay on per-unit
+pricing with no minimum; the plan card and pricing panel reflect that. The
+upgrade dialog shows the standard "$5.99/month minimum" wording regardless, so
 the plan card and pricing panel are authoritative per account.
 
 
