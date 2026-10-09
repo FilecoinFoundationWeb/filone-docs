@@ -4,7 +4,7 @@
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees on paid plans, no per-request charges,
-> $4.99/TB/month with a $4.99/month minimum.
+> $5.99/TB/month with a $5.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://<region>.s3.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -139,11 +139,12 @@ Critical integration notes for developers:
 - [Trial & Billing](https://docs.fil.one/billing/trial): 30-day free trial with
   1 TB storage (1,000 GB) and 2 TB egress (cumulative); storage cap write-locks,
   egress cap disables the account; trial lifecycle (active → grace → expiry);
-  paid past_due is read-only immediately; paid plan $4.99/TB/month, $4.99/month
+  paid past_due is read-only immediately; paid plan $5.99/TB/month, $5.99/month
   minimum, no egress or request fees. Cancellation is via the Stripe portal
-- [Pricing](https://docs.fil.one/billing/pricing): $4.99/TB/month (decimal TB,
-  1,000 GB) with a $4.99/month minimum; single linear rate plus a floor (no
-  first-TB tier); metered twice daily; no egress or per-request charges
+- [Pricing](https://docs.fil.one/billing/pricing): $5.99/TB/month (decimal TB,
+  1,000 GB) with a $5.99/month minimum; single linear rate plus a floor (no
+  first-TB tier); accounts subscribed before the change keep their existing
+  rate and minimum; metered twice daily; no egress or per-request charges
 
 ## API Reference
 
@@ -184,7 +185,7 @@ Security, Billing) hold the concepts and code samples.
   setup checklist, PLAN/STORAGE/EGRESS cards, Usage Trends, Recent Activity.
   Storage is a periodic point-in-time reading (a very recent change may not show
   yet) and egress is a rolling 30-day total, not a calendar month. "Est. monthly
-  cost" applies $4.99/TB to the latest reading with the monthly minimum as the
+  cost" applies the plan's per-TB rate to the latest reading with the monthly minimum as the
   floor, while the invoice uses AVERAGE storage, so they differ. Recent Activity
   covers bucket-created and key-created; object-level events are not included yet
 - [App - Buckets](https://docs.fil.one/app/buckets): Bucket list, create form,

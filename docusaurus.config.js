@@ -30,13 +30,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "Fil One",
-        "description": "S3-compatible object storage backed by Filecoin. No egress fees on paid plans, $4.99/TB/month. Works with the S3 SDKs and tools you already use.",
+        "description": "S3-compatible object storage backed by Filecoin. No egress fees on paid plans, $5.99/TB/month. Works with the S3 SDKs and tools you already use.",
         "url": "https://docs.fil.one",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
         "offers": {
           "@type": "UnitPriceSpecification",
-          "price": "4.99",
+          "price": "5.99",
           "priceCurrency": "USD"
         },
         "featureList": [
