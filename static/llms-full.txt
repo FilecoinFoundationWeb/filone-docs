@@ -6,7 +6,7 @@
 > committed to store. No egress fees on paid plans, no per-request charges,
 > $4.99/TB/month with a $4.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
-> `https://<region>.s3.filonecontent.com`, with standard Access Key ID / Secret Access Key
+> `https://s3.<region>.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
@@ -1983,7 +1983,7 @@ endpoint and authenticate with your API keys.
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | https://<region>.s3.filonecontent.com — region-specific |
+| Endpoint | https://s3.<region>.filonecontent.com — region-specific |
 | Region | eu-west-1 (Europe, France, default) or us-east-1 (US East, Michigan) |
 | Signature version | SigV4 |
 | Path style | Required |
@@ -2551,7 +2551,7 @@ uploadReq, _ := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 Source: https://docs.fil.one/sdk/cli
 
 The AWS CLI works with Fil One out of the box. Install it, configure
-credentials, and use --endpoint-url https://<region>.s3.filonecontent.com on every command
+credentials, and use --endpoint-url https://s3.<region>.filonecontent.com on every command
 — or set it as a profile default.
 
 Note: the endpoint depends on your bucket's region. Examples here use

@@ -35,7 +35,7 @@ s3 = boto3.client(
 Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
 
 :::warning Path-style addressing is required
-Fil One only supports **path-style** URLs (`https://s3.eu-west-1.filonecontent.com/my-bucket/key`). boto3 defaults to virtual-hosted style (`https://my-bucket.eu-west-1.s3.filonecontent.com/key`) even with a custom `endpoint_url`, which fails with a DNS or 404-shaped error. The `config=Config(s3={"addressing_style": "path"})` line above is not optional — without it, every request fails. `region_name` is also required, since SigV4 cannot sign without a region.
+Fil One only supports **path-style** URLs (`https://s3.eu-west-1.filonecontent.com/my-bucket/key`). boto3 defaults to virtual-hosted style (`https://my-bucket.s3.eu-west-1.filonecontent.com/key`) even with a custom `endpoint_url`, which fails with a DNS or 404-shaped error. The `config=Config(s3={"addressing_style": "path"})` line above is not optional — without it, every request fails. `region_name` is also required, since SigV4 cannot sign without a region.
 :::
 
 ## Core operations
