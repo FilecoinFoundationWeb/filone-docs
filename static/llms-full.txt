@@ -1491,7 +1491,7 @@ Billed on average daily usage, with a $5.99 / month minimum. If you store less t
 
 Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, opened from **Billing** in the organization menu at the top of the left sidebar. Usage details are visible on the Billing page to Owners and Admins.
 
-If a payment fails, the account enters **past due** and Stripe automatically retries the charge. The DASHBOARD BECOMES READ-ONLY from the moment the payment fails, and the Billing page shows "Your last payment failed" with an "Update payment" button. If all retries are exhausted and Stripe cancels the subscription, the account moves to the paid grace period. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
+If a payment fails, the account enters **past due** and Stripe automatically retries the charge. The DASHBOARD BECOMES READ-ONLY from the moment the payment fails, and the Billing page shows "Your last payment failed" with an "Update payment" button. If all retries are exhausted and Stripe cancels the subscription, the account moves to the paid grace period. DO NOT RELY ON AN EMAIL to learn a payment failed: check the Billing page, where an Owner fixes it with "Update payment". Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
 
 
 ---

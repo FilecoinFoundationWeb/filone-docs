@@ -70,7 +70,11 @@ Payments are processed through Stripe. An organization Owner adds a credit card 
 
 If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. The **dashboard becomes read-only** from the moment the payment fails, and the Billing page shows **Your last payment failed** with an **Update payment** button.
 
-If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below). You will receive email notifications at each stage.
+If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below).
+
+:::warning Check the Billing page, not your inbox
+Don't rely on an email to tell you a payment has failed. If uploads stop working, open **Billing** in the dashboard: a **Your last payment failed** banner means the card needs updating, and an Owner can fix it with **Update payment**. See [Billing](/app/billing#your-plan).
+:::
 
 ## Cancellation
 
