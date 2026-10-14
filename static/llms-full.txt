@@ -1360,9 +1360,9 @@ treat it as effective quickly rather than at a guaranteed instant.
 The API Keys list shows: Name (with the Access Key ID beneath), Region (hidden on
 narrow screens), Buckets, Permissions, Created by (who created the key, and who
 rotated it and when; shown when the organization has more than one member),
-Status (currently ALWAYS "Active"), Last Used (currently ALWAYS "Never"). Status
-and Last Used are placeholders, and the list doesn't show a key's expiry date, so
-keep your own record of when each key expires. You cannot view the Secret Access
+Status ("Active", or "Expired" with the expiry date beneath it, from the day
+after the key's expiry date in UTC). An active key's expiry date is not shown, so
+keep your own record of when each key expires. There is NO "Last Used" column. You cannot view the Secret Access
 Key after creation.
 
 ## Rotating a key
@@ -1800,16 +1800,19 @@ copy button), Region (e.g. eu-west-1; hidden on narrow screens), Buckets ("All
 Buckets" or per-bucket badges), Permissions (badges, with finer-grained ones
 grouped as "Data protection" / "Bucket management" / "Bucket info"), Created by
 (the member who created the key, plus "Rotated by … on …" once rotated; shown
-when the organization has more than one member), Status, Last Used, and a "⋯"
-menu with Rotate and Delete for the keys you can act on. Empty state: "No API
+when the organization has more than one member), Status, and a "⋯"
+menu with Rotate and Delete for the keys you can act on (no Rotate on an expired
+key). Empty state: "No API
 keys yet" plus "Create your first key". If the account is disabled, the page
 shows only a notice asking you to reactivate your subscription, with no keys,
 tabs, or "Create new key" button.
 
-PLACEHOLDER COLUMNS: "Last Used" reads "Never" and "Status" reads "Active" for
-every key, and the expiry date set at creation is not shown in this list. Do not
-infer from these columns whether a key is in use or still valid; advise keeping
-an external record and using descriptive key names.
+STATUS: "Active", or "Expired" (grey, with the expiry date beneath) from the day
+after the key's expiry date (UTC). An active key's expiry date is not shown in
+this list. THERE IS NO "LAST USED" COLUMN: S3 requests go straight to the
+regional gateway, which doesn't report last use to the console, so the list
+cannot say whether a key is still in use. Advise keeping an external record and
+using descriptive key names.
 
 ## Who can manage keys
 
