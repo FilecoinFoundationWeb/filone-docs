@@ -4,7 +4,7 @@
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees on paid plans, no per-request charges,
-> $4.99/TB/month with a $4.99/month minimum.
+> $5.99/TB/month with a $5.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://s3.<region>.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -169,13 +169,15 @@ Critical integration notes for developers:
   storage cap write-locks, egress cap disables the account directly (no
   read-only grace first); trial lifecycle (active → grace → expiry); a failed
   payment makes the dashboard read-only immediately; Pay as you go
-  $4.99/TB/month, $4.99/month minimum, no egress or request fees; Business plan
+  $5.99/TB/month, $5.99/month minimum, no egress or request fees (earlier
+  subscribers keep their $4.99 or per-unit terms); Business plan
   (1, 3, or 5-year terms) via sales. Cancellation is via the Stripe portal
-- [Pricing](https://docs.fil.one/billing/pricing): Pay as you go $4.99/TB/month
-  (decimal TB, 1,000 GB) with a $4.99/month minimum; single linear rate plus a
+- [Pricing](https://docs.fil.one/billing/pricing): Pay as you go $5.99/TB/month
+  (decimal TB, 1,000 GB) with a $5.99/month minimum; single linear rate plus a
   floor (no first-TB tier); storage measured as daily readings and averaged, with
   the running average reported twice daily; no egress or per-request charges.
-  Accounts predating the minimum have none
+  Organizations that subscribed before the move to $5.99 keep $4.99/TB with a
+  $4.99 minimum; accounts predating any minimum have none
 - [Usage](https://docs.fil.one/billing/usage): What is measured (average stored
   bytes, egress), trial caps and how they are enforced; the storage write-lock
   lifts on the next usage run once storage is back under 1 TB. Billing page
@@ -267,8 +269,14 @@ Security, Billing) hold the concepts and code samples.
   keys scoped to a bucket, which is how LangChain, LlamaIndex, Vercel AI SDK and
   CrewAI connect
 - [App - Organization](https://docs.fil.one/app/organization): BETA. Every
-  account starts as a one-person organization with you as Owner. Members,
-  Invitations, Audit log and Billing tabs (only Members for Member/Read only).
+  account starts as a one-person organization with you as Owner. The
+  ORGANIZATION MENU at the top of the sidebar opens separate pages, each shown
+  only to roles that can use it: Edit organization (/edit-organization; name,
+  logo, and an Owner-only Danger zone), Members (/members; Members and
+  Invitations tabs), Billing (/billing), and Audit log (/audit). Old
+  /organization links redirect. Members, Audit log, Create organization and
+  sending invitations are beta-only. With no active plan, only Settings, Edit
+  organization and Support are reachable.
   Four roles: Owner, Admin, Member, Read only. Only Owners manage billing,
   transfer ownership, or create keys with PutObjectRetention/PutObjectLegalHold;
   Owners and Admins invite, change roles, remove members, rename the org, and
@@ -278,30 +286,32 @@ Security, Billing) hold the concepts and code samples.
   makes you Admin and needs a sign-in within five minutes. The beta gates
   SENDING INVITATIONS: single-use links, expire in 14 days, max 25 pending.
   Audit log kept 90 days, CSV export up to 20,000 rows. Organization switching
-  is per browser tab. Deleting an organization is not available yet
-  (support@fil.one)
+  is in the organization menu and per browser tab; leave an organization from
+  Settings (not as its last Owner). Deleting an organization is not available
+  in the console yet (support@fil.one)
 - [App - Billing](https://docs.fil.one/app/billing): Plan card, usage card,
-  payment method, choosing a plan, invoices, "Need help?" panel. Location depends
-  on the organization (Organization page Billing tab, or the sidebar). Visible to
+  payment method, choosing a plan, invoices, "Need help?" panel. Its own page
+  at /billing, opened from the organization menu at the top of the sidebar. Visible to
   Owners and Admins; every action is Owner-only. A FAILED PAYMENT shows a
   "Payment failed" badge and a "Your last payment failed" banner, and makes the
   DASHBOARD read-only. Usage card shows Storage and Egress (egress "Free" on
   paid) and an "Estimated total" on per-TB plans. Payment method: "No card on
   file", card brand and last four, or "Billed by invoice". "Choose your plan":
-  Pay as you go ($4.99/TB/month, $4.99 minimum) or Business plan (custom
+  Pay as you go ($5.99/TB/month, $5.99 minimum) or Business plan (custom
   pricing, 1, 3, or 5-year terms). Invoices list shows the
   12 most recent issued invoices, INCLUDING UNPAID (drafts not shown). Card
   details live in the Stripe portal, which is also where cancellation happens
 - [App - Settings](https://docs.fil.one/app/settings): Profile fields (full name
   <= 200 chars; valid email, disposable rejected; the organization's name is not
-  part of the profile and is edited on the Organization page), notification preferences (Marketing
+  part of the profile and is edited on the Edit organization page), an
+  Organizations section to switch or leave organizations, notification preferences (Marketing
   emails only; no upload or storage-limit notification setting), pointer to
   Account Security. Changing your email RESETS VERIFICATION and re-triggers the
   verification-screen redirect; Google/GitHub sign-ins manage name and email at
-  the provider. "Delete organization" card is disabled ("Not available yet");
-  email support@fil.one
-- [App - Support](https://docs.fil.one/app/support): The "Talk to an expert" form
-  behind the sidebar Help menu. All fields required, starts empty, four
+  the provider. The "Danger zone" card covers "Delete account": not available in
+  the console yet, email support@fil.one
+- [App - Support](https://docs.fil.one/app/support): The "Talk to an expert" form,
+  opened from "Support" in the user menu at the bottom of the sidebar. All fields required, starts empty, four
   categories, ~1 business day response. Replies arrive by email; the console does
   not show a ticket list. Sales: "Contact sales team" in the "Choose your plan"
   dialog, or "Talk to sales" in Billing's "Need help?" panel on trial/no plan

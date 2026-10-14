@@ -3,7 +3,7 @@ title: Billing
 description: Reading the Fil One billing page, adding a payment method, and finding your invoices.
 ---
 
-Where billing lives depends on your organization. If your organization has an [Organization](/app/organization) page, billing is its **Billing** tab, and opening `/billing` takes you there. Otherwise, **Billing** sits at the bottom of the left sidebar, next to Settings.
+Billing is a page of its own, at `/billing`. Open it from **Billing** in the organization menu, at the top of the left sidebar (see [The organization menu](/app/organization#the-organization-menu)).
 
 Billing is visible to **Owners** and **Admins**. Every action on it (choosing or changing a plan, adding or updating a card, opening the Stripe portal) is for **Owners** only, so an Admin sees the same figures without the buttons. Members and Read only users see "Billing is managed by your organization's owners and admins" instead. See [Roles and permissions](/app/organization#roles-and-permissions).
 
@@ -74,7 +74,7 @@ Cancellation is handled in the Stripe portal, reached through **Manage plan**.
 
 **Add card**, **Upgrade**, **Choose a plan**, and **Reactivate** open **Choose your plan**, which offers two plans:
 
-- **Pay as you go**, at **$4.99** per TB per month with a $4.99 monthly minimum, no egress fees, and no API request fees. **Upgrade now** takes you to the payment form.
+- **Pay as you go**, at **$5.99** per TB per month with a $5.99 monthly minimum, no egress fees, and no API request fees. **Upgrade now** takes you to the payment form.
 - **Business plan**, with **Custom pricing**, purchased in 1, 3, or 5-year increments, with capacity assurance and deployment SLAs. **Contact sales team** opens a sales contact form.
 
 The payment form takes your card number, expiry, and CVC. **Start subscription** activates the plan.
@@ -95,6 +95,6 @@ Three things to expect:
 
 The panel beside the cards offers **Billing questions**, which links to **Contact support** for questions about an invoice, a payment, or your plan. On the trial or with no plan, it also offers **Volume pricing**, where **Talk to sales** opens the sales contact form.
 
-:::note If your account predates the monthly minimum
-Accounts created before the minimum was introduced stay on per-unit pricing with no minimum. The plan card shows your per-TB rate, and your estimate is not raised to a minimum. The **Choose your plan** dialog shows the standard $4.99/month minimum wording, so take the plan card as the guide to your own terms. See [Pricing](/billing/pricing).
+:::note If your account predates the current price
+Organizations that subscribed before the move to $5.99 keep their earlier terms: $4.99 per TB with a $4.99 monthly minimum, or, for accounts created before any minimum was introduced, per-unit pricing with no minimum. The plan card and the estimate use your own rate and minimum. The **Choose your plan** dialog always shows the current $5.99 wording, so take the plan card as the guide to your own terms. See [Pricing](/billing/pricing).
 :::

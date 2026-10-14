@@ -4,7 +4,7 @@
 > workloads. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees on paid plans, no per-request charges,
-> $4.99/TB/month with a $4.99/month minimum.
+> $5.99/TB/month with a $5.99/month minimum.
 > Use any S3-compatible SDK or tool — point it at your region's endpoint,
 > `https://s3.<region>.filonecontent.com`, with standard Access Key ID / Secret Access Key
 > auth. Endpoint, region and key must all refer to the same region.
@@ -113,7 +113,7 @@ cannot be independently audited by the customer today.
 **No egress fees on paid plans.** On a paid plan there are no data-transfer
 charges. (The free trial has a 2 TB egress cap.)
 
-**Simple, flat pricing.** Pay as you go at $4.99 / TB / month, with a $4.99 /
+**Simple, flat pricing.** Pay as you go at $5.99 / TB / month, with a $5.99 /
 month minimum. No per-request charges, no hidden fees, no tiered pricing. For
 volume pricing on 1, 3, or 5-year terms, talk to sales about the Business plan.
 
@@ -1432,7 +1432,7 @@ applies automatically.
 
 Source: https://docs.fil.one/billing/pricing
 
-Fil One is priced at **$4.99 / TB / month**, with a **$4.99 / month minimum**. If you store less than 1 TB, you are billed the $4.99 minimum.
+Fil One is priced at **$5.99 / TB / month**, with a **$5.99 / month minimum**. If you store less than 1 TB, you are billed the $5.99 minimum.
 
 No egress fees, no per-request charges, no hidden costs.
 
@@ -1440,11 +1440,11 @@ This is the self-service **Pay as you go** plan. For volume pricing on 1, 3, or 
 
 ## How billing is calculated
 
-Your bill is based on the average amount of data you store over the billing period. Stored bytes are measured as daily readings and averaged across the billing period; a metering job reports the running average twice a day (~07:00 and 19:00 UTC). Storage is charged at a single flat rate of $4.99 per TB per month with a $4.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
+Your bill is based on the average amount of data you store over the billing period. Stored bytes are measured as daily readings and averaged across the billing period; a metering job reports the running average twice a day (~07:00 and 19:00 UTC). Storage is charged at a single flat rate of $5.99 per TB per month with a $5.99/month minimum — there is no separate "first TB" tier, just one linear rate plus a floor. Storage is measured in decimal units (1 TB = 1,000 GB).
 
-Illustrative figures (steady amount stored for the full month, at $4.99/TB with the $4.99 minimum applied): 500 GB ≈ $4.99 (minimum applies); 1 TB (1,000 GB) ≈ $4.99; 1.5 TB ≈ $7.49; 2 TB ≈ $9.98. These are illustrative — your invoice on the Billing page is the source of truth for exact amounts. Storage that changes during the month is averaged first.
+Illustrative figures (steady amount stored for the full month, at $5.99/TB with the $5.99 minimum applied): 500 GB ≈ $5.99 (minimum applies); 1 TB (1,000 GB) ≈ $5.99; 1.5 TB ≈ $8.99; 2 TB ≈ $11.98. These are illustrative — your invoice on the Billing page is the source of truth for exact amounts. Storage that changes during the month is averaged first.
 
-Accounts created before the $4.99 minimum was introduced stay on per-unit pricing with no monthly minimum. The Billing page shows your own rate.
+These are the prices for new customers. Organizations that subscribed before the move to $5.99 keep their earlier terms: $4.99 / TB / month with a $4.99 / month minimum, or, for accounts created before any monthly minimum was introduced, per-unit pricing with no minimum. The Billing page shows your own rate.
 
 
 ---
@@ -1483,13 +1483,13 @@ You can upgrade to a paid plan at any time during the trial or grace period. Dis
 
 | Component | Price |
 |-----------|-------|
-| Storage | $4.99 / TB / month |
+| Storage | $5.99 / TB / month |
 | Egress bandwidth | No charge |
 | API operations | Included |
 
-Billed on average daily usage, with a $4.99 / month minimum. If you store less than 1 TB, you are billed the $4.99 minimum. **Pay as you go** has no contract or term commitment; for volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team.
+Billed on average daily usage, with a $5.99 / month minimum. If you store less than 1 TB, you are billed the $5.99 minimum. Organizations that subscribed before the move to $5.99 keep their earlier terms (see Pricing). **Pay as you go** has no contract or term commitment; for volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team.
 
-Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, which is either **Billing** in the left sidebar or the **Billing** tab of the Organization page. Usage details are visible on the Billing page to Owners and Admins.
+Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, opened from **Billing** in the organization menu at the top of the left sidebar. Usage details are visible on the Billing page to Owners and Admins.
 
 If a payment fails, the account enters **past due** and Stripe automatically retries the charge. The DASHBOARD BECOMES READ-ONLY from the moment the payment fails, and the Billing page shows "Your last payment failed" with an "Update payment" button. If all retries are exhausted and Stripe cancels the subscription, the account moves to the paid grace period. Cancellation is done through the Stripe billing portal, and the 30-day grace period starts when Stripe actually cancels the subscription.
 
@@ -1931,41 +1931,54 @@ selected organizations, so what you see depends on whether yours is one of them.
 Details may change before general availability.
 
 Every Fil One account starts as a ONE-PERSON ORGANIZATION, with you as its
-OWNER. The Organization page is where you rename the organization, bring other
-people into it, decide what each can do, and review what has happened in it.
+OWNER. Everything about the organization itself (name and logo, members, billing,
+history) is reached from the ORGANIZATION MENU at the top of the left sidebar.
 
-## When the page appears
+## The organization menu
 
-"Organization" appears in the left sidebar, next to Settings, when EITHER your
-organization is in the organizations beta OR you belong to more than one
-organization. When it appears, BILLING MOVES INSIDE IT as the "Billing" tab, and
-opening /billing takes you there. Otherwise there is no Organization entry,
-"Billing" stays a standalone sidebar item, and opening /organization directly
-shows "Inviting teammates is not enabled for this organization yet."
+Click the organization's logo and name at the top of the sidebar. The menu lists
+the organization's pages; you only see the entries your role can open. EACH IS A
+SEPARATE PAGE (there are no tabs for billing or the audit log any more):
 
-The beta gates ONE THING: SENDING INVITATIONS. If you belong to several
-organizations you see the Organization page in each, but "Add member" only
-appears in organizations in the beta. To ask about access, email support@fil.one.
+| Entry | Page | What it holds | Who sees it |
+|-------|------|---------------|-------------|
+| Edit organization | /edit-organization | Name, logo, Owner-only Danger zone | Owner, Admin |
+| Members | /members | Members and Invitations tabs | Every role, beta only |
+| Billing | /billing | Plan, usage, payment method, invoices | Owner, Admin |
+| Audit log | /audit | Membership, key, and organization changes | Owner, Admin, beta only |
 
-## The page
+Old /organization links redirect to the matching page. Below the pages the menu
+lists your organizations if you belong to more than one, and, in the beta,
+"Create organization".
 
-Header "Organization", with "Manage <your organization's name> and who has access
-to it." Two buttons:
-- "Edit" opens "Edit organization" to rename it: 2 to 100 characters, letters,
-  numbers, spaces, hyphens, periods only. Owners and Admins.
-- "Add member" opens the invitation form. Owners and Admins, and only in
-  organizations in the beta.
+With NO ACTIVE PLAN, every page except Settings, Edit organization and Support is
+replaced by "Add a payment method to continue", so Members, Billing and Audit log
+are left out of the menu until a plan is in place.
 
-Up to four tabs; you only see the tabs your role can open:
+## The organizations beta
 
-| Tab | What it holds | Who sees it |
-|-----|---------------|-------------|
-| Members | Everyone in the organization and their role | Every role |
-| Invitations | Invitations sent but not yet accepted | Owner, Admin |
-| Audit log | Membership, key, and organization changes | Owner, Admin |
-| Billing | Plan, usage, payment method, invoices | Owner, Admin |
+Members, Audit log, Create organization and SENDING INVITATIONS are part of the
+organizations beta, switched on by Fil One for selected organizations. Outside
+it those entries don't appear, and opening /members or /audit directly goes to
+the dashboard. Edit organization and Billing are available to every
+organization. To ask about access, email support@fil.one.
 
-Members and Invitations show a count beside their label.
+## Editing the organization
+
+"Edit organization" (Owners and Admins) has two sections:
+- "General": the logo (saves as soon as it uploads) and "Organization name"
+  (needs "Save"; 2 to 100 characters, letters, numbers, spaces, hyphens, periods
+  only). Every member sees the change.
+- "Danger zone": Owners only; deleting the organization (see below).
+Members and Read only members see "Organization details are managed by your
+organization's owners and admins."
+
+## Creating another organization
+
+In the beta, "Create organization" in the organization menu asks for an
+"Organization name" (same rules) and an optional logo. You become the new
+organization's Owner and the console switches to it straight away. A new
+organization has its own members, keys, buckets, and billing.
 
 ## Roles and permissions
 
@@ -2011,7 +2024,12 @@ a member's role narrows, keys that go beyond the new role are revoked.
 
 ## Members
 
-Columns: Member (name, a "You" badge on your own row, user ID underneath), Role
+"Members" in the organization menu opens a page headed "Members" ("People with
+access to this organization.") with up to two tabs, each with a count: Members
+(every role) and Invitations (Owner, Admin). Owners and Admins also get an "Add
+member" button beside the heading.
+
+Members tab columns: Member (name, a "You" badge on your own row, user ID underneath), Role
 (a role picker if you can change this member's role, otherwise a badge), Joined
 (when, and how: "Signed up", "Original account", or "Invited"; hidden on narrow
 screens), and a "⋯" menu with "Transfer ownership" and "Remove" for members you
@@ -2052,8 +2070,9 @@ not affected: the subscription belongs to the organization, not the Owner.
 
 ## Invitations
 
-Sending needs an Owner or Admin role AND an organization in the beta.
-1. "Add member". 2. Enter the Email address. 3. Choose a Role (only roles you
+Sending needs an Owner or Admin role AND an organization in the beta. Managed
+from the Invitations tab of the Members page.
+1. "Add member" on the Members page. 2. Enter the Email address. 3. Choose a Role (only roles you
 can assign: an Admin can invite Admins, Members, and Read only; an Owner can
 also invite Owners; "Member" is the default). 4. "Send invitation".
 
@@ -2077,16 +2096,23 @@ expired; ask for a new one).
 
 ## Switching organizations
 
-With more than one membership, the user menu lists your organizations under
-"Organization", sorted by name, with a check mark on the current one; choosing
-another reloads the console in it. With one membership there is no switcher.
-The choice is kept PER BROWSER TAB, so two tabs can be in different
-organizations. The page header names the current organization; check it before
-removing people or transferring ownership.
+With more than one membership, the ORGANIZATION MENU lists your organizations
+under "Organization", sorted by name, with a check mark on the current one;
+choosing another switches the console to it and opens its dashboard. With one
+membership the list doesn't appear. The choice is kept PER BROWSER TAB, so two
+tabs can be in different organizations. The sidebar names the current
+organization; check it before removing people or transferring ownership.
+
+Leaving: the "Organizations" section of Settings lists every organization you
+belong to (role, when you joined); each row's menu offers "Switch to this
+organization" and "Leave organization". Leaving removes your access to that
+organization and everything in it; you can only rejoin with a new invitation.
+THE LAST OWNER CAN'T LEAVE: make someone else an Owner first.
 
 ## Audit log
 
-Owners and Admins. Columns: Event, Member, Subject (hidden on narrow screens),
+Its own page (/audit), from "Audit log" in the organization menu. Owners and
+Admins. Columns: Event, Member, Subject (hidden on narrow screens),
 When; expand a row for details. Filter by date range (From, To), event type
 ("All events"), and member ("Anyone").
 
@@ -2101,11 +2127,13 @@ removed.
 
 ## Billing
 
-The Billing tab is the billing page, for Owners and Admins (see App: Billing).
+"Billing" in the organization menu opens the billing page (/billing), for
+Owners and Admins (see App: Billing).
 
 ## Deleting an organization
 
-Not available yet. Email support@fil.one to delete one.
+Not available in the console yet. The Danger zone on the Edit organization page
+(Owners only) points to support@fil.one: email them to delete the organization.
 
 
 ---
@@ -2117,9 +2145,8 @@ Source: https://docs.fil.one/app/billing
 Console-specific. Trial lifecycle, pricing model and measurement live on Trial &
 Billing, Pricing and Usage.
 
-WHERE BILLING LIVES DEPENDS ON YOUR ORGANIZATION: if it has an Organization page,
-billing is its "Billing" tab and /billing takes you there; otherwise "Billing" is
-at the bottom of the left sidebar, next to Settings.
+BILLING IS ITS OWN PAGE, at /billing, opened from "Billing" in the organization
+menu at the top of the left sidebar.
 
 VISIBLE TO OWNERS AND ADMINS. Every action on it (choosing or changing a plan,
 adding or updating a card, opening the Stripe portal) is OWNER-ONLY, so an Admin
@@ -2186,7 +2213,7 @@ CANCELLATION IS HANDLED IN THE STRIPE PORTAL, via "Manage plan".
 
 "Add card", "Upgrade", "Choose a plan" and "Reactivate" open "Choose your plan",
 with two plans:
-- "Pay as you go": $4.99 per TB per month, $4.99 monthly minimum, no egress fees,
+- "Pay as you go": $5.99 per TB per month, $5.99 monthly minimum, no egress fees,
   no API request fees. "Upgrade now" goes to the payment form.
 - "Business plan": "Custom pricing", purchased in 1, 3, or 5-year increments,
   with capacity assurance and deployment SLAs. "Contact sales team" opens a sales
@@ -2212,11 +2239,12 @@ support" for invoice, payment, or plan questions). On the trial or with no plan,
 it also offers "Volume pricing", where "Talk to sales" opens the sales contact
 form.
 
-THE MONTHLY MINIMUM IS NOT UNIVERSAL: accounts predating it stay on per-unit
-pricing with no minimum. The plan card shows your per-TB rate, and your estimate
-is not raised to a minimum. The "Choose your plan" dialog shows the standard
-"$4.99/month minimum" wording regardless, so the plan card is authoritative per
-account.
+EARLIER SUBSCRIBERS KEEP THEIR TERMS: organizations that subscribed before the
+move to $5.99 keep $4.99 per TB with a $4.99 monthly minimum, or, for accounts
+created before any minimum was introduced, per-unit pricing with no minimum. The
+plan card and estimate use your own rate and minimum. The "Choose your plan"
+dialog always shows the current $5.99 wording, so the plan card is authoritative
+per account.
 
 
 ---
@@ -2225,8 +2253,8 @@ account.
 
 Source: https://docs.fil.one/app/settings
 
-Bottom of the left sidebar: profile, notification preferences and account
-security. Every member of an organization has their own Settings.
+In the user menu at the bottom of the left sidebar: profile, the organizations
+you belong to, notification preferences and account security. Every member of an organization has their own Settings.
 
 ## Profile
 
@@ -2249,8 +2277,16 @@ read-only in Fil One, labelled "Managed by Google" / "Managed by GitHub" with a
 link to that provider's profile page.
 
 The profile holds only Full name and Email: the organization's name is not part
-of your profile. Owners and Admins rename it with "Edit" on the Organization page (2 to
-100 characters, letters, numbers, spaces, hyphens, periods only).
+of your profile. Owners and Admins rename it on the "Edit organization" page,
+from the organization menu at the top of the sidebar (2 to 100 characters,
+letters, numbers, spaces, hyphens, periods only).
+
+## Organizations
+
+Lists every organization you belong to, with your role and when you joined. Each
+row's menu offers "Switch to this organization" and "Leave organization".
+Leaving removes your access and you can only rejoin with a new invitation; the
+last Owner of an organization can't leave it.
 
 ## Notifications
 
@@ -2268,11 +2304,12 @@ Two-factor authentication, passkeys, recovery codes and password changes are all
 under Settings > Security (see Account Security). Password is managed by the
 provider on Google and GitHub accounts, so no Change button appears.
 
-## Delete organization
+## Danger zone
 
-The last card on the page is "Delete organization". Its "Delete" button is
-DISABLED and the card reads "Not available yet", with a link to email
-support@fil.one to delete your organization. Not self-service in the console.
+The last card on the page is "Danger zone", with "Delete account". NOT
+SELF-SERVICE: the card asks you to email support@fil.one to delete your account.
+Deleting an organization is separate and is covered on the Edit organization
+page.
 
 
 ---
@@ -2281,8 +2318,9 @@ support@fil.one to delete your organization. Not self-service in the console.
 
 Source: https://docs.fil.one/app/support
 
-Reached from the "Help" menu at the bottom of the left sidebar, which offers
-"Documentation" and "Talk to an expert". The latter opens the support form.
+Reached from the USER MENU at the bottom of the left sidebar (your name and
+avatar), which offers "Settings", "Support", "Documentation" and "Log out".
+"Support" opens the support form. (There is no separate Help menu any more.)
 
 ## The form
 
@@ -2300,9 +2338,10 @@ console does not show a ticket list or status view.
 
 ## Other routes
 
-- "Documentation" in the same Help menu opens the docs in a new tab.
-- The sidebar links to the Fil One status page, the quickest check for whether an
-  issue is already known.
+- "Documentation" in the same user menu opens the docs in a new tab.
+- The system status indicator links to the Fil One status page, the quickest
+  check for whether an issue is already known. On desktop it is in the bar along
+  the bottom of the content area; on a phone it is in the sidebar drawer.
 - Account deletion is handled by email at support@fil.one.
 - Volume pricing, SLAs and the Business plan go through "Contact sales team" in
   the "Choose your plan" dialog on Billing. On the trial or with no plan, "Talk to

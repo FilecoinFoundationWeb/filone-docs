@@ -1,42 +1,47 @@
 ---
 title: Organization
-description: Members, roles, invitations, the audit log, and billing for your Fil One organization. Beta.
+description: The organization menu, members, roles, invitations, and the audit log for your Fil One organization. Beta.
 ---
 
 :::info Beta
 Organizations are in **beta**. Inviting teammates is switched on by Fil One for selected organizations, so what you see on this page depends on whether yours is one of them. Details may change before general availability.
 :::
 
-Every Fil One account starts as a one-person organization, with you as its **Owner**. The **Organization** page is where you rename that organization, bring other people into it, decide what each of them can do, and review what has happened in it.
+Every Fil One account starts as a one-person organization, with you as its **Owner**. Everything about the organization itself (its name and logo, who is in it, what it pays, and what has happened in it) is reached from the **organization menu** at the top of the left sidebar.
 
-## When the page appears
+## The organization menu
 
-**Organization** appears in the left sidebar, next to Settings, when either of these is true:
+The organization's logo and name sit at the top of the left sidebar. Click them to open the menu, which lists the organization's pages. You only see the entries your role can open:
 
-- your organization is in the organizations beta, or
-- you belong to more than one organization.
+| Entry | What it opens | Who sees it |
+|-------|---------------|-------------|
+| **Edit organization** | The organization's name and logo, and how to delete it (see [Editing the organization](#editing-the-organization)) | Owner, Admin |
+| **Members** | Everyone in the organization, and pending invitations (see [Members](#members)) | Every role, beta only |
+| **Billing** | Your plan, usage, payment method, and invoices (see [Billing](/app/billing)) | Owner, Admin |
+| **Audit log** | A record of membership, key, and organization changes (see [Audit log](#audit-log)) | Owner, Admin, beta only |
 
-When it appears, billing moves inside it as the **Billing** tab, and opening `/billing` takes you there. Otherwise there is no Organization entry, **Billing** stays a standalone sidebar item, and opening `/organization` directly shows "Inviting teammates is not enabled for this organization yet."
+Each is a page of its own, at `/edit-organization`, `/members`, `/billing`, and `/audit`. Older links to `/organization` still work and redirect to the matching page.
 
-The beta gates one thing: **sending invitations**. If you belong to several organizations, you see the Organization page in each of them, but **Add member** only appears in organizations that are in the beta. To ask about access, email [support@fil.one](mailto:support@fil.one).
+Below the pages, the menu lists your organizations if you belong to more than one (see [Switching organizations](#switching-organizations)), and, in the beta, **Create organization**.
 
-## The page
+While an organization has no active plan, every page except Settings, Edit organization, and Support is replaced by **Add a payment method to continue**, so **Members**, **Billing**, and **Audit log** are left out of the menu until a plan is in place. See [Billing](/app/billing).
 
-The header reads **Organization**, with "Manage *your organization's name* and who has access to it." underneath. Two buttons sit beside it:
+## The organizations beta
 
-- **Edit** opens **Edit organization**, where you rename the organization. The name must be 2 to 100 characters, using letters, numbers, spaces, hyphens, and periods only. Shown to Owners and Admins.
-- **Add member** opens the invitation form (see [Invitations](#invitations)). Shown to Owners and Admins, and only in organizations in the beta.
+**Members**, **Audit log**, **Create organization**, and sending invitations are part of the organizations beta, which Fil One switches on for selected organizations. Outside the beta those entries don't appear, and opening `/members` or `/audit` directly takes you to the dashboard. **Edit organization** and **Billing** are available to every organization. To ask about access, email [support@fil.one](mailto:support@fil.one).
 
-Below the header are up to four tabs. You only see the tabs your role can open:
+## Editing the organization
 
-| Tab | What it holds | Who sees it |
-|-----|---------------|-------------|
-| **Members** | Everyone in the organization and their role | Every role |
-| **Invitations** | Invitations that have been sent but not yet accepted | Owner, Admin |
-| **Audit log** | A record of membership, key, and organization changes | Owner, Admin |
-| **Billing** | Your plan, usage, payment method, and invoices | Owner, Admin |
+**Edit organization**, for Owners and Admins, opens a page with two sections:
 
-The **Members** and **Invitations** tabs show a count beside their label.
+- **General** holds the organization's logo and **Organization name**. A new logo saves as soon as it uploads. A new name needs **Save**, and must be 2 to 100 characters, using letters, numbers, spaces, hyphens, and periods only. Every member sees the change.
+- **Danger zone**, shown to Owners only, covers deleting the organization (see [Deleting an organization](#deleting-an-organization)).
+
+Members and Read only members who open the page see "Organization details are managed by your organization's owners and admins."
+
+## Creating another organization
+
+In the beta, **Create organization** in the organization menu opens a dialog asking for an **Organization name**, with the same rules as above, and an optional logo. You become the new organization's Owner, and the console switches to it straight away. A new organization has its own members, keys, buckets, and billing, separate from the organization you created it from.
 
 ## Roles and permissions
 
@@ -79,6 +84,15 @@ The S3 API has no users or roles. A request made with an access key is allowed o
 :::
 
 ## Members
+
+**Members** in the organization menu opens a page headed **Members**, "People with access to this organization." It has up to two tabs, each with a count beside its label:
+
+| Tab | What it holds | Who sees it |
+|-----|---------------|-------------|
+| **Members** | Everyone in the organization and their role | Every role |
+| **Invitations** | Invitations that have been sent but not yet accepted | Owner, Admin |
+
+Owners and Admins also get an **Add member** button beside the heading, which opens the invitation form (see [Invitations](#invitations)).
 
 The **Members** tab lists everyone in the organization:
 
@@ -125,11 +139,11 @@ Billing is not affected: the subscription belongs to the organization, not to th
 
 ## Invitations
 
-Invitations are how anyone else joins your organization. Sending them needs an Owner or Admin role, and an organization in the beta.
+Invitations are how anyone else joins your organization. Sending them needs an Owner or Admin role, and an organization in the beta. They're managed from the **Invitations** tab of the [Members](#members) page.
 
 ### Sending an invitation
 
-1. Click **Add member** at the top of the page.
+1. Click **Add member** at the top of the **Members** page.
 2. Enter the person's **Email address**.
 3. Choose a **Role**. Each role is listed with its description, and the list only includes roles you can assign: an Admin can invite Admins, Members, and Read only members, and an Owner can also invite Owners. **Member** is selected by default.
 4. Click **Send invitation**.
@@ -165,13 +179,17 @@ The invitation email links to `app.fil.one/invite/accept`. If you're not signed 
 
 ## Switching organizations
 
-If you belong to more than one organization, the user menu lists them under **Organization**, sorted by name, with a check mark on the one you're in. Choosing another reloads the console in that organization. With only one membership, the switcher doesn't appear.
+If you belong to more than one organization, the organization menu lists them under **Organization**, sorted by name, with a check mark on the one you're in. Choosing another switches the console to that organization and opens its dashboard. With only one membership, the list doesn't appear.
 
-The choice is kept per browser tab, so two tabs can be in different organizations at the same time. The page header names the organization you're in, so check it before removing people or transferring ownership.
+The choice is kept per browser tab, so two tabs can be in different organizations at the same time. The sidebar names the organization you're in, so check it before removing people or transferring ownership.
+
+### Leaving an organization
+
+The **Organizations** section of [Settings](/app/settings) lists every organization you belong to, with your role and when you joined. Each row's menu offers **Switch to this organization** and **Leave organization**. Leaving removes your access to that organization and everything in it, and you can only rejoin with a new invitation. The last Owner of an organization can't leave it: make someone else an Owner first (see [At least one Owner](#at-least-one-owner)).
 
 ## Audit log
 
-The **Audit log** tab, for Owners and Admins, records changes to the organization:
+**Audit log** in the organization menu opens a page, for Owners and Admins, that records changes to the organization:
 
 | Column | What it holds |
 |--------|---------------|
@@ -192,12 +210,12 @@ Events recorded:
 
 **Download CSV** exports the events that match your current filters. An export can hold up to 20,000 rows. A larger one is refused rather than cut short, so narrow the date range or filter by event type or member.
 
-Events are kept for **90 days**. If you ask for a range that reaches further back, the tab tells you the older events have been removed.
+Events are kept for **90 days**. If you ask for a range that reaches further back, the page tells you the older events have been removed.
 
 ## Billing
 
-The **Billing** tab is the billing page, for Owners and Admins. See [Billing](/app/billing).
+**Billing** in the organization menu opens the billing page, for Owners and Admins. See [Billing](/app/billing).
 
 ## Deleting an organization
 
-Deleting an organization is not available yet. To delete one, email [support@fil.one](mailto:support@fil.one).
+Deleting an organization is not available in the console yet. The **Danger zone** on the **Edit organization** page, shown to Owners only, points you to [support@fil.one](mailto:support@fil.one): email them to delete the organization.
