@@ -187,7 +187,7 @@ How an ACL request fails depends on **how** you send it. Confirmed in `eu-west-1
 
 So a tool that uploads with `--acl public-read` will appear to work, while a tool that sets ACLs as a separate step will fail outright. In neither case does the object become publicly readable. If you need unauthenticated access to an object, use a [presigned URL](#presigned-urls).
 
-Per-bucket access control via API key scoping is planned for a future release.
+To limit what a key can reach, scope it to specific buckets when you create it. See [Bucket scope](/security/api-keys#bucket-scope).
 
 ## Not yet supported
 
@@ -197,7 +197,7 @@ Per-bucket access control via API key scoping is planned for a future release.
 | Event notifications (SNS/SQS/Lambda triggers) | Phase 2 | Planned. |
 | Object and bucket tagging | Phase 2 | Planned. |
 | Additional regions | Phase 2 | `eu-west-1` and `us-east-1` are available today. |
-| IAM / multi-user accounts / RBAC | Phase 2 | Single-user accounts only. |
+| IAM users, roles, and bucket policies on the S3 API | Not yet supported | The S3 API has no IAM users, roles, or bucket policies. Access is controlled by each access key's permissions and bucket scope. Team members and roles exist in the console, in beta: see [Organization](/app/organization#roles-and-permissions). |
 | S3 Select | Not planned | |
 | S3 Inventory | Not planned | |
 | S3 Batch Operations | Not planned | |
@@ -257,7 +257,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
 | Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
-| IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
+| IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles, in beta: see [Organization](/app/organization#roles-and-permissions). |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected, and never make an object public. |
 | Error codes for missing features | `NotImplemented` (501). | `AccessDenied` (403) in `eu-west-1`. A 403 on a bucket-configuration call means the feature is absent, not that your key lacks permission. |
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |

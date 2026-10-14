@@ -14,9 +14,23 @@ To enable versioning, turn on the **Versioning** toggle when creating a bucket i
 
 ## How versions work
 
-When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object, Fil One places a **delete marker** at the current version — the object appears deleted, but all previous versions are still retrievable.
+When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object over the S3 API without a version ID, Fil One places a **delete marker** at the current version — the object appears deleted, but all previous versions are still retrievable.
 
 This behavior applies to all objects in versioned buckets.
+
+:::warning Deleting in the dashboard removes a version permanently
+The dashboard never writes a delete marker. Deleting an object there, one at a time or in bulk, permanently deletes the specific version on the row you chose. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](/app/buckets#deleting-objects).
+:::
+
+## Access key permissions for versions
+
+Version-specific operations are separate granular permissions on an access key, and none of them is granted automatically. When you [create the key](/security/api-keys), select the ones you need under the matching base permission:
+
+| To do this | Grant | Under |
+|------------|-------|-------|
+| List object versions (`list-object-versions`) | **List object versions** (`ListBucketVersions`) | List |
+| Download a specific version (`--version-id` on `get-object`) | **Read object versions** (`GetObjectVersion`) | Read |
+| Delete a specific version or a delete marker | **Delete object versions** (`DeleteObjectVersion`) | Delete |
 
 ## Billing implications
 

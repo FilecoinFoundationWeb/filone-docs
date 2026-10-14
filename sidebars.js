@@ -23,7 +23,6 @@ const sidebars = {
         "storage/object-lock",
       ],
     },
-    "bucket-intelligence",
     {
       type: "category",
       label: "Security",
@@ -50,8 +49,8 @@ const sidebars = {
         "app/dashboard",
         "app/buckets",
         "app/api-keys",
-        "app/bucket-intelligence",
         "app/ai-agent-toolkit",
+        "app/organization",
         "app/billing",
         "app/settings",
         "app/support",
