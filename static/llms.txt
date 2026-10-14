@@ -250,7 +250,7 @@ Security, Billing) hold the concepts and code samples.
   restore/promote (download and re-upload). Download works on trial; SHARING IS
   A PAID-PLAN FEATURE
 - [App - API Keys](https://docs.fil.one/app/api-keys): Key list (Name, Region,
-  Buckets, Permissions, Created by, Status, Last Used) and create flow. Region is
+  Buckets, Permissions, Created by, Status) and create flow. Region is
   REQUIRED (pre-set to eu-west-1) and a key is scoped to its own region's
   endpoint. Read/Write/List pre-selected, Delete NOT; finer-grained permissions
   (retention, legal hold, versions) are granted INDIVIDUALLY, so Write alone
@@ -260,9 +260,11 @@ Security, Billing) hold the concepts and code samples.
   Owner-only. `filone-console` name prefix reserved. Secret shown ONCE (at
   creation or rotation) and never stored. ROTATE gives a new Access Key ID and
   secret keeping name, permissions, buckets, region and expiry; the old secret
-  stops working at once; expired keys can't be rotated. Delete is the
-  revocation. "Last Used" and "Status" are placeholder columns reading
-  "Never"/"Active" for every key, and expiry is not shown after creation
+  stops working at once; expired keys can't be rotated (Rotate is hidden on
+  them). Delete is the revocation. Status reads "Active", or "Expired" (with the
+  expiry date) from the day after the key's expiry date (UTC); an active key's
+  expiry date is not shown. There is NO "Last Used" column: the gateways don't
+  report last use
 - [App - AI Agent Toolkit](https://docs.fil.one/app/ai-agent-toolkit): NOT
   RELEASED. A "Coming Soon" page introducing the toolkit plus a waitlist form, so
   there is nothing to set up on it yet. What DOES work today: ordinary S3 access

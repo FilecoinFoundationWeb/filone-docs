@@ -18,8 +18,7 @@ The page has two tabs, **API keys** and **Connection details**. The table shows:
 | **Buckets** | **All Buckets**, or one badge per bucket the key is scoped to |
 | **Permissions** | Badges for the object permissions, with the finer-grained ones grouped into **Data protection**, **Bucket management**, and **Bucket info** |
 | **Created by** | The member who created the key, and **Rotated by … on …** once it has been rotated. Shown when your organization has more than one member |
-| **Status** | **Active** |
-| **Last Used** | **Never** |
+| **Status** | **Active**, or **Expired** with the expiry date beneath it |
 | **⋯** | **Rotate** and **Delete**, for the keys you can act on |
 
 With no keys yet the page reads **No API keys yet** and offers **Create your first key**.
@@ -27,7 +26,9 @@ With no keys yet the page reads **No API keys yet** and offers **Create your fir
 If your account is disabled, the **API Keys** page shows only a notice asking you to reactivate your subscription, with no keys, tabs, or **Create new key** button.
 
 :::note Keep your own record of each key
-**Last Used** and **Status** are placeholders for now: every key reads **Never** and **Active**, and the expiry date you set is not shown in this list. Note down what each key is for and when it expires, and give keys descriptive names so the **Name** column carries that context for you.
+A key shows **Expired** from the day after its expiry date (UTC), with that date beneath the badge. Until then it reads **Active**, and the list doesn't show when it will expire, so note down what each key is for and when it expires, and give keys descriptive names so the **Name** column carries that context for you.
+
+The list has no record of when a key was last used. Requests signed with an access key go straight to the regional storage gateway, which doesn't report last use back to the console.
 :::
 
 ## Who can manage keys
@@ -96,7 +97,7 @@ The old secret stops working as soon as the new one is issued, so update anythin
 
 A few limits apply:
 
-- An expired key can't be rotated. Create a new key instead.
+- An expired key can't be rotated, so **Rotate** isn't offered on it. **Delete** it and create a new key instead.
 - **Rotate** only appears on keys your current role could still create. See [Who can manage keys](#who-can-manage-keys).
 
 After a rotation, the **Created by** column shows who rotated the key and when.
