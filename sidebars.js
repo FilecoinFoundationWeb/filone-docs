@@ -32,6 +32,7 @@ const sidebars = {
         "security/authentication",
         "security/api-keys",
         "security/encryption",
+        "security/certifications-and-trust",
       ],
     },
     {
