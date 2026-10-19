@@ -1,0 +1,51 @@
+---
+title: DuckDB
+description: Read and write Fil One objects with DuckDB httpfs.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# DuckDB
+
+DuckDB reads and writes Fil One through the `httpfs` extension with an S3 secret that sets `ENDPOINT` to the regional hostname, `URL_STYLE 'path'`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `eu-west-1.s3.fil.one` or `us-east-1.s3.fil.one`, matching the bucket's region (`ENDPOINT`, hostname without `https://`, with `USE_SSL true`) |
+| Region | `eu-west-1` or `us-east-1` (`REGION`) |
+| Addressing | Path style (`URL_STYLE 'path'`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region (`KEY_ID` and `SECRET`) |
+
+## Configure
+
+Install and load DuckDB's `httpfs` extension. Create an S3 secret with the regional key, region, endpoint hostname, `USE_SSL true`, and `URL_STYLE 'path'`. Use a secret provider appropriate to your environment and keep credentials out of SQL files.
+
+```sql
+INSTALL httpfs;
+LOAD httpfs;
+CREATE SECRET filone (
+  TYPE S3,
+  KEY_ID 'ACCESS_KEY',
+  SECRET 'SECRET_KEY',
+  REGION 'eu-west-1',
+  ENDPOINT 'eu-west-1.s3.fil.one',
+  USE_SSL true,
+  URL_STYLE 'path'
+);
+```
+
+## Examples
+
+1. Read a disposable Parquet file from the bucket and compare row count and deterministic aggregates.
+2. Use `COPY` to write a result under a unique prefix, start a fresh DuckDB process, and read the output back. Compare schema, row count, byte size, and content-level checks before removing the prefix.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Requests target a bucket subdomain | Set `URL_STYLE 'path'`. |
+| Endpoint rejected | The `ENDPOINT` field expects a hostname rather than a full URL. |
+| Large datasets | Test range reads and multipart writes separately. |

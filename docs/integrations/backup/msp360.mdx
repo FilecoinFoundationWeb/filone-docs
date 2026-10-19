@@ -1,0 +1,38 @@
+---
+title: MSP360
+description: Add Fil One as S3-compatible storage for MSP360 backup plans.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# MSP360
+
+MSP360 writes to Fil One as an S3-compatible storage account, using SigV4, path-style addressing, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 (signature version 4) access key and secret scoped to the bucket's region |
+
+## Configure
+
+Add an S3-compatible storage account. Put the regional URL in the HTTPS endpoint field, choose signature version 4, keep certificate validation enabled, and select an existing bucket. Enable native multipart upload after validating it with your MSP360 release. The desktop agent exposes the same core settings.
+
+## Examples
+
+1. Create a test plan for the fixture directory and run it.
+2. Confirm the remote objects are listed, restore to a new directory, and compare size and SHA-256.
+3. Delete only the isolated test backup set.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Connection or signature errors | Use the S3-compatible provider rather than an AWS preset, confirm path-style addressing, and keep HTTPS enabled. |
+| Bucket discovery fails | Check the bucket's region and the key's scope. |
+| Backup succeeds but restore fails | Preserve the job logs and rerun the round trip after correcting the settings. |

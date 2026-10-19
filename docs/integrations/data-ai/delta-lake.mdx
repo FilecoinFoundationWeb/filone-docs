@@ -1,0 +1,37 @@
+---
+title: Delta Lake
+description: Evaluate Delta Lake transaction-log workflows on Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Delta Lake
+
+Delta Lake on Spark reads and writes Fil One through the `s3a` connector, with `fs.s3a.endpoint` set to the regional endpoint, `fs.s3a.path.style.access=true`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`fs.s3a.endpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`fs.s3a.endpoint.region`) |
+| Addressing | Path style (`fs.s3a.path.style.access=true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through the platform's secret mechanism |
+
+## Configure
+
+Configure Spark's S3 connector with the existing bucket, regional endpoint and region, path-style access, and credentials supplied through the platform's secret mechanism. Keep a dedicated table prefix. Ensure the driver and every executor receive the same settings.
+
+## Examples
+
+1. Create a disposable Delta table, append and update rows, produce a checkpoint, and read the table from a fresh session.
+2. Run concurrent writers and verify conflicts do not cause silent data loss.
+3. Restore a prior table version after confirming the required log and data objects exist, then compare row counts and deterministic hashes.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Parquet reads work but Delta commits fail | Connector retry, rename, conditional-write, and consistency assumptions vary by release; check the Delta, Spark, and connector version set. |
+| Executors reach an AWS hostname | Apply the endpoint and path-style settings to executors as well as the driver. |

@@ -1,0 +1,39 @@
+---
+title: Elasticsearch searchable snapshots
+description: Configure Elasticsearch S3 snapshots with Fil One for recovery testing.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Elasticsearch searchable snapshots
+
+Elasticsearch stores snapshots in Fil One through an `s3` repository whose named client sets `endpoint`, `region`, and `path_style_access: true`, with a key scoped to the bucket's region held in the keystore. Elasticsearch 8.x includes `repository-s3`; on 7.x install the plugin on every node.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`s3.client.CLIENT.endpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`s3.client.CLIENT.region`) |
+| Addressing | Path style (`s3.client.CLIENT.path_style_access: true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, stored in the keystore as `s3.client.CLIENT.access_key` and `s3.client.CLIENT.secret_key` |
+
+## Configure
+
+Store the access and secret keys in the Elasticsearch keystore under a named S3 client. Configure that client's endpoint, region, and path-style access, then register an `s3` snapshot repository using an existing bucket and a dedicated `base_path`. Run the repository verification API from every master and data node before taking a snapshot. Searchable snapshots require an Enterprise subscription; ordinary snapshot storage does not.
+
+## Examples
+
+1. Create a disposable index with known documents, take a snapshot, delete the index, and restore it under a new name.
+2. Compare document counts and selected content hashes.
+3. If searchable snapshots are in scope, mount the snapshot and execute representative queries.
+4. Test cleanup only against the dedicated repository path.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Repository verification fails on some nodes | Confirm every node can reach the endpoint and has the same client settings and keystore entries. |
+| Endpoint syntax errors | Review the endpoint format for your Elasticsearch release. |
+| Verification passes but restore fails | Repository verification checks connectivity only; rerun the snapshot and restore steps. |

@@ -1,0 +1,42 @@
+---
+title: Cyberduck and Mountain Duck
+description: Connect Cyberduck or Mountain Duck to a Fil One bucket.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Cyberduck and Mountain Duck
+
+Cyberduck and Mountain Duck connect to Fil One through Cyberduck's path-style S3 connection profile, using SigV4 and a key scoped to the bucket's region. Mountain Duck uses the same bookmark and mounts the bucket in Finder or File Explorer.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (enter the hostname without a bucket name or path) |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style (Cyberduck's path-style S3 connection profile) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region |
+
+## Configure
+
+1. Install Cyberduck's path-style S3 connection profile from the profiles list.
+2. Open **New Bookmark**, choose that profile, and enter the hostname from the bucket's regional endpoint.
+3. Enter the access key and secret for the same region.
+4. Keep HTTPS and certificate validation enabled. Save the bookmark.
+
+Mountain Duck uses the same bookmark settings, then mounts the bucket through Finder or File Explorer.
+
+## Examples
+
+1. Rename and delete a test object and confirm the remote listing reflects each operation.
+2. Test keys containing spaces before a larger migration.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Client requests a bucket subdomain | Use the path-style S3 connection profile rather than the default Amazon S3 profile. |
+| `403` | Key, endpoint, and region must belong to the same region and the key must be scoped to the bucket. |
+| Unexpected filename encoding | Test keys with spaces and review regional behavior in [S3 Compatibility](/reference/s3-compatibility). |

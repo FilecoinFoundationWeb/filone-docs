@@ -1,0 +1,37 @@
+---
+title: Databricks
+description: Evaluate Databricks access to data stored in Fil One.
+integration_status: Not currently tested
+tested_versions: []
+verified_regions: []
+verification_date: null
+evidence: null
+---
+
+# Databricks
+
+Availability of custom S3-compatible endpoints varies by Databricks compute mode. On compute that permits a custom endpoint, Databricks reads and writes Fil One through the S3 connector with the regional endpoint, path-style access, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region |
+| Region | `eu-west-1` or `us-east-1` |
+| Addressing | Path style |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, stored in a Databricks secret scope |
+
+## Configure
+
+Use a cluster or SQL environment that permits a custom S3-compatible endpoint. Store credentials in a Databricks secret scope and inject them into the supported filesystem or connector configuration. Set the regional endpoint, region, and path-style access from [Connection settings](/integrations/connection-settings). Keep secret values out of notebooks and cluster policies.
+
+## Examples
+
+1. Read a disposable Parquet dataset, write results to a dedicated prefix, terminate the compute, and read the output from a fresh cluster.
+2. Compare row counts, schema, and deterministic aggregates.
+3. For managed table formats, validate their transaction and concurrency behavior separately.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Serverless or governed mode blocks custom endpoints | Use a compute mode that permits them, or treat the integration as unavailable for that workspace. |
+| Driver works but jobs fail | Confirm that executors as well as the driver receive endpoint and credential settings. |
