@@ -46,6 +46,16 @@ Fil One returns standard S3-style error XML. The specific codes and HTTP statuse
 | `ServiceUnavailable` | 503 | The service is temporarily unavailable. Check the `Retry-After` header. |
 | `SlowDown` | 503 | You are sending requests too quickly. Implement exponential backoff. |
 
+## Console errors
+
+These come from the Fil One console at [app.fil.one](https://app.fil.one), not from the S3 API.
+
+| Message | HTTP Status | What to do |
+|---------|-------------|------------|
+| "We are still setting up your account. Please try again in a moment." | 503 | Shown while a new account is being set up. Wait a moment and retry. |
+| "We are still setting up the region for you. Please try again in a moment." | 503 | Shown while a region is being set up for your account. Wait a moment and retry. |
+| A message that your role does not permit the action | 403 | Your [role](/app/organization#roles-and-permissions) doesn't include this action. Ask an Owner or Admin. |
+
 ## Troubleshooting
 
 **`SignatureDoesNotMatch`** -- The most common auth error. Check that:

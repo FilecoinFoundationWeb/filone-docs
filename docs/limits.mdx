@@ -27,11 +27,11 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 | Maximum parts per multipart upload | 10,000 |
 | Minimum part size (multipart) | 5 MB |
 | Maximum part size (multipart) | 5 GB |
-| Maximum object key length | 1,024 bytes |
+| Maximum object key length | 1,024 characters in the dashboard; 1,024 bytes (standard S3 limit) through the API |
 | Maximum metadata size per object | 2 KB |
 
 :::note Which of these are Fil One-specific
-The **maximum object key length (1,024 bytes)** is enforced by Fil One and verified in code. The other values in this table (maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
+The **dashboard** rejects object keys longer than **1,024 characters** when you upload, which is verified in code. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
 :::
 
 For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
@@ -60,5 +60,5 @@ Rate limits are enforced by the underlying storage gateway. Fil One does not imp
 - Unique within Fil One
 
 **Object keys:**
-- Up to 1,024 bytes (UTF-8)
+- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies but is not independently confirmed
 - Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility

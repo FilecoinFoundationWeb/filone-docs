@@ -3,7 +3,7 @@ title: "Usage"
 description: "Understanding your storage and bandwidth usage in Fil One."
 ---
 
-The **Billing** page in the dashboard shows your current usage for the active billing period.
+The **Billing** page in the dashboard shows your current usage for the active billing period. It is visible to organization Owners and Admins. See [Billing](/app/billing).
 
 ## What is measured
 
@@ -19,8 +19,8 @@ Storage is measured as an average rather than a peak — if you store 2 TB for h
 ## Trial limits
 
 During the free trial, usage is capped at:
-- **Storage — 1 TB (1,000 GB):** reaching this limit **write-locks** the account. You can still read and download; new uploads are rejected.
-- **Egress — 2 TB (2,000 GB), cumulative over the whole trial:** reaching this limit **disables** the account entirely — no read or write access — the same state as trial expiry. This is a single budget for the full 30 days, not a monthly amount that resets.
+- **Storage — 1 TB (1,000 GB):** reaching this limit **write-locks** the account. You can still read and download; new uploads are rejected. If you delete data and your storage drops back under 1 TB, the write lock lifts on the next usage run.
+- **Egress — 2 TB (2,000 GB), cumulative over the whole trial:** reaching this limit **disables** the account entirely — no read or write access — the same state as an account whose grace period has ended, with no read-only grace period first. This is a single budget for the full 30 days, not a monthly amount that resets.
 
 These caps are enforced by a usage job that runs **twice a day** (around 07:00 and 19:00 UTC), so you may exceed a cap for a few hours before the account state changes — there is no real-time block at the exact moment you cross it. Upgrading to a paid plan removes both caps immediately.
 
