@@ -1947,7 +1947,7 @@ SEPARATE PAGE (there are no tabs for billing or the audit log any more):
 | Billing | /billing | Plan, usage, payment method, invoices | Owner, Admin |
 | Audit log | /audit | Membership, key, and organization changes | Owner, Admin, beta only |
 
-Old /organization links redirect to the matching page. Below the pages the menu
+Below the pages the menu
 lists your organizations if you belong to more than one, and, in the beta,
 "Create organization".
 
@@ -2157,7 +2157,7 @@ sees the same figures without the buttons. Members and Read only users see
 
 | Status | Badge | Plan name and detail line |
 |--------|-------|---------------------------|
-| Trial | Trial | "Free trial", "1 TB of storage included", days until the trial ends |
+| Trial | Trial | "Free trial", days until the trial ends (storage and egress limits are on the usage card) |
 | Paid | Active | "Pay as you go", per-TB rate, renewal date |
 | Payment failed | Payment failed (amber) | Plan name, rate, renewal date, as for a paid plan |
 | Grace period | Grace period | Plan name and rate, days until access ends |
