@@ -275,8 +275,8 @@ Security, Billing) hold the concepts and code samples.
   ORGANIZATION MENU at the top of the sidebar opens separate pages, each shown
   only to roles that can use it: Edit organization (/edit-organization; name,
   logo, and an Owner-only Danger zone), Members (/members; Members and
-  Invitations tabs), Billing (/billing), and Audit log (/audit). Old
-  /organization links redirect. Members, Audit log, Create organization and
+  Invitations tabs), Billing (/billing), and Audit log (/audit).
+  Members, Audit log, Create organization and
   sending invitations are beta-only. With no active plan, only Settings, Edit
   organization and Support are reachable.
   Four roles: Owner, Admin, Member, Read only. Only Owners manage billing,
