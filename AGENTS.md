@@ -41,3 +41,11 @@ npm run build
 ```
 
 This catches MDX syntax errors (broken JSX, unclosed tags, invalid frontmatter) that won't show up just from reading the file.
+
+## Drafts from the fil-one docs sync workflow
+
+Some PRs here are drafted by an AI agent in the `fil-one/fil-one` repo's **Docs sync** workflow (design: `docs/DocsSync.md` in that repo). They come from the branch `docs-sync/fil-one-<PR number>`, carry the `docs-sync` label, and link to the product PR they follow. The rules above apply to them like any other change; the agent is told to follow this file.
+
+- The agent may edit only `docs/**` and the two `static/llms*.txt` mirrors. Changes it needs elsewhere (`sidebars.js` for a new page, `docusaurus.config.js`, `vercel.json` redirects) are listed under "Manual follow-ups" in the PR body.
+- Claims under "Needs verification" are the ones the code alone could not settle (region behaviour, a flag's production state). Confirm them before approving.
+- The PR stays a draft until the product PR merges, and is regenerated on each push to the product PR. Push a commit to the branch to take it over: the workflow then stops regenerating it. Close the PR to stop it for good.
