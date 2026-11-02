@@ -1961,7 +1961,7 @@ Members, Audit log, Create organization and SENDING INVITATIONS are part of the
 organizations beta, switched on by Fil One for selected organizations. Outside
 it those entries don't appear, and opening /members or /audit directly goes to
 the dashboard. Edit organization and Billing are available to every
-organization. To ask about access, email support@fil.one.
+organization. To ask about access, email support@filone.com.
 
 ## Editing the organization
 
@@ -2133,7 +2133,7 @@ Owners and Admins (see App: Billing).
 ## Deleting an organization
 
 Not available in the console yet. The Danger zone on the Edit organization page
-(Owners only) points to support@fil.one: email them to delete the organization.
+(Owners only) points to support@filone.com: email them to delete the organization.
 
 
 ---
@@ -2307,7 +2307,7 @@ provider on Google and GitHub accounts, so no Change button appears.
 ## Danger zone
 
 The last card on the page is "Danger zone", with "Delete account". NOT
-SELF-SERVICE: the card asks you to email support@fil.one to delete your account.
+SELF-SERVICE: the card asks you to email support@filone.com to delete your account.
 Deleting an organization is separate and is covered on the Edit organization
 page.
 
@@ -2342,7 +2342,7 @@ console does not show a ticket list or status view.
 - The system status indicator links to the Fil One status page, the quickest
   check for whether an issue is already known. On desktop it is in the bar along
   the bottom of the content area; on a phone it is in the sidebar drawer.
-- Account deletion is handled by email at support@fil.one.
+- Account deletion is handled by email at support@filone.com.
 - Volume pricing, SLAs and the Business plan go through "Contact sales team" in
   the "Choose your plan" dialog on Billing. On the trial or with no plan, "Talk to
   sales" in the "Need help?" panel beside the billing cards does the same.
