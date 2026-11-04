@@ -1,0 +1,78 @@
+---
+title: Certifications & Trust
+description: Certification status, the shared-responsibility model, and what a procurement team can request today.
+---
+
+This page is the current reference for Fil One's security and compliance posture: where certification stands, which controls are live in the product today, and how responsibility divides between Fil One and the storage operators behind it.
+
+:::note Looking for WORM immutability?
+"Compliance" also names a specific Object Lock retention mode in Fil One. If you are here for immutable storage, retention periods, or legal holds, see [Object Lock](/storage/object-lock). This page is about certification status and security posture.
+:::
+
+## Certification status
+
+**SOC 2 Type II and ISO 27001 are actively being pursued.** Fil One does not hold either certification today, and holds no third-party compliance attestation for any feature, including the SEC 17a-4 assessments often asked about for WORM retention workloads.
+
+For where that work currently stands, contact [security@fil.one](mailto:security@fil.one).
+
+## Controls in place today
+
+These are live in the product and open to your own review:
+
+| Area | What is in place |
+|------|------------------|
+| **Authentication** | Passkeys (the primary method), Google, GitHub, and email with password. |
+| **Multi-factor** | Opt-in per user: authenticator apps (TOTP), WebAuthn security keys, and device biometrics. SMS is deliberately not offered. |
+| **Access control** | Access keys scoped to a single region and to specific permissions (Read, Write, List, Delete), optionally restricted to named buckets, with optional expiry dates. |
+| **Encryption** | Always on, at rest and in transit. TLS is enforced and HTTP is rejected. It cannot be disabled. |
+| **Retention (WORM)** | Object Lock in Governance and Compliance modes, from 1 day to 100 years. A Compliance-mode lock binds every caller, including the account owner. |
+
+Detail on each: [API Keys](/security/api-keys), [Encryption](/security/encryption), [Object Lock](/storage/object-lock).
+
+## Demonstrating a control is in force
+
+Auditors usually want evidence, not a statement that a feature exists. What you can produce yourself today:
+
+| To show | Call | Returns |
+|---------|------|---------|
+| A specific object version is under retention | `GetObjectRetention` | The retention mode (`GOVERNANCE` or `COMPLIANCE`) and its `RetainUntilDate` |
+| A bucket's default retention policy | `GetBucketObjectLockConfiguration` | The mode and duration applied to new object versions |
+| A legal hold is active on an object | `GetObjectLegalHold` | The hold status |
+| Versioning is enabled on a bucket | `GetBucketVersioning` | `Enabled` |
+
+`GetObjectRetention` and `GetBucketObjectLockConfiguration` work in both regions. `GetObjectLegalHold` is confirmed in `us-east-1` and not yet confirmed in `eu-west-1`. The reads require the matching access-key permissions, which are selectable when you create a key rather than granted by default: see [API Keys](/security/api-keys).
+
+A failed delete is also evidence in itself. Attempting to delete an object under active retention returns `403 AccessDenied`, which is reproducible on demand.
+
+What you **cannot** produce is a per-object cryptographic artefact (see [Scope of what Fil One claims](#scope-of-what-fil-one-claims)).
+
+## Shared responsibility
+
+Storage is fulfilled by regional operators on the Filecoin network, so a review needs to know which layer owns what:
+
+| Layer | Operated by | Responsible for |
+|-------|-------------|-----------------|
+| Console, API, identity, billing | **Fil One** | Authentication, access-key issuance and scoping, multi-factor enrolment, the dashboard, request authorization, subscription state |
+| Regional S3 storage gateway | **Regional storage operator** | Serving object data, applying server-side encryption at rest, custody of encryption keys |
+| Underlying storage network | **Filecoin storage providers** | Holding data and producing the network's proof-of-storage |
+
+The practical consequence for a security review: encryption at rest is applied and keyed by the regional storage operator, so there is no customer-managed-key or SSE-C option, and the cipher in use is set by that operator. If your requirements turn on the exact scheme, or on who holds key material for a given region, contact support and we will route the question to the operator for your region.
+
+## Who to ask
+
+- **Fil One's own controls** (authentication, access keys, the console): [security@fil.one](mailto:security@fil.one).
+- **The storage gateway's encryption implementation or key custody:** contact support and we will route the question to the regional operator.
+
+## Scope of what Fil One claims
+
+Stated here so it does not have to be inferred:
+
+- **Proof-of-storage is a network property.** Filecoin storage providers continuously prove they still hold the data they committed to store. Fil One does not surface per-object content identifiers, deal IDs, or seal state, so there is no per-object artefact to hand an auditor. See [How does Filecoin protect the integrity of stored data?](/faq).
+- **Named regulations describe use cases, not certifications.** Where these docs mention SEC 17a-4, FINRA, HIPAA or similar, they describe a scenario the underlying capability supports. Whether a given feature satisfies a specific obligation is a determination for your own compliance review.
+
+## Related
+
+- [Encryption](/security/encryption): at-rest and in-transit encryption, key custody
+- [Object Lock](/storage/object-lock): WORM retention and its compliance caveats
+- [API Keys](/security/api-keys): permissions, region scoping, expiration
+- [FAQ](/faq) and [Trial & Billing](/billing/trial): deletion and account-closure behaviour
