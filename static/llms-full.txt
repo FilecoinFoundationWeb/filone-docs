@@ -125,14 +125,14 @@ required.
 
 # Quickstart
 
-Source: https://docs.fil.one/quickstart
+Source: https://docs.filone.com/quickstart
 
 This guide walks you through creating an account, setting up credentials, and
 uploading your first object.
 
 ## 1. Create your account
 
-1. Go to app.fil.one and sign up with your email or SSO.
+1. Go to app.filone.com and sign up with your email or SSO.
 2. Verify your email address.
 3. No credit card needed — your 30-day free trial starts automatically.
 
@@ -285,7 +285,7 @@ func main() {
 
 # Quickstart - AWS CLI
 
-Source: https://docs.fil.one/quickstart/cli
+Source: https://docs.filone.com/quickstart/cli
 
 If you have the AWS CLI installed, you can start using Fil One in under 2 minutes.
 
@@ -336,7 +336,7 @@ aws s3 ls --profile filone
 
 # Quickstart - SDK
 
-Source: https://docs.fil.one/quickstart/sdk
+Source: https://docs.filone.com/quickstart/sdk
 
 Each example uploads a file and verifies it. Create the bucket first in the
 dashboard — CreateBucket over the S3 API is not available in eu-west-1, the
@@ -469,7 +469,7 @@ the dedicated SDK pages for Python, JavaScript, and Go.
 
 # Buckets
 
-Source: https://docs.fil.one/storage/buckets
+Source: https://docs.filone.com/storage/buckets
 
 Buckets are containers for your objects. Every object in Fil One lives inside a bucket.
 
@@ -541,7 +541,7 @@ Fil One. This does not affect your ability to manage your data in Fil One.
 
 # Objects
 
-Source: https://docs.fil.one/storage/objects
+Source: https://docs.filone.com/storage/objects
 
 Objects are the files you store in Fil One. Each object consists of the file data,
 a key (the file path/name), and metadata.
@@ -643,7 +643,7 @@ Presigned URLs work for both GetObject (downloads) and PutObject (uploads).
 
 # Multipart Uploads
 
-Source: https://docs.fil.one/storage/multipart-uploads
+Source: https://docs.filone.com/storage/multipart-uploads
 
 For very large objects you must use multipart upload. The single-PUT ceiling is
 the standard S3 5 GB, which Fil One's gateway is expected to follow but which is
@@ -720,7 +720,7 @@ aws s3api abort-multipart-upload \
 
 # Versioning
 
-Source: https://docs.fil.one/storage/versioning
+Source: https://docs.filone.com/storage/versioning
 
 Versioning is opt-in and configured at bucket creation time. Once enabled on a
 bucket it cannot be suspended or disabled. Every upload to an existing key on a
@@ -927,7 +927,7 @@ retention independently. In practice:
 
 # Object Lock
 
-Source: https://docs.fil.one/storage/object-lock
+Source: https://docs.filone.com/storage/object-lock
 
 Object Lock enforces Write-Once-Read-Many (WORM) protection. Depending on the
 mode, a locked object cannot be deleted or overwritten until its retention
@@ -1131,7 +1131,7 @@ process.
 
 # Account Security
 
-Source: https://docs.fil.one/security/account-security
+Source: https://docs.filone.com/security/account-security
 
 Covers securing the account you sign in with. API request authentication is a
 separate mechanism (see Authentication / API Keys).
@@ -1196,7 +1196,7 @@ update it with that provider.
 
 # Authentication
 
-Source: https://docs.fil.one/security/authentication
+Source: https://docs.filone.com/security/authentication
 
 All API requests to Fil One must be authenticated using AWS Signature Version 4
 (SigV4). Any S3-compatible SDK or tool handles this automatically.
@@ -1305,7 +1305,7 @@ func newClient() *s3.Client {
 
 # API Keys
 
-Source: https://docs.fil.one/security/api-keys
+Source: https://docs.filone.com/security/api-keys
 
 API keys authenticate your requests to the Fil One S3 API. Each key consists of
 an Access Key ID (public identifier) and a Secret Access Key (used to sign requests).
@@ -1397,7 +1397,7 @@ the old key.
 
 # Encryption
 
-Source: https://docs.fil.one/security/encryption
+Source: https://docs.filone.com/security/encryption
 
 Fil One encrypts all data by default. There is nothing to configure.
 
@@ -1430,7 +1430,7 @@ applies automatically.
 
 # Pricing
 
-Source: https://docs.fil.one/billing/pricing
+Source: https://docs.filone.com/billing/pricing
 
 Fil One is priced at **$5.99 / TB / month**, with a **$5.99 / month minimum**. If you store less than 1 TB, you are billed the $5.99 minimum.
 
@@ -1451,7 +1451,7 @@ These are the prices for new customers. Organizations that subscribed before the
 
 # Trial & Billing
 
-Source: https://docs.fil.one/billing/trial
+Source: https://docs.filone.com/billing/trial
 
 ## Free trial
 
@@ -1498,7 +1498,7 @@ If a payment fails, the account enters **past due** and Stripe automatically ret
 
 # Usage
 
-Source: https://docs.fil.one/billing/usage
+Source: https://docs.filone.com/billing/usage
 
 The Billing page in the dashboard shows current usage for the active billing
 period. It is visible to organization Owners and Admins.
@@ -1551,7 +1551,7 @@ each new billing period.
 
 # App: Dashboard
 
-Source: https://docs.fil.one/app/dashboard
+Source: https://docs.filone.com/app/dashboard
 
 The console home page, reached from "Dashboard" at the top of the left sidebar.
 A "New bucket" button sits in the header, and during the trial a banner shows the
@@ -1626,7 +1626,7 @@ Reads keep working while writes are paused, so data stays available to download.
 
 # App: Buckets
 
-Source: https://docs.fil.one/app/buckets
+Source: https://docs.filone.com/app/buckets
 
 Console-specific. Concepts, S3 equivalents and code samples live on Buckets,
 Objects, Versioning and Object Lock.
@@ -1788,7 +1788,7 @@ grace period, access is read-only and writes resume once payment succeeds.
 
 # App: API Keys
 
-Source: https://docs.fil.one/app/api-keys
+Source: https://docs.filone.com/app/api-keys
 
 Console-specific. Permission meanings, signing and security guidance live on API
 Keys and Authentication.
@@ -1896,7 +1896,7 @@ A bucket's "API Keys" tab lists the keys that can reach that one bucket.
 
 # App: AI Agent Toolkit
 
-Source: https://docs.fil.one/app/ai-agent-toolkit
+Source: https://docs.filone.com/app/ai-agent-toolkit
 
 Under the "AI Tools" sidebar group.
 
@@ -1924,7 +1924,7 @@ Treat the access-key route above as the supported way to connect AI tools today.
 
 # App: Organization
 
-Source: https://docs.fil.one/app/organization
+Source: https://docs.filone.com/app/organization
 
 BETA. Organizations are in beta. Inviting teammates is switched on by Fil One for
 selected organizations, so what you see depends on whether yours is one of them.
@@ -2087,7 +2087,7 @@ delivered", or "Expired"), Expires (hidden on narrow screens). "Revoke"
 withdraws an invitation; "Resend" appears on undelivered ones. You can only act
 on invitations for roles you're allowed to assign.
 
-Accepting: the email links to app.fil.one/invite/accept (sign in first if
+Accepting: the email links to app.filone.com/invite/accept (sign in first if
 needed). Outcomes: "Welcome to <organization>" (joined, with your role and
 "Continue to <organization>"); "You're already in <organization>"; "Wrong
 account signed in" (sign out and sign in with the invited address); "Verify your
@@ -2140,7 +2140,7 @@ Not available in the console yet. The Danger zone on the Edit organization page
 
 # App: Billing
 
-Source: https://docs.fil.one/app/billing
+Source: https://docs.filone.com/app/billing
 
 Console-specific. Trial lifecycle, pricing model and measurement live on Trial &
 Billing, Pricing and Usage.
@@ -2251,7 +2251,7 @@ per account.
 
 # App: Settings
 
-Source: https://docs.fil.one/app/settings
+Source: https://docs.filone.com/app/settings
 
 In the user menu at the bottom of the left sidebar: profile, the organizations
 you belong to, notification preferences and account security. Every member of an organization has their own Settings.
@@ -2316,7 +2316,7 @@ page.
 
 # App: Support
 
-Source: https://docs.fil.one/app/support
+Source: https://docs.filone.com/app/support
 
 Reached from the USER MENU at the bottom of the left sidebar (your name and
 avatar), which offers "Settings", "Support", "Documentation" and "Log out".
@@ -2352,7 +2352,7 @@ console does not show a ticket list or status view.
 
 # API Reference Overview
 
-Source: https://docs.fil.one/reference/overview
+Source: https://docs.filone.com/reference/overview
 
 ## Base endpoint
 
@@ -2387,7 +2387,7 @@ data. Standard S3 headers included (x-amz-request-id, ETag, Content-Length, etc.
 
 # S3 Compatibility
 
-Source: https://docs.fil.one/reference/s3-compatibility
+Source: https://docs.filone.com/reference/s3-compatibility
 
 Fil One provides an S3-compatible API. Point your SDK or CLI at the Fil One
 endpoint and authenticate with your API keys.
@@ -2587,7 +2587,7 @@ Organization).
 
 # Error Reference
 
-Source: https://docs.fil.one/reference/errors
+Source: https://docs.filone.com/reference/errors
 
 Fil One returns standard S3 error responses in XML format. The FORMAT is standard;
 the CODE for a given condition does not always match AWS, so an application that
@@ -2631,7 +2631,7 @@ eu-west-1" under S3 Compatibility.
 
 ## Console errors
 
-These come from the Fil One console at app.fil.one, NOT from the S3 API.
+These come from the Fil One console at app.filone.com, NOT from the S3 API.
 
 | Message | HTTP | What to do |
 |---------|------|------------|
@@ -2658,7 +2658,7 @@ before auditing access-key scopes.
 
 # SDKs & Tools Overview
 
-Source: https://docs.fil.one/sdk/overview
+Source: https://docs.filone.com/sdk/overview
 
 Fil One works with any tool or library that supports the S3 API.
 
@@ -2697,7 +2697,7 @@ specific setup notes:
 
 # Python (boto3)
 
-Source: https://docs.fil.one/sdk/python
+Source: https://docs.filone.com/sdk/python
 
 ```bash
 pip install boto3
@@ -2790,7 +2790,7 @@ except ClientError as e:
 
 # JavaScript (AWS SDK v3)
 
-Source: https://docs.fil.one/sdk/javascript
+Source: https://docs.filone.com/sdk/javascript
 
 ```bash
 npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
@@ -2887,7 +2887,7 @@ try {
 
 # Go (aws-sdk-go-v2)
 
-Source: https://docs.fil.one/sdk/go
+Source: https://docs.filone.com/sdk/go
 
 ```bash
 go get github.com/aws/aws-sdk-go-v2/aws
@@ -2974,7 +2974,7 @@ uploadReq, _ := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 
 # AWS CLI
 
-Source: https://docs.fil.one/sdk/cli
+Source: https://docs.filone.com/sdk/cli
 
 The AWS CLI works with Fil One out of the box. Install it, configure
 credentials, and use --endpoint-url https://s3.<region>.filonecontent.com on every command
@@ -3136,7 +3136,7 @@ aws s3api abort-multipart-upload \
 
 # FAQ
 
-Source: https://docs.fil.one/faq
+Source: https://docs.filone.com/faq
 
 **Is Fil One S3-compatible?**
 Yes. Any application, SDK, or tool that works with AWS S3 works with Fil One by
@@ -3218,7 +3218,7 @@ and permissions.
 
 # Limits & Quotas
 
-Source: https://docs.fil.one/limits
+Source: https://docs.filone.com/limits
 
 ## Account limits
 

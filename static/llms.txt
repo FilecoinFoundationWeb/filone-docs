@@ -91,39 +91,39 @@ Critical integration notes for developers:
 
 ## Getting Started
 
-- [Quickstart](https://docs.fil.one/quickstart): Create an account, generate
+- [Quickstart](https://docs.filone.com/quickstart): Create an account, generate
   API keys, and upload your first object — covers App, AWS CLI, Python, and
   JavaScript paths
-- [Quickstart - AWS CLI](https://docs.fil.one/quickstart/cli): Full CLI walkthrough
+- [Quickstart - AWS CLI](https://docs.filone.com/quickstart/cli): Full CLI walkthrough
   including named profile setup to avoid repeating --endpoint-url
-- [Quickstart - SDK](https://docs.fil.one/quickstart/sdk): Copy-paste examples
+- [Quickstart - SDK](https://docs.filone.com/quickstart/sdk): Copy-paste examples
   for Python (boto3), JavaScript (AWS SDK v3), and Go to create a bucket, upload,
   and verify
 
 ## Storage
 
-- [Buckets](https://docs.fil.one/storage/buckets): Bucket naming rules, how to
+- [Buckets](https://docs.filone.com/storage/buckets): Bucket naming rules, how to
   create via dashboard, listing via API, deleting (bucket must be EMPTY; dashboard
   delete works in every region for Owner/Admin roles; S3-API DeleteBucket in
   us-east-1 only), and Filecoin deal lifecycle on deletion
-- [Objects](https://docs.fil.one/storage/objects): Upload, download, list, delete,
+- [Objects](https://docs.filone.com/storage/objects): Upload, download, list, delete,
   and presigned URL generation with code examples for App, AWS CLI, and boto3.
   Dashboard has multi-select delete and Empty bucket; a dashboard delete on a
   versioned bucket PERMANENTLY removes that version (no delete marker), while an
   S3-API delete without a version ID writes a delete marker
-- [Multipart Uploads](https://docs.fil.one/storage/multipart-uploads): Required
+- [Multipart Uploads](https://docs.filone.com/storage/multipart-uploads): Required
   above the single-PUT ceiling (standard S3 5 GB, not independently confirmed);
   recommended for > 100 MB. Dashboard uploads are single-PUT; multipart is via
   your own SDK/CLI. No lifecycle rule to auto-abort incomplete uploads. Cleanup
   needs List (list uploads) and Write (abort); us-east-1 keys created before
   26 August 2026 lack these multipart actions (403), so replace them
-- [Versioning](https://docs.fil.one/storage/versioning): Opt-in at bucket
+- [Versioning](https://docs.filone.com/storage/versioning): Opt-in at bucket
   creation, cannot be suspended. S3-API delete without a version ID writes a
   delete marker; the DASHBOARD NEVER DOES, it permanently deletes the chosen
   version. Version operations need granular key permissions (List object
   versions, Read object versions, Delete object versions), none granted
   automatically
-- [Object Lock](https://docs.fil.one/storage/object-lock): WORM retention.
+- [Object Lock](https://docs.filone.com/storage/object-lock): WORM retention.
   Opt-in at bucket creation, Governance (default) and Compliance modes, 1 day to
   100 years, no trial-specific cap. NO third-party compliance attestation, NO
   grantable Governance bypass permission in the product. Per-object
@@ -133,7 +133,7 @@ Critical integration notes for developers:
 
 ## Security
 
-- [Account Security](https://docs.fil.one/security/account-security): securing
+- [Account Security](https://docs.filone.com/security/account-security): securing
   the account you sign in with (distinct from API request auth). Sign-in via
   passkeys (primary), Google, GitHub, or email with password; email
   verification is mandatory before the dashboard opens. Opt-in two-factor with
@@ -144,10 +144,10 @@ Critical integration notes for developers:
   recovery code all require a session established with 2FA or a passkey
   (step-up). Transferring organization ownership also needs a sign-in within the
   last five minutes (with 2FA or a passkey if 2FA is set up)
-- [Authentication](https://docs.fil.one/security/authentication): SigV4 auth
+- [Authentication](https://docs.filone.com/security/authentication): SigV4 auth
   setup for AWS CLI, Python (boto3), JavaScript (AWS SDK v3), and Go; credential
   best practices including environment variable usage
-- [API Keys](https://docs.fil.one/security/api-keys): Creating keys with scoped
+- [API Keys](https://docs.filone.com/security/api-keys): Creating keys with scoped
   permissions (Read/Write/List/Delete), CreateBucket/DeleteBucket and
   GetBucketVersioning/GetBucketObjectLockConfiguration groups, single-region
   scoping, bucket-level scoping, key expiration, ROTATION, revocation, best
@@ -155,7 +155,7 @@ Critical integration notes for developers:
   without Delete can still OVERWRITE. A key can only carry permissions its
   creator's organization role holds; PutObjectRetention/PutObjectLegalHold are
   Owner-only. Names starting with `filone-console` are reserved
-- [Encryption](https://docs.fil.one/security/encryption): server-side
+- [Encryption](https://docs.filone.com/security/encryption): server-side
   encryption always on by default for all objects; TLS in transit; keys held by
   the regional operator (no customer-managed keys, cipher unconfirmed).
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
@@ -163,7 +163,7 @@ Critical integration notes for developers:
 
 ## Billing
 
-- [Trial & Billing](https://docs.fil.one/billing/trial): 30-day free trial with
+- [Trial & Billing](https://docs.filone.com/billing/trial): 30-day free trial with
   1 TB storage (1,000 GB) and 2 TB egress (cumulative); the trial starts after
   EMAIL VERIFICATION, one trial per email address, invited members get none;
   storage cap write-locks, egress cap disables the account directly (no
@@ -172,29 +172,29 @@ Critical integration notes for developers:
   $5.99/TB/month, $5.99/month minimum, no egress or request fees (earlier
   subscribers keep their $4.99 or per-unit terms); Business plan
   (1, 3, or 5-year terms) via sales. Cancellation is via the Stripe portal
-- [Pricing](https://docs.fil.one/billing/pricing): Pay as you go $5.99/TB/month
+- [Pricing](https://docs.filone.com/billing/pricing): Pay as you go $5.99/TB/month
   (decimal TB, 1,000 GB) with a $5.99/month minimum; single linear rate plus a
   floor (no first-TB tier); storage measured as daily readings and averaged, with
   the running average reported twice daily; no egress or per-request charges.
   Organizations that subscribed before the move to $5.99 keep $4.99/TB with a
   $4.99 minimum; accounts predating any minimum have none
-- [Usage](https://docs.fil.one/billing/usage): What is measured (average stored
+- [Usage](https://docs.filone.com/billing/usage): What is measured (average stored
   bytes, egress), trial caps and how they are enforced; the storage write-lock
   lifts on the next usage run once storage is back under 1 TB. Billing page
   visible to Owners and Admins
 
 ## API Reference
 
-- [API Reference Overview](https://docs.fil.one/reference/overview): Base endpoint,
+- [API Reference Overview](https://docs.filone.com/reference/overview): Base endpoint,
   SigV4 authentication requirement, path-style addressing, and response format
-- [S3 Compatibility](https://docs.fil.one/reference/s3-compatibility): Full table
+- [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): Full table
   of supported vs. unsupported S3 operations (GetObject, PutObject, DeleteObject,
   ListObjectsV2, multipart, presigned URLs all supported; bucket policies, lifecycle
   rules, IAM users/roles/bucket policies on the S3 API not yet supported; access
   is per access key permissions and bucket scope); how unsupported operations respond in eu-west-1
   (AccessDenied, not NotImplemented); known error-code deviations and known
   behavioral issues in eu-west-1; differences from AWS S3
-- [Error Reference](https://docs.fil.one/reference/errors): Standard S3 XML error
+- [Error Reference](https://docs.filone.com/reference/errors): Standard S3 XML error
   format, full table of 4xx and 5xx error codes, the ways codes deviate from AWS,
   console errors (account/region still being set up: 503; role does not permit
   the action: 403), and troubleshooting for the most common errors
@@ -202,29 +202,29 @@ Critical integration notes for developers:
 
 ## SDKs & Tools
 
-- [SDKs & Tools Overview](https://docs.fil.one/sdk/overview): Connection parameters
+- [SDKs & Tools Overview](https://docs.filone.com/sdk/overview): Connection parameters
   for all tools (endpoint, region, credentials); recommended tools list including
   rclone, Cyberduck, s3cmd, MinIO Client
-- [Python (boto3)](https://docs.fil.one/sdk/python): Full examples for upload,
+- [Python (boto3)](https://docs.filone.com/sdk/python): Full examples for upload,
   download, list, delete, multipart, presigned URLs, and error handling
-- [JavaScript (AWS SDK v3)](https://docs.fil.one/sdk/javascript): Full examples
+- [JavaScript (AWS SDK v3)](https://docs.filone.com/sdk/javascript): Full examples
   for Node.js including streaming downloads, pagination, presigned URLs, and
   error handling; requires `forcePathStyle: true`
-- [Go (aws-sdk-go-v2)](https://docs.fil.one/sdk/go): Full examples for upload,
+- [Go (aws-sdk-go-v2)](https://docs.filone.com/sdk/go): Full examples for upload,
   download, paginated listing, presigned URLs, and error handling; requires
   `UsePathStyle: true`
-- [AWS CLI](https://docs.fil.one/sdk/cli): Installation, named-profile
+- [AWS CLI](https://docs.filone.com/sdk/cli): Installation, named-profile
   configuration, core operations, multipart uploads and cleanup. `aws s3 rb`
   works in us-east-1 only; in eu-west-1 delete buckets from the dashboard
   (Owner and Admin roles)
 
 ## Optional
 
-The browser console at app.fil.one, one page per console screen. No code
+The browser console at app.filone.com, one page per console screen. No code
 required. Each page below is console-specific; the capability pages (Storage,
 Security, Billing) hold the concepts and code samples.
 
-- [App - Dashboard](https://docs.fil.one/app/dashboard): Console home. Quick
+- [App - Dashboard](https://docs.filone.com/app/dashboard): Console home. Quick
   setup checklist, PLAN/STORAGE/EGRESS cards (PLAN shown to Owner/Admin only),
   Usage Trends (Storage area chart with latest reading; Egress bar chart with
   the window total), Recent Activity. Storage is a periodic point-in-time reading
@@ -234,7 +234,7 @@ Security, Billing) hold the concepts and code samples.
   per-TB rate), while the invoice uses AVERAGE storage, so they differ. Recent
   Activity covers bucket and key creation; object-level events are not included
   yet
-- [App - Buckets](https://docs.fil.one/app/buckets): Bucket list (Name, Region,
+- [App - Buckets](https://docs.filone.com/app/buckets): Bucket list (Name, Region,
   Created; sorted by name; search, sortable columns and region filter from 5
   buckets), create form, object browser, upload, object detail, download/share,
   delete. DELETE BUCKET from the row's actions menu: Owner/Admin only, EMPTY
@@ -249,7 +249,7 @@ Security, Billing) hold the concepts and code samples.
   entries and the tab count is a daily reading that can lag; no version
   restore/promote (download and re-upload). Download works on trial; SHARING IS
   A PAID-PLAN FEATURE
-- [App - API Keys](https://docs.fil.one/app/api-keys): Key list (Name, Region,
+- [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Name, Region,
   Buckets, Permissions, Created by, Status, Last Used) and create flow. Region is
   REQUIRED (pre-set to eu-west-1) and a key is scoped to its own region's
   endpoint. Read/Write/List pre-selected, Delete NOT; finer-grained permissions
@@ -263,12 +263,12 @@ Security, Billing) hold the concepts and code samples.
   stops working at once; expired keys can't be rotated. Delete is the
   revocation. "Last Used" and "Status" are placeholder columns reading
   "Never"/"Active" for every key, and expiry is not shown after creation
-- [App - AI Agent Toolkit](https://docs.fil.one/app/ai-agent-toolkit): NOT
+- [App - AI Agent Toolkit](https://docs.filone.com/app/ai-agent-toolkit): NOT
   RELEASED. A "Coming Soon" page introducing the toolkit plus a waitlist form, so
   there is nothing to set up on it yet. What DOES work today: ordinary S3 access
   keys scoped to a bucket, which is how LangChain, LlamaIndex, Vercel AI SDK and
   CrewAI connect
-- [App - Organization](https://docs.fil.one/app/organization): BETA. Every
+- [App - Organization](https://docs.filone.com/app/organization): BETA. Every
   account starts as a one-person organization with you as Owner. The
   ORGANIZATION MENU at the top of the sidebar opens separate pages, each shown
   only to roles that can use it: Edit organization (/edit-organization; name,
@@ -289,7 +289,7 @@ Security, Billing) hold the concepts and code samples.
   is in the organization menu and per browser tab; leave an organization from
   Settings (not as its last Owner). Deleting an organization is not available
   in the console yet (support@fil.one)
-- [App - Billing](https://docs.fil.one/app/billing): Plan card, usage card,
+- [App - Billing](https://docs.filone.com/app/billing): Plan card, usage card,
   payment method, choosing a plan, invoices, "Need help?" panel. Its own page
   at /billing, opened from the organization menu at the top of the sidebar. Visible to
   Owners and Admins; every action is Owner-only. A FAILED PAYMENT shows a
@@ -301,7 +301,7 @@ Security, Billing) hold the concepts and code samples.
   pricing, 1, 3, or 5-year terms). Invoices list shows the
   12 most recent issued invoices, INCLUDING UNPAID (drafts not shown). Card
   details live in the Stripe portal, which is also where cancellation happens
-- [App - Settings](https://docs.fil.one/app/settings): Profile fields (full name
+- [App - Settings](https://docs.filone.com/app/settings): Profile fields (full name
   <= 200 chars; valid email, disposable rejected; the organization's name is not
   part of the profile and is edited on the Edit organization page), an
   Organizations section to switch or leave organizations, notification preferences (Marketing
@@ -310,16 +310,16 @@ Security, Billing) hold the concepts and code samples.
   verification-screen redirect; Google/GitHub sign-ins manage name and email at
   the provider. The "Danger zone" card covers "Delete account": not available in
   the console yet, email support@fil.one
-- [App - Support](https://docs.fil.one/app/support): The "Talk to an expert" form,
+- [App - Support](https://docs.filone.com/app/support): The "Talk to an expert" form,
   opened from "Support" in the user menu at the bottom of the sidebar. All fields required, starts empty, four
   categories, ~1 business day response. Replies arrive by email; the console does
   not show a ticket list. Sales: "Contact sales team" in the "Choose your plan"
   dialog, or "Talk to sales" in Billing's "Need help?" panel on trial/no plan
-- [FAQ](https://docs.fil.one/faq): Common questions on S3 compatibility,
+- [FAQ](https://docs.filone.com/faq): Common questions on S3 compatibility,
   blockchain/crypto requirements, data residency, deletion behavior, migration
   from AWS S3, backups, durability, multiple users (organizations, in beta),
   and Filecoin data integrity mechanics
-- [Limits & Quotas](https://docs.fil.one/limits): Account limits (storage,
+- [Limits & Quotas](https://docs.filone.com/limits): Account limits (storage,
   egress, buckets), object size limits (max 5 TB, use multipart above 5 GB),
   API rate limits, and bucket/key naming constraints (object keys 1,024
   characters in the dashboard; 1,024 bytes via the API, standard S3 and not

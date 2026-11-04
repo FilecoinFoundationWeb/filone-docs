@@ -1,6 +1,6 @@
 # Agent guidelines for filone-docs
 
-This repo is the source for [docs.fil.one](https://docs.fil.one), a Docusaurus site. These guidelines apply to any AI agent (or human) making changes here.
+This repo is the source for [docs.filone.com](https://docs.filone.com), a Docusaurus site. These guidelines apply to any AI agent (or human) making changes here.
 
 ## Keep the LLM mirror files in sync
 
@@ -28,7 +28,7 @@ Fil One's capabilities can differ by region. When documenting an S3 operation, a
 
 ## Dashboard vs. direct API/SDK are different surfaces
 
-A feature working through the S3 API (via a customer's own SDK or CLI) does not mean the `app.fil.one` dashboard has a UI for it, and vice versa. Be explicit about which surface a claim applies to — don't let "supported" in one context imply the other.
+A feature working through the S3 API (via a customer's own SDK or CLI) does not mean the `app.filone.com` dashboard has a UI for it, and vice versa. Be explicit about which surface a claim applies to — don't let "supported" in one context imply the other.
 
 ## `docs/reference/s3-compatibility.mdx` is the single source of truth for API compatibility
 
