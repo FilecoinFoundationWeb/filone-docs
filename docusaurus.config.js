@@ -6,7 +6,7 @@ const config = {
   title: "Fil One",
   tagline: "S3 object storage built for the AI era.",
   favicon: "img/favicon.svg",
-  url: "https://docs.fil.one",
+  url: "https://docs.filone.com",
   baseUrl: "/",
   organizationName: "FilecoinFoundationWeb",
   projectName: "filone-docs",
@@ -31,7 +31,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         "@type": "SoftwareApplication",
         "name": "Fil One",
         "description": "S3-compatible object storage backed by Filecoin. No egress fees on paid plans, $5.99/TB/month. Works with the S3 SDKs and tools you already use.",
-        "url": "https://docs.fil.one",
+        "url": "https://docs.filone.com",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
         "offers": {
@@ -121,12 +121,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           {
             type: "html",
             position: "right",
-            value: '<a href="https://app.fil.one/login" class="navbar-btn-secondary">Login</a>',
+            value: '<a href="https://app.filone.com/login" class="navbar-btn-secondary">Login</a>',
           },
           {
             type: "html",
             position: "right",
-            value: '<a href="https://app.fil.one/login?screen_hint=signup" class="navbar-btn-primary"><span class="navbar-btn-primary-inner">Sign up</span></a>',
+            value: '<a href="https://app.filone.com/login?screen_hint=signup" class="navbar-btn-primary"><span class="navbar-btn-primary-inner">Sign up</span></a>',
           },
         ],
       },

@@ -42,7 +42,7 @@ Fil One only supports **path-style** URLs (`https://s3.eu-west-1.filonecontent.c
 
 ### Create a bucket
 
-`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.fil.one) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.filone.com) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
 
 ```python
 s3.create_bucket(Bucket="my-bucket")

@@ -32,4 +32,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://docs.fil.one/sitemap.xml
+Sitemap: https://docs.filone.com/sitemap.xml
