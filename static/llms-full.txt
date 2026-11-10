@@ -2651,7 +2651,7 @@ what an unimplemented operation returns, and what you get instead of a 404 for a
 bucket or key you cannot see. Confirm the operation is supported in your region
 before auditing access-key scopes.
 
-**ServiceUnavailable (503)**: Transient. Retry with exponential backoff.
+**ServiceUnavailable (503)**: Transient. Retry with exponential backoff. If persistent, check https://status.filone.com.
 
 
 ---
