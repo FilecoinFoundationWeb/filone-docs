@@ -91,6 +91,8 @@ Critical integration notes for developers:
 
 ## Getting Started
 
+- [Introduction](https://docs.filone.com/): What Fil One is, who it is for, and
+  where to start
 - [Quickstart](https://docs.filone.com/quickstart): Create an account, generate
   API keys, and upload your first object — covers App, AWS CLI, Python, and
   JavaScript paths
