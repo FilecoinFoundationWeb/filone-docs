@@ -1,0 +1,73 @@
+---
+title: Use with an AI Agent
+description: Let a coding agent work with your Fil One buckets without putting your keys in its prompt or files.
+---
+
+A coding agent such as Claude Code, Cursor, or Codex can work with Fil One the same way any S3 client does. Fil One is S3-compatible, so the agent uses the AWS CLI or an AWS SDK it already knows. This guide covers how to give it access safely, and the few rules agents tend to get wrong against Fil One.
+
+## 1. Create a key for the agent
+
+Give each agent its own key rather than reusing one from your application or your own machine. If the agent misbehaves or its key leaks, you can [delete that key](/app/api-keys#revoking-a-key) without breaking anything else.
+
+When you [create the key](/app/api-keys#creating-a-key):
+
+- **Name it after the agent and project**, such as `claude-code-reports`, so the key list tells you what it is for.
+- **Scope it to the buckets the agent needs.** Choose **Specific buckets** rather than **All buckets**.
+- **Make it read-only if the agent only reads.** Keep **Read** and **List**, and untick **Write**, which is pre-selected. Leave **Delete** unticked unless the agent has to remove objects.
+- **Pick the region the buckets are in.** A key works in one region only.
+- **Set an expiry**, such as **30 days**, for an agent you are trying out.
+
+See [API Keys](/security/api-keys#key-permissions) for exactly what each permission allows.
+
+## 2. Store the key in a profile
+
+Put the key in a named AWS CLI profile so the agent can use it without ever seeing it in a prompt or a file in your project. Run this yourself, in your own terminal, not through the agent:
+
+```bash
+aws configure set aws_access_key_id YOUR_ACCESS_KEY --profile filone
+aws configure set aws_secret_access_key YOUR_SECRET_KEY --profile filone
+aws configure set region eu-west-1 --profile filone
+aws configure set s3.addressing_style path --profile filone
+```
+
+Use your key's region in place of `eu-west-1`. If you work in both regions, create one profile per region, such as `filone-eu` and `filone-us`.
+
+:::warning Keep keys out of the agent's context
+Don't paste a key into the chat, a system prompt, `AGENTS.md`, `CLAUDE.md`, or a `.env` file in the project. Agents read those files, and anything in them can end up in logs, commits, or the model's context. A profile keeps the secret in `~/.aws/credentials`, outside the project.
+
+An agent with shell access can still read `~/.aws/credentials` if it tries. A profile keeps keys out of prompts and committed files, but the key's scope is what limits what the agent can do. Keep it narrow.
+:::
+
+## 3. Add instructions for the agent
+
+Paste this into `AGENTS.md`, `CLAUDE.md`, or your agent's system prompt. It names the profile and never contains a key, so the file is safe to commit. Change the endpoint and region to match your key.
+
+```markdown
+## Object storage: Fil One
+
+Fil One is S3-compatible object storage. Use any S3 client.
+
+- Endpoint: https://s3.eu-west-1.filonecontent.com
+- Region: eu-west-1. The access key works in this region only.
+- Credentials: the `filone` AWS profile. Pass `--profile filone` to the AWS CLI, or set `AWS_PROFILE=filone` for an SDK. Never print, log or commit the keys.
+- Use path-style addressing; virtual-hosted-style URLs fail. The profile sets it for the AWS CLI and boto3. In JavaScript set `forcePathStyle: true`, in Go `UsePathStyle = true`.
+- Send no server-side encryption headers. Data is already encrypted at rest, and SSE-KMS and SSE-C requests are rejected.
+- Buckets cannot be created or deleted over S3 in this region. Ask the user to create one in the Fil One console.
+- Full reference: https://docs.filone.com/llms.txt
+```
+
+For `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and drop the bucket-creation line, because buckets can be created and deleted over S3 there.
+
+## What agents get wrong
+
+Agents default to how Amazon S3 behaves. These are the differences that trip them up most:
+
+| What the agent does | What happens | What to do instead |
+|---------------------|--------------|--------------------|
+| Uses virtual-hosted-style URLs (`https://bucket.s3...`), the default in most SDKs | Requests fail | Enable path-style addressing in every client. See [SDKs & Tools](/sdk/overview#connection-details). |
+| Sends `ServerSideEncryption: aws:kms` or SSE-C headers | SSE-KMS is rejected in both regions. SSE-C is rejected in `eu-west-1` | Send no encryption headers. Data is encrypted at rest automatically. See [Encryption](/security/encryption). |
+| Calls `CreateBucket` or `DeleteBucket` in `eu-west-1` | Rejected | Create and delete buckets in the console there. Both work over S3 in `us-east-1`. See [Buckets](/storage/buckets). |
+| Uses a key against the other region's endpoint | Requests fail | Keep the endpoint, the region, and the key in the same region. |
+| Tries to turn versioning or Object Lock on or off after creating a bucket | The setting can't be changed | Both are set when the bucket is created. See [Versioning](/storage/versioning). |
+
+For the full list of supported operations, see [S3 Compatibility](/reference/s3-compatibility). Agents can read the whole of these docs as plain text at [`/llms.txt`](https://docs.filone.com/llms.txt) and [`/llms-full.txt`](https://docs.filone.com/llms-full.txt).

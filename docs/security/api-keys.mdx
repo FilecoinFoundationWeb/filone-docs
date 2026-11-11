@@ -161,5 +161,6 @@ Find the key in **API Keys**, open its **⋯** action menu, and choose **Delete*
 - **Rotate keys periodically.** Use **Rotate** on the key, then update your application with the new credentials. See [Rotating a key](#rotating-a-key).
 - **Revoke keys immediately** if you suspect compromise, and rotate anything that depended on them. Revocation is forwarded to the storage operator, so treat it as effective quickly rather than assuming a precise cut-off instant.
 - **Never hardcode credentials** in source code. Use environment variables or a secrets manager.
+- **Give each AI agent its own narrowly scoped key,** read-only if it only reads, and keep the key out of the agent's prompt and project files. See [Use with an AI Agent](/sdk/ai-agents).
 
 See [Authentication](/security/authentication) for how to configure your S3 client with your API keys.
