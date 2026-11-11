@@ -1,85 +1,144 @@
 ---
 title: Quickstart
-description: Create an account, a bucket and an API key, then upload your first object from the console, the AWS CLI, Python or JavaScript.
+description: Sign up, create a bucket and an API key, then upload your first object from the console, the AWS CLI, Python, JavaScript or Go.
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-This guide walks you through creating an account, setting up credentials, and uploading your first object. Choose the path that fits your workflow.
+This guide takes you from a new account to your first uploaded object. In steps 4 and 5, pick the tab for the tool you use: your choice carries over between the two steps.
+
+:::info What you'll need
+- A web browser, to sign up and to create a bucket and an API key in the [Fil One console](https://app.filone.com).
+- To work from a terminal or code: [AWS CLI v2](/sdk/cli) (version 2.13 or later), or Python with boto3, Node.js with the AWS SDK for JavaScript v3, or Go with aws-sdk-go-v2. To upload from the console, you need nothing else.
+- About 10 minutes.
+:::
 
 ## 1. Create your account
 
 1. Go to [app.filone.com](https://app.filone.com) and sign up with your email, Google, or GitHub.
-2. Verify your email address.
-3. You're in. No credit card needed — your 30-day free trial starts automatically.
+2. Verify your email address. The console shows **Verify your email to get started** until you open the link in the email, then click **I verified my email**.
+3. Name your organization, then click **Create organization**. The organization holds your buckets, API keys and billing.
+4. You land on the **Get started** page, which has shortcuts to **Create bucket** and **Create API key**.
+
+Your 30-day free trial starts automatically, with no credit card. Each person gets one trial, on the first organization they own. See [Free trial](/billing/trial).
 
 ## 2. Create a bucket
 
-From the dashboard, click **New bucket** to open the create form. Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
+On the **Get started** page, click **Create bucket**. (Later, use **New bucket** on the dashboard or **Create bucket** on the **Buckets** page; they open the same form.) Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
 
 | Setting | Options | Notes |
 |---------|---------|-------|
 | Region | `eu-west-1` Europe (France) or `us-east-1` US East (Michigan) | Defaults to `eu-west-1`. Cannot be changed later. |
 | Encryption | Always on | All data is encrypted at rest. Nothing to configure. |
 
-Leave everything else at its default for your first bucket, and click **Create bucket**.
+Leave everything else at its default for your first bucket, and click **Create bucket**. The examples below use a bucket named `my-bucket`: use your own bucket's name instead.
 
 :::warning Some settings can only be chosen now
 Versioning, Object Lock, and retention sit under **Advanced settings** on the create form, and can only be turned on when the bucket is created. Neither can be turned off later, and Object Lock can stop you deleting data you're paying for. Read [Versioning](/storage/versioning) and [Object Lock](/storage/object-lock) before you enable them on a bucket you plan to keep.
 :::
 
-## 3. Upload your first object
+## 3. Create an API key
 
-Choose your preferred method. The App requires no API key. For CLI and SDK access, open your new bucket and click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. You'll get two values:
+You need a key for the CLI and the SDKs, not for uploading in the console. On the **Get started** page, click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. Create it in the **same region as your bucket**: a key belongs to one region and is rejected by the other. **Read**, **Write** and **List** are selected by default, which is enough for this guide.
+
+You'll get two values:
 
 - **Access Key ID** — identifies the key (safe to store in config)
 - **Secret Access Key** — authenticates your requests (treat like a password)
 
 :::note
-Your secret key is shown once. Copy it and store it securely. If you lose it, rotate the key from its **⋯** menu in **API Keys** to get a new secret. See [API Keys](/app/api-keys#rotating-a-key).
-
-A key also belongs to a single region, so create it in the same region as your bucket.
+Your secret key is shown once. Copy it, or click **Download .env** to save a `credentials.env` file that sets `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Store it securely, and never commit it to a repository. If you lose the secret, rotate the key from its **⋯** menu in **API Keys** to get a new one. See [API Keys](/app/api-keys#rotating-a-key).
 :::
 
-The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1` instead.
+## 4. Set up your tool
 
-<Tabs>
-  <TabItem value="app-ui" label="App">
-    1. Open your bucket from the dashboard.
-    2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
-    3. Your objects appear in the file list once the upload completes.
-    4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
-  </TabItem>
+The examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1` instead. Path-style addressing is required: Fil One does not support virtual-hosted-style URLs.
 
-  <TabItem value="aws-cli" label="AWS CLI">
-    Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](/sdk/cli). Enter your key's ID and secret when prompted, and leave the other prompts empty:
+<Tabs groupId="quickstart-tool" queryString="tool">
+  <TabItem value="cli" label="AWS CLI">
+    Create a `filone` profile, so you don't overwrite your default AWS credentials. Enter your key's ID and secret when prompted, and leave the other prompts empty:
 
     ```bash
     aws configure --profile filone
     aws configure set region eu-west-1 --profile filone
     aws configure set endpoint_url https://s3.eu-west-1.filonecontent.com --profile filone
-    # Path-style is required: Fil One does not support virtual-hosted URLs
     aws configure set s3.addressing_style path --profile filone
     ```
 
-    Upload a file:
+    Check that the key works before you upload anything:
 
     ```bash
-    echo "hello" > my-file.txt
-    aws s3 cp my-file.txt s3://my-bucket/my-file.txt --profile filone
+    aws s3 ls --profile filone
     ```
 
-    Verify it's there:
+    You should see a line for `my-bucket`. If you get an error instead, see [Troubleshooting](/reference/errors#troubleshooting): a key, endpoint and region that don't all match is the most common cause.
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+    ```bash
+    pip install boto3
+    ```
+
+    Load your key into the standard AWS environment variables. If you downloaded `credentials.env`, run `source credentials.env`. Otherwise:
 
     ```bash
-    aws s3 ls s3://my-bucket/ --profile filone
+    export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+    export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
     ```
   </TabItem>
 
-  <TabItem value="python-boto3" label="Python (boto3)">
-    Create `my-file.txt` first, for example with `echo "hello" > my-file.txt`.
+  <TabItem value="javascript" label="JavaScript">
+    ```bash
+    npm install @aws-sdk/client-s3
+    ```
+
+    Load your key into the standard AWS environment variables. If you downloaded `credentials.env`, run `source credentials.env`. Otherwise:
+
+    ```bash
+    export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+    export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+    ```
+  </TabItem>
+
+  <TabItem value="go" label="Go">
+    ```bash
+    mkdir filone-quickstart && cd filone-quickstart
+    go mod init example.com/filone-quickstart
+    go get github.com/aws/aws-sdk-go-v2/service/s3
+    go get github.com/aws/aws-sdk-go-v2/credentials
+    ```
+
+    Load your key into the standard AWS environment variables. If you downloaded `credentials.env`, run `source credentials.env`. Otherwise:
+
+    ```bash
+    export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+    export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+    ```
+  </TabItem>
+
+  <TabItem value="console" label="Console">
+    Nothing to set up. You're already signed in to the console.
+  </TabItem>
+</Tabs>
+
+## 5. Upload your first object
+
+Create a file to upload first, for example with `echo "hello" > my-file.txt`. The SDK examples list your buckets before they upload, so a credential problem shows up before anything else happens. If that first call fails, see [Troubleshooting](/reference/errors#troubleshooting).
+
+<Tabs groupId="quickstart-tool" queryString="tool">
+  <TabItem value="cli" label="AWS CLI">
+    ```bash
+    aws s3 cp my-file.txt s3://my-bucket/my-file.txt --profile filone
+    aws s3 ls s3://my-bucket/ --profile filone
+    ```
+
+    For downloads and more commands, see [Quickstart - AWS CLI](/quickstart/cli).
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+    Save this as `upload.py`, then run `python3 upload.py`:
 
     ```python
     import boto3
@@ -88,27 +147,35 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
     s3 = boto3.client(
         "s3",
         endpoint_url="https://s3.eu-west-1.filonecontent.com",
-        aws_access_key_id="YOUR_ACCESS_KEY",
-        aws_secret_access_key="YOUR_SECRET_KEY",
         region_name="eu-west-1",
+        # Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
         config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
     )
+
+    # Check the credentials: list the buckets this key can see
+    for bucket in s3.list_buckets()["Buckets"]:
+        print("bucket:", bucket["Name"])
 
     # Upload a file
     s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
 
-    # List objects to confirm
+    # List the bucket to confirm
     response = s3.list_objects_v2(Bucket="my-bucket")
     for obj in response.get("Contents", []):
-        print(obj["Key"], obj["Size"])
+        print(f"{obj['Key']}  ({obj['Size']} bytes)")
     ```
   </TabItem>
 
-  <TabItem value="javascript-aws-sdk-v3" label="JavaScript (AWS SDK v3)">
+  <TabItem value="javascript" label="JavaScript">
     Save this as `upload.mjs` (it uses ES modules and top-level `await`), then run `node upload.mjs`:
 
     ```javascript
-    import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+    import {
+      S3Client,
+      ListBucketsCommand,
+      PutObjectCommand,
+      ListObjectsV2Command,
+    } from "@aws-sdk/client-s3";
     import { readFileSync } from "fs";
 
     const client = new S3Client({
@@ -118,11 +185,12 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
       // SDK v3.729+ adds checksums Fil One doesn't accept on presigned uploads
       requestChecksumCalculation: "WHEN_REQUIRED",
       responseChecksumValidation: "WHEN_REQUIRED",
-      credentials: {
-        accessKeyId: "YOUR_ACCESS_KEY",
-        secretAccessKey: "YOUR_SECRET_KEY",
-      },
+      // Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
     });
+
+    // Check the credentials: list the buckets this key can see
+    const { Buckets } = await client.send(new ListBucketsCommand({}));
+    Buckets?.forEach((b) => console.log("bucket:", b.Name));
 
     // Upload a file
     await client.send(new PutObjectCommand({
@@ -131,19 +199,99 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
       Body: readFileSync("my-file.txt"),
     }));
 
-    // List objects to confirm
+    // List the bucket to confirm
     const { Contents } = await client.send(
       new ListObjectsV2Command({ Bucket: "my-bucket" })
     );
-    Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
+    Contents?.forEach((obj) => console.log(`${obj.Key}  (${obj.Size} bytes)`));
     ```
   </TabItem>
+
+  <TabItem value="go" label="Go">
+    Save this as `main.go` in the `filone-quickstart` folder, then run `go run .`:
+
+    ```go
+    package main
+
+    import (
+        "bytes"
+        "context"
+        "fmt"
+        "log"
+        "os"
+
+        "github.com/aws/aws-sdk-go-v2/aws"
+        "github.com/aws/aws-sdk-go-v2/credentials"
+        "github.com/aws/aws-sdk-go-v2/service/s3"
+    )
+
+    func main() {
+        client := s3.New(s3.Options{
+            BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
+            Region:       "eu-west-1",
+            UsePathStyle: true,
+            Credentials: credentials.NewStaticCredentialsProvider(
+                os.Getenv("AWS_ACCESS_KEY_ID"),
+                os.Getenv("AWS_SECRET_ACCESS_KEY"),
+                "",
+            ),
+        })
+        ctx := context.Background()
+
+        // Check the credentials: list the buckets this key can see
+        buckets, err := client.ListBuckets(ctx, &s3.ListBucketsInput{})
+        if err != nil {
+            log.Fatal(err)
+        }
+        for _, b := range buckets.Buckets {
+            fmt.Println("bucket:", aws.ToString(b.Name))
+        }
+
+        // Upload a file
+        data, err := os.ReadFile("my-file.txt")
+        if err != nil {
+            log.Fatal(err)
+        }
+        _, err = client.PutObject(ctx, &s3.PutObjectInput{
+            Bucket: aws.String("my-bucket"),
+            Key:    aws.String("my-file.txt"),
+            Body:   bytes.NewReader(data),
+        })
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        // List the bucket to confirm
+        out, err := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+            Bucket: aws.String("my-bucket"),
+        })
+        if err != nil {
+            log.Fatal(err)
+        }
+        for _, obj := range out.Contents {
+            fmt.Printf("%s  (%d bytes)\n", aws.ToString(obj.Key), aws.ToInt64(obj.Size))
+        }
+    }
+    ```
+  </TabItem>
+
+  <TabItem value="console" label="Console">
+    1. Open your bucket from the dashboard.
+    2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
+    3. Your objects appear in the file list once the upload completes.
+    4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
+  </TabItem>
 </Tabs>
+
+:::tip Deleting needs its own permission
+A key with the default permissions can upload and read but not delete. To delete objects over the S3 API, use a key that also has the **Delete** permission. See [API Keys](/security/api-keys#key-permissions).
+:::
 
 ## What's next
 
 <div class="card-grid">
+  <a href="/quickstart/cli"><strong>More with the AWS CLI</strong><span>Profile file, both regions, downloads and syncing.</span></a>
+  <a href="/quickstart/sdk"><strong>SDK setup notes</strong><span>Credentials, regions and the client settings Fil One needs.</span></a>
   <a href="/reference/s3-compatibility"><strong>S3 Compatibility</strong><span>Full list of supported operations and headers.</span></a>
-  <a href="/sdk/overview"><strong>SDK Examples</strong><span>Detailed examples for Python, JavaScript, Go, and CLI.</span></a>
-  <a href="/billing/trial"><strong>Billing & Trial</strong><span>What's included in your trial and how to upgrade.</span></a>
+  <a href="/billing/trial"><strong>Free trial</strong><span>What's included in your trial and how to upgrade.</span></a>
 </div>

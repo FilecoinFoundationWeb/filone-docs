@@ -24,6 +24,8 @@ The storage and egress figures above are hard limits, not soft allowances, and r
 - **Storage reaching 1 TB** puts the account into a **write-locked** state — you can still read and download, but new uploads are rejected.
 - **Egress reaching 2 TB** **disables the account** — the same state as an account whose grace period has ended, with no read or write access until you upgrade. There is no read-only grace period first.
 
+Upgrading to a paid plan lifts both caps as soon as the upgrade completes.
+
 Trial egress is a **single cumulative budget** across the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (around 07:00 and 19:00 UTC), so a cap may be exceeded for a few hours before access changes.
 :::
 
