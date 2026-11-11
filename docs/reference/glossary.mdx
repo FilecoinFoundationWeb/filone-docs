@@ -1,0 +1,98 @@
+---
+title: Glossary
+description: Short definitions of the storage, S3 and Fil One terms used in these docs, each linked to the page that covers it.
+---
+
+Short definitions of terms used across these docs. Each links to the page that covers it.
+
+## Access key ID and secret access key
+
+The two halves of an API key. The access key ID identifies the key and is sent with each request. The secret access key signs requests and is never sent. It's shown once, when you create the key. See [Authentication](/security/authentication#api-keys).
+
+## API key
+
+A credential for the S3 API. It belongs to one region and carries a set of permissions, optionally limited to some buckets. See [API keys](/security/api-keys).
+
+## Bucket
+
+A container for objects. You choose its region, versioning and Object Lock settings when you create it, and they can't be changed afterwards. See [Buckets](/storage/buckets).
+
+## Bucket scope
+
+An optional limit on which buckets an API key can work with. Without it, a key reaches every bucket in its region. See [Bucket scope](/security/api-keys#bucket-scope).
+
+## Compliance mode
+
+The stricter Object Lock mode. No one, including the organization Owner, can delete a locked object version or shorten its retention before it expires. See [Retention modes](/storage/object-lock#retention-modes).
+
+## Delete marker
+
+What a versioned bucket records when you delete an object without naming a version. The object disappears from listings, and its earlier versions stay retrievable by version ID. See [Delete markers](/storage/versioning#delete-markers).
+
+## Egress
+
+Data downloaded from Fil One. Paid plans have no egress fees. During the free trial, egress is capped. See [Usage](/billing/usage).
+
+## Endpoint
+
+The base URL for a region's S3 API, such as `https://s3.eu-west-1.filonecontent.com`. Your client, key and bucket must all use the same region. See [S3 compatibility](/reference/s3-compatibility#endpoint).
+
+## Governance mode
+
+The default Object Lock mode. In AWS S3, a caller with a bypass permission can override it. Fil One doesn't let any key be granted that permission, so a Governance-locked object is protected for its retention period. See [Retention modes](/storage/object-lock#retention-modes).
+
+## Legal hold
+
+A flag on an object version, in a bucket with Object Lock, that protects it from deletion until the hold is removed. Setting it needs the **Set legal hold** permission, which only an Owner can grant. See [API keys](/security/api-keys).
+
+## Multipart upload
+
+Uploading one object as several parts, then combining them. It's required above the single-PUT size limit and recommended for large files. See [Multipart uploads](/storage/multipart-uploads).
+
+## Object
+
+A file stored in a bucket under a key (its name), with its metadata. See [Objects](/storage/objects).
+
+## Object Lock
+
+Write-once protection that stops object versions being deleted or overwritten for a retention period. It's enabled when you create a bucket, together with versioning. See [Object Lock](/storage/object-lock).
+
+## Organization
+
+The account that owns buckets, keys and billing. Members join it with a role: Owner, Admin, Member or Read only. See [Organization](/app/organization).
+
+## Path-style addressing
+
+Putting the bucket name in the URL path (`https://s3.<region>.filonecontent.com/my-bucket/my-key`) rather than in the hostname. Fil One only supports path-style URLs, so S3 clients must be set to use them. See [API reference](/reference/overview#request-format).
+
+## Presigned URL
+
+A time-limited URL that lets someone download or upload one object without credentials. See [Presigned URLs](/storage/objects#presigned-urls).
+
+## Proof of Replication (PoRep) and Proof of Spacetime (PoSt)
+
+The cryptographic proofs that Filecoin storage providers submit to show they still hold the data they committed to store. They run at the network level, not per request. See [FAQ](/faq).
+
+## Region
+
+Where a bucket's data is stored: `eu-west-1` (Europe, France) or `us-east-1` (US East, Michigan). See [Choosing a region](/guides/choosing-a-region).
+
+## Retention period
+
+How long an object version under Object Lock can't be deleted or overwritten. A bucket's default is set at creation, from 1 day to 100 years. Retention can be extended but not shortened. See [Object Lock](/storage/object-lock).
+
+## SigV4 (Signature Version 4)
+
+The AWS request-signing scheme that Fil One requires. Some clients need it set explicitly, for example boto3 for presigned URLs. See [S3 compatibility](/reference/s3-compatibility#authentication).
+
+## Version ID
+
+The identifier of one version of an object in a versioned bucket. Use it to read or delete a specific version. See [Versioning](/storage/versioning).
+
+## Versioning
+
+Keeping every version of an object when it's overwritten or deleted. It's set when you create a bucket and can't be suspended afterwards. See [Versioning](/storage/versioning).
+
+## WORM (write once, read many)
+
+Storage that can be written once and then only read for a set period. Object Lock provides it. See [Object Lock](/storage/object-lock).

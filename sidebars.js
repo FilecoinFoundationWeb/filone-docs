@@ -14,7 +14,27 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Guides",
+      link: {
+        type: "generated-index",
+        title: "Guides",
+        description: "Task guides for moving data to Fil One and choosing where it lives.",
+        slug: "/guides",
+      },
+      items: [
+        "guides/migration",
+        "guides/choosing-a-region",
+      ],
+    },
+    {
+      type: "category",
       label: "Storage",
+      link: {
+        type: "generated-index",
+        title: "Storage",
+        description: "Buckets, objects, multipart uploads, versioning and Object Lock.",
+        slug: "/storage",
+      },
       items: [
         "storage/buckets",
         "storage/objects",
@@ -44,16 +64,16 @@ const sidebars = {
     },
     {
       type: "category",
-      label: "App",
+      label: "Console",
       items: [
-        "app/dashboard",
-        "app/buckets",
-        "app/api-keys",
+        { type: "doc", id: "app/dashboard", label: "Dashboard" },
+        { type: "doc", id: "app/buckets", label: "Buckets" },
+        { type: "doc", id: "app/api-keys", label: "API Keys" },
         "app/ai-agent-toolkit",
-        "app/organization",
-        "app/billing",
-        "app/settings",
-        "app/support",
+        { type: "doc", id: "app/organization", label: "Organization" },
+        { type: "doc", id: "app/billing", label: "Billing" },
+        { type: "doc", id: "app/settings", label: "Settings" },
+        { type: "doc", id: "app/support", label: "Support" },
       ],
     },
     {
@@ -63,6 +83,8 @@ const sidebars = {
         "reference/overview",
         "reference/s3-compatibility",
         "reference/errors",
+        "limits",
+        "reference/glossary",
       ],
     },
     {
@@ -76,8 +98,16 @@ const sidebars = {
         "sdk/cli",
       ],
     },
-    "faq",
-    "limits",
+    {
+      type: "category",
+      label: "Help",
+      items: [
+        "faq",
+        { type: "link", label: "Troubleshooting", href: "/reference/errors#troubleshooting" },
+        { type: "link", label: "Contact support", href: "/app/support" },
+        { type: "link", label: "Service status", href: "https://status.filone.com" },
+      ],
+    },
   ],
 };
 

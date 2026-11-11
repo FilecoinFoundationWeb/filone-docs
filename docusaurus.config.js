@@ -110,17 +110,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             to: "/",
             label: "Documentation",
             position: "left",
-            activeBaseRegex: "^/(?!(reference|sdk))",
+            activeBaseRegex: "^/(?!(reference|sdk|limits)(/|$))",
           },
           {
             to: "/reference/overview",
             label: "API Reference",
             position: "left",
+            activeBaseRegex: "^/(reference|limits)(/|$)",
           },
           {
             to: "/sdk/overview",
             label: "SDKs & Tools",
             position: "left",
+            activeBaseRegex: "^/sdk(/|$)",
           },
           {
             type: "html",

@@ -1,0 +1,113 @@
+---
+title: Migrate to Fil One
+description: Move data from AWS S3 or another S3-compatible provider to Fil One with the AWS CLI or rclone.
+---
+
+Fil One speaks the S3 API, so the tools you already use to copy data between S3 buckets also copy data into Fil One. This guide covers two of them: the AWS CLI (`aws s3 sync`) and [rclone](https://rclone.org).
+
+Data can't move directly from another provider to Fil One with a server-side copy. Either tool downloads each object from the source and uploads it to Fil One, so the data passes through the machine that runs the tool. Run it close to the source if you can.
+
+## Before you start
+
+1. **Create the destination buckets.** In `eu-west-1`, the default region, buckets can only be created in the [console](https://app.filone.com). In `us-east-1` you can also create them over the S3 API with a key that has the `CreateBucket` permission. See [Buckets](/storage/buckets).
+2. **Decide on versioning and Object Lock now.** Both are set when you create the bucket and can't be changed afterwards. If Object Lock is on, every object you copy in gets the bucket's default retention, and you can't delete it until that period ends. See [Object Lock](/storage/object-lock).
+3. **Check bucket names.** Fil One doesn't allow dots (`.`) in bucket names, which AWS S3 does. A source bucket such as `logs.example.com` needs a new name, such as `logs-example-com`.
+4. **Create an API key** in the same region as the destination bucket, with **Read**, **Write** and **List**. These three are pre-selected on a new key. See [API keys](/security/api-keys).
+5. **Check the size against your plan.** During the free trial, reaching the storage cap write-locks the account. See [Free trial](/billing/trial) and [Limits](/limits).
+
+Your current provider may charge egress fees for the data you read out of it.
+
+## Option 1: AWS CLI
+
+Use AWS CLI v2.13 or later. You need two profiles: one for the source, which can be your existing default profile, and a `filone` profile for Fil One. The [CLI quickstart](/quickstart/cli#2-configure-a-profile) shows the `filone` profile:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://s3.eu-west-1.filonecontent.com
+region = eu-west-1
+s3 =
+    addressing_style = path
+```
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+A single `aws s3 sync` can't read from one endpoint and write to another, so copy the data in two steps through a local folder. Make sure the folder's disk has room for the data, or migrate one prefix at a time.
+
+```bash
+# 1. Download from the source bucket (here: your default AWS profile)
+aws s3 sync s3://my-source-bucket ./migration
+
+# 2. Preview the upload, then upload to Fil One
+aws s3 sync ./migration s3://my-bucket --dryrun --profile filone
+aws s3 sync ./migration s3://my-bucket --profile filone
+```
+
+To move one prefix at a time, add it to both paths, for example `s3://my-source-bucket/2025/` and `s3://my-bucket/2025/`.
+
+`aws s3 sync` only copies files that are new or changed, so you can run step 2 again after an interruption, or run both steps again later to pick up objects added to the source since the first pass.
+
+Check that the object count and total size match:
+
+```bash
+aws s3 ls s3://my-source-bucket --recursive --summarize | tail -2
+aws s3 ls s3://my-bucket --recursive --summarize --profile filone | tail -2
+```
+
+User-defined metadata (`x-amz-meta-*`) doesn't survive the trip through a local folder. If you rely on it, use rclone with `--metadata`.
+
+## Option 2: rclone
+
+rclone copies from one remote to another without writing the data to local disk. Define one remote for the source and one for Fil One in your rclone config file (run `rclone config file` to find it):
+
+```ini
+[source]
+type = s3
+provider = AWS
+access_key_id = YOUR_SOURCE_ACCESS_KEY
+secret_access_key = YOUR_SOURCE_SECRET_KEY
+region = us-east-1
+
+[filone]
+type = s3
+provider = Other
+access_key_id = YOUR_ACCESS_KEY
+secret_access_key = YOUR_SECRET_KEY
+region = eu-west-1
+endpoint = https://s3.eu-west-1.filonecontent.com
+force_path_style = true
+no_check_bucket = true
+```
+
+For the Fil One remote:
+
+- `provider = Other` with your region's `endpoint`. For `us-east-1`, use `region = us-east-1` and `endpoint = https://s3.us-east-1.filonecontent.com`.
+- `force_path_style = true` is required, because Fil One only supports path-style URLs.
+- `no_check_bucket = true` stops rclone from trying to create the destination bucket, which you create in advance.
+
+The config file holds your keys, so keep it private.
+
+Preview the copy, run it, then compare the two sides:
+
+```bash
+rclone copy source:my-source-bucket filone:my-bucket --dry-run
+rclone copy source:my-source-bucket filone:my-bucket --progress
+rclone check source:my-source-bucket filone:my-bucket
+```
+
+`rclone copy` skips files that already match, so you can run it again after an interruption. It never deletes anything at the destination. `rclone check` can't compare hashes for objects that were uploaded in parts, so it may report that some hashes couldn't be checked; it still compares sizes.
+
+rclone keeps each object's content type. Add `--metadata` (`-M`) to also copy user-defined metadata.
+
+Neither tool carries over object tags, ACLs or the source's version history: Fil One doesn't support tagging or ACLs, and each tool copies only the current version of each object.
+
+## After the migration
+
+- Point your applications at the Fil One endpoint, with path-style addressing and the new keys. See [Quickstart](/quickstart) and the [SDK guides](/sdk/overview).
+- Check the operations your applications use against [S3 compatibility](/reference/s3-compatibility). Lifecycle rules, bucket policies, tagging and event notifications aren't available, and that page lists a workaround for each.
+- Delete the local `./migration` folder if you used the AWS CLI.
