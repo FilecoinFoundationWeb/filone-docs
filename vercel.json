@@ -12,6 +12,8 @@
     { "source": "/app", "destination": "/app/dashboard", "permanent": true },
     { "source": "/app/overview", "destination": "/app/dashboard", "permanent": true },
     { "source": "/app/managing-buckets", "destination": "/app/buckets", "permanent": true },
-    { "source": "/app/uploading-files", "destination": "/app/buckets", "permanent": true }
+    { "source": "/app/uploading-files", "destination": "/app/buckets", "permanent": true },
+    { "source": "/bucket-intelligence", "destination": "/", "permanent": false },
+    { "source": "/app/bucket-intelligence", "destination": "/", "permanent": false }
   ]
 }

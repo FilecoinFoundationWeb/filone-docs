@@ -30,11 +30,15 @@ Two-factor authentication is opt-in per user and managed from **Settings**, unde
 
 You can enrol more than one factor and remove individual ones from Settings.
 
+Signing in with a passkey counts as a strong factor, so you aren't asked for a second factor on top of it.
+
 ## Passkeys
 
 Passkeys are listed separately from two-factor methods in Settings, under **Passkeys**. If you have none enrolled, the dashboard prompts you to add one on your next sign-in.
 
 You can hold up to **20 passkeys** on one account, which is enough to cover several devices without having to retire an old one to add a new one.
+
+Accounts that sign in with Google or GitHub don't see the **Passkeys** section.
 
 ## Recovery codes
 
@@ -44,18 +48,22 @@ Generating a new code invalidates the previous one, so store the new value somew
 
 ## Changes to security settings require re-authentication
 
-Four actions are gated behind a fresh two-factor check, even inside an already signed-in session:
+Four actions require a session that was signed in with two-factor authentication or a passkey, even inside an already signed-in session:
 
 - Removing a two-factor method
 - Removing all two-factor methods
 - Removing a passkey
 - Regenerating a recovery code
 
-If your current session was not established with a strong factor, the dashboard sends you back through sign-in to step up before the action proceeds. This means someone who gains access to an open session still cannot quietly strip the account's protections.
+If your current session wasn't, the dashboard sends you back through sign-in to step up before the action proceeds. This means a session signed in with a password alone cannot strip the account's protections.
+
+Transferring ownership of an organization has a stricter check: you must have signed in within the last five minutes, and if you have two-factor authentication set up, that sign-in must include it or use a passkey. Otherwise the dashboard sends you back through sign-in first.
 
 ## Changing your password
 
 Change your account password from **Settings** → **Security** → **Password** → **Change**. This sends a password-reset email to your registered address.
+
+If you sign in with Google or GitHub, there is no password to change in Fil One. **Settings** shows the password as **Managed by Google** (or **GitHub**), with a link to update it with that provider.
 
 ## Related
 

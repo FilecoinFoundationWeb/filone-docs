@@ -9,13 +9,19 @@ This page covers the console specifically. For the concepts, the S3 API equivale
 
 ## The bucket list
 
-The table shows **Name**, **Region** (both the label and the region ID, such as Europe (France) and `eu-west-1`), **Created**, **Visibility**, and **Features**, where **Versioned** and **Object Lock** badges appear if you enabled them.
+The table shows **Name**, **Region** (both the label and the region ID, such as Europe (France) and `eu-west-1`), and **Created**. Under each name a second line gives the bucket's storage used and object count, and an icon marks the bucket as private.
 
-All of your buckets are listed together, in the order the API returns them. With no buckets yet the page reads **No buckets yet** and offers **Create bucket**.
+All of your buckets are listed together, sorted by name. Once you have 5 or more buckets, a **Search buckets** box appears above the table, the column headers become sortable, and a region filter appears when your buckets span more than one region. With no buckets yet the page reads **No buckets yet** and offers **Create bucket**.
 
-:::note Deleting a bucket
-Bucket deletion runs through the S3 API rather than the console for now, so the trash icon on each row is disabled with the tooltip **Deleting buckets is not available yet**. See [Buckets](/storage/buckets#deleting-a-bucket) for the API route and which regions support it.
-:::
+If one region cannot be reached, an amber notice names it and the buckets in the other regions are still listed.
+
+Each row has an actions menu with **Browse objects**, **Copy bucket name**, **Copy S3 endpoint**, and **Delete bucket**.
+
+### Deleting a bucket
+
+Choose **Delete bucket** from the row's actions menu and confirm. Only empty buckets can be deleted: if the bucket still holds objects or object versions, the console says it is not empty and links to how to empty it. Use [Empty bucket](#emptying-a-bucket) first, then delete. Deletion is permanent.
+
+**Delete bucket** is only shown to Owners and Admins. It works in every region, including `eu-west-1`, where `DeleteBucket` is not available over the S3 API. See [Buckets](/storage/buckets#deleting-a-bucket).
 
 ## Creating a bucket
 
@@ -30,7 +36,7 @@ Click **Create bucket** and fill in:
 
 Turning a parent switch back off resets the ones nested inside it.
 
-You can also expand **Create new key** to generate an access key alongside the bucket. It is pre-scoped to the bucket you are creating and to that bucket's region, and the submit button changes to **Create bucket and API key**. The secret is shown once, in a dialog, before you return to the list.
+You can also expand **Create new key** to generate an access key alongside the bucket. It is pre-scoped to the bucket you are creating and to that bucket's region, and the submit button changes to **Create bucket and API key**. The secret is shown once, in a dialog. The console then opens the new bucket's page.
 
 A panel headed **Included by default** confirms two things you do not configure: all data is encrypted at rest, and every bucket is private, so access requires an API key.
 
@@ -40,12 +46,14 @@ Name, region, versioning, Object Lock, and the default retention policy are all 
 
 ## Inside a bucket
 
-Opening a bucket shows its region, storage used, and creation time, then property cards for **Versioning**, **Object Lock**, **Encryption** (always **Enabled**), and **Default Retention** when one is set.
+Opening a bucket shows its region, storage used, and creation time, then three property cards: **Versioning** and **Object Lock** (each **Enabled** or **Disabled**), and **Retention**, which shows the default retention policy, such as **Compliance · 15 days**, or **None**. Encryption is on for every bucket, so it has no card of its own.
+
+Once the bucket holds objects, **Empty bucket** and **Upload object** buttons appear in the header. While it is empty, the upload button sits in the empty state instead.
 
 Two tabs follow:
 
 - **Objects (N)** is the object browser.
-- **API Keys (N)** lists the keys that can reach this bucket, plus an **Access endpoints** block with the copyable **S3 Endpoint**, **S3 Path**, and **Region** you need to configure a client.
+- **API Keys (N)** lists the keys that can reach this bucket, plus an **Access endpoints** block with the copyable **S3 Endpoint**, **S3 Path**, and **Region** you need to configure a client. This tab is hidden for the Read-only role.
 
 ### Browsing objects
 
@@ -53,10 +61,10 @@ The object table shows **Name**, **Size**, and **Last Modified**, plus **Version
 
 On a versioned bucket, a key with more than one version gets an expander and an *n* **versions** pill. Expanding shows the older versions, badged **Latest** for the current one and **Delete marker** where a delete marker sits on top.
 
-Per-row icon buttons download or delete a single object, one at a time.
+Per-row icon buttons download or delete a single object. A checkbox on each row, and on the header, lets you select several at once. See [Deleting objects](#deleting-objects).
 
 :::note Large buckets
-The browser shows the first page of results, around 1,000 entries. The count on the **Objects (N)** tab is drawn from your bucket analytics and stays accurate, so on a large bucket expect that count to be higher than the number of rows in view. Use the AWS CLI or an SDK to page through a full listing. See [Objects](/storage/objects).
+The browser shows the first page of results, around 1,000 entries. When there are more, an amber **Showing the first** *n* notice appears, and selecting and deleting apply only to the objects listed. The count on the **Objects (N)** tab then comes from your bucket analytics, a daily reading that can lag recent changes, so expect it to be higher than the number of rows in view. Use the AWS CLI or an SDK to page through a full listing, or [Empty bucket](#emptying-a-bucket) to remove everything. See [Objects](/storage/objects).
 :::
 
 ## Uploading
@@ -68,6 +76,8 @@ An optional **Prefix** field puts your files under a path such as `images/`. Two
 - The prefix field appears when you select individual files. Files picked as a folder keep their own relative paths, which take the place of the prefix.
 - The prefix starts empty each time rather than carrying over from the folder you were browsing, so set it on every upload where you want one.
 
+Folder uploads skip system files that come along with a folder: `.DS_Store`, `Thumbs.db`, `desktop.ini`, anything whose path contains a segment starting with a dot, and `__MACOSX` folders. A **Skipped** *n* **system files** message tells you how many were left out. A file you select on its own is always uploaded, whatever its name.
+
 Selecting files does not upload them. Click **Upload** *n* **file(s)** to start, and a per-run progress bar tracks the batch. If any file fails, a **Retry** *n* **failed** button retries just those rather than the whole set.
 
 :::note Object size
@@ -76,7 +86,7 @@ The console uploads each file in a single request, which the S3 single-PUT ceili
 
 ## The object detail page
 
-Clicking an object shows its **Name**, **Size**, **Bucket**, **S3 Path**, **ETag**, and, where they apply, **Version ID**, **Retention**, **Description**, and **Tags**. When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+Clicking an object shows its **Name**, **Size**, **Bucket**, **S3 Path**, **ETag**, and, where they apply, **Version ID**, **Retention**, **Description**, and **Tags**. **Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
 
 A **Version history** card appears when the object has more than one version, listing each **Version ID** with its **Status**, **Size**, and **Last Modified**, and marking the one you are viewing. Clicking another row opens that version.
 
@@ -96,10 +106,22 @@ Sharing is a paid-plan feature. During the trial the button is disabled, with a 
 
 ## Deleting objects
 
-Click the trash icon on a row, or **Delete object** on the detail page, and confirm. Objects are deleted one at a time.
+Click the trash icon on a row, or **Delete object** on the detail page, and confirm.
 
-Deletion is permanent on a non-versioned bucket. On a versioned bucket, deleting the current object writes a delete marker and keeps the earlier versions, which continue to be billed. Deleting a specific version removes just that version.
+To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. Ticking a folder row selects everything under it, and the header checkbox selects everything at the current level.
+
+:::warning Console deletes are permanent, including on versioned buckets
+The console always deletes the specific version on the row you chose. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are. To hide an object behind a delete marker instead, delete it over the S3 API without a version ID. See [Versioning](/storage/versioning#delete-markers).
+:::
 
 An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](/storage/object-lock).
+
+### Emptying a bucket
+
+**Empty bucket** on the bucket page removes every object in the bucket, including every earlier version and delete marker. Type the bucket name to confirm, then click **Delete everything**.
+
+The deletion runs on the server, so it is not limited to the objects listed on screen, and it keeps running if you close the dialog. When it finishes, the dialog reports **Bucket empty**, **Some objects remain** (with how many could not be deleted, for example because they are under active retention), or **Deletion stopped** if the job could not complete.
+
+Deleting objects, in bulk or one at a time, and emptying a bucket all need a role that can delete objects. Uploading and creating buckets need a role that can write objects and create buckets. Controls you cannot use are hidden, and opening the upload or create page directly explains that the action is not part of your role. See [Roles and permissions](/app/organization#roles-and-permissions).
 
 While an account is past due or in a grace period, access is read-only and uploads and deletions resume once the payment succeeds. See [Trial & Billing](/billing/trial).
