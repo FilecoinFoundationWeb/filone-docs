@@ -24,13 +24,14 @@ See [API Keys](/security/api-keys#key-permissions) for exactly what each permiss
 Put the key in a named AWS CLI profile so the agent can use it without ever seeing it in a prompt or a file in your project. Run this yourself, in your own terminal, not through the agent:
 
 ```bash
-aws configure set aws_access_key_id YOUR_ACCESS_KEY --profile filone
-aws configure set aws_secret_access_key YOUR_SECRET_KEY --profile filone
-aws configure set region eu-west-1 --profile filone
+aws configure --profile filone
+# Paste the Access Key ID and Secret Access Key when prompted.
+# Region: eu-west-1. Output format: press Enter.
+aws configure set endpoint_url https://s3.eu-west-1.filonecontent.com --profile filone
 aws configure set s3.addressing_style path --profile filone
 ```
 
-Use your key's region in place of `eu-west-1`. If you work in both regions, create one profile per region, such as `filone-eu` and `filone-us`.
+Use your key's region in place of `eu-west-1` in both places. The interactive prompt keeps the secret out of your shell history, and the profile's `endpoint_url` (AWS CLI v2) sends requests to Fil One rather than to AWS. If you work in both regions, create one profile per region, such as `filone-eu` and `filone-us`.
 
 :::warning Keep keys out of the agent's context
 Don't paste a key into the chat, a system prompt, `AGENTS.md`, `CLAUDE.md`, or a `.env` file in the project. Agents read those files, and anything in them can end up in logs, commits, or the model's context. A profile keeps the secret in `~/.aws/credentials`, outside the project.
@@ -49,14 +50,14 @@ Fil One is S3-compatible object storage. Use any S3 client.
 
 - Endpoint: https://s3.eu-west-1.filonecontent.com
 - Region: eu-west-1. The access key works in this region only.
-- Credentials: the `filone` AWS profile. Pass `--profile filone` to the AWS CLI, or set `AWS_PROFILE=filone` for an SDK. Never print, log or commit the keys.
+- Credentials and endpoint: the `filone` AWS profile. Pass `--profile filone` to the AWS CLI, or set `AWS_PROFILE=filone` for an SDK. Never print, log or commit the keys.
 - Use path-style addressing; virtual-hosted-style URLs fail. The profile sets it for the AWS CLI and boto3. In JavaScript set `forcePathStyle: true`, in Go `UsePathStyle = true`.
-- Send no server-side encryption headers. Data is already encrypted at rest, and SSE-KMS and SSE-C requests are rejected.
+- Send no server-side encryption headers. Data is already encrypted at rest. SSE-KMS requests are rejected; don't send SSE-C headers either.
 - Buckets cannot be created or deleted over S3 in this region. Ask the user to create one in the Fil One console.
 - Full reference: https://docs.filone.com/llms.txt
 ```
 
-For `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and drop the bucket-creation line, because buckets can be created and deleted over S3 there.
+For `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and replace the bucket-creation line: buckets can be created and deleted over S3 there, but only with a key that has the **Create bucket** and **Delete bucket** permissions, which are not pre-selected.
 
 ## What agents get wrong
 
