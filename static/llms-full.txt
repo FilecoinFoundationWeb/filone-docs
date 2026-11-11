@@ -156,7 +156,7 @@ Your 30-day free trial starts automatically, with no credit card. Each person ge
 
 ## 2. Create a bucket
 
-On the **Get started** page, click **Create bucket**. (Later, use **New bucket** on the dashboard or **Create bucket** on the **Buckets** page; they open the same form.) Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
+On the **Get started** page, click **Create bucket**. (Later, use **New bucket** on the **Dashboard** or **Create bucket** on the **Buckets** page; they open the same form.) Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
 
 | Setting | Options | Notes |
 |---------|---------|-------|
@@ -170,7 +170,7 @@ Versioning, Object Lock, and retention sit under **Advanced settings** on the cr
 
 ## 3. Create an API key
 
-You need a key for the CLI and the SDKs, not for uploading in the console. On the **Get started** page, click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. Create it in the **same region as your bucket**: a key belongs to one region and is rejected by the other. **Read**, **Write** and **List** are selected by default, which is enough for this guide.
+You need a key for the CLI and the SDKs, not for uploading in the console. On the **Get started** page, click **Create API key**, or go to **API Keys** in the sidebar and click **Create new key**. Create it in the **same region as your bucket**: a key belongs to one region and is rejected by the other. **Read**, **Write** and **List** are selected by default, which is enough for this guide.
 
 You'll get two values:
 
@@ -392,7 +392,7 @@ func main() {
 ```
 
 Console:
-1. Open your bucket from the dashboard.
+1. Open your bucket from **Buckets** in the console.
 2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
 3. Your objects appear in the file list once the upload completes.
 4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
@@ -474,7 +474,7 @@ It lists the buckets in the key's region. If you get an error, see [Troubleshoot
 
 ## 3. Create a bucket
 
-Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket** on the dashboard, enter `my-bucket` (or your own name), and click **Create bucket**.
+Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket** on the console, enter `my-bucket` (or your own name), and click **Create bucket**.
 
 In `us-east-1` you can create a bucket from the CLI, with the `filone-us` profile and a key that has the `CreateBucket` permission. That permission isn't selected by default when you create a key:
 
@@ -555,6 +555,166 @@ For downloads, multipart uploads and presigned URLs, see the SDK pages:
 
 ---
 
+# Migrate to Fil One
+
+Source: https://docs.filone.com/guides/migration
+
+Fil One speaks the S3 API, so the tools you already use to copy data between S3 buckets also copy data into Fil One. This guide covers two of them: the AWS CLI (`aws s3 sync`) and [rclone](https://rclone.org).
+
+Data can't move directly from another provider to Fil One with a server-side copy. Either tool downloads each object from the source and uploads it to Fil One, so the data passes through the machine that runs the tool. Run it close to the source if you can.
+
+## Before you start
+
+1. **Create the destination buckets.** In `eu-west-1`, the default region, buckets can only be created in the [console](https://app.filone.com). In `us-east-1` you can also create them over the S3 API with a key that has the `CreateBucket` permission. See [Buckets](https://docs.filone.com/storage/buckets).
+2. **Decide on versioning and Object Lock now.** Both are set when you create the bucket and can't be changed afterwards. If Object Lock is on, every object you copy in gets the bucket's default retention, and you can't delete it until that period ends. See [Object Lock](https://docs.filone.com/storage/object-lock).
+3. **Check bucket names.** Fil One doesn't allow dots (`.`) in bucket names, which AWS S3 does. A source bucket such as `logs.example.com` needs a new name, such as `logs-example-com`.
+4. **Create an API key** in the same region as the destination bucket, with **Read**, **Write** and **List**. These three are pre-selected on a new key. See [API keys](https://docs.filone.com/security/api-keys).
+5. **Check the size against your plan.** During the free trial, reaching the storage cap write-locks the account. See [Free trial](https://docs.filone.com/billing/trial) and [Limits](https://docs.filone.com/limits).
+
+Your current provider may charge egress fees for the data you read out of it.
+
+## Option 1: AWS CLI
+
+Use AWS CLI v2.13 or later. You need two profiles: one for the source, which can be your existing default profile, and a `filone` profile for Fil One. The [CLI quickstart](https://docs.filone.com/quickstart/cli#2-configure-a-profile) shows the `filone` profile:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://s3.eu-west-1.filonecontent.com
+region = eu-west-1
+s3 =
+    addressing_style = path
+```
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+A single `aws s3 sync` can't read from one endpoint and write to another, so copy the data in two steps through a local folder. Make sure the folder's disk has room for the data, or migrate one prefix at a time.
+
+```bash
+# 1. Download from the source bucket (here: your default AWS profile)
+aws s3 sync s3://my-source-bucket ./migration
+
+# 2. Preview the upload, then upload to Fil One
+aws s3 sync ./migration s3://my-bucket --dryrun --profile filone
+aws s3 sync ./migration s3://my-bucket --profile filone
+```
+
+To move one prefix at a time, add it to both paths, for example `s3://my-source-bucket/2025/` and `s3://my-bucket/2025/`.
+
+`aws s3 sync` only copies files that are new or changed, so you can run step 2 again after an interruption, or run both steps again later to pick up objects added to the source since the first pass.
+
+Check that the object count and total size match:
+
+```bash
+aws s3 ls s3://my-source-bucket --recursive --summarize | tail -2
+aws s3 ls s3://my-bucket --recursive --summarize --profile filone | tail -2
+```
+
+User-defined metadata (`x-amz-meta-*`) doesn't survive the trip through a local folder. If you rely on it, use rclone with `--metadata`.
+
+## Option 2: rclone
+
+rclone copies from one remote to another without writing the data to local disk. Define one remote for the source and one for Fil One in your rclone config file (run `rclone config file` to find it):
+
+```ini
+[source]
+type = s3
+provider = AWS
+access_key_id = YOUR_SOURCE_ACCESS_KEY
+secret_access_key = YOUR_SOURCE_SECRET_KEY
+region = us-east-1
+
+[filone]
+type = s3
+provider = Other
+access_key_id = YOUR_ACCESS_KEY
+secret_access_key = YOUR_SECRET_KEY
+region = eu-west-1
+endpoint = https://s3.eu-west-1.filonecontent.com
+force_path_style = true
+no_check_bucket = true
+```
+
+For the Fil One remote:
+
+- `provider = Other` with your region's `endpoint`. For `us-east-1`, use `region = us-east-1` and `endpoint = https://s3.us-east-1.filonecontent.com`.
+- `force_path_style = true` is required, because Fil One only supports path-style URLs.
+- `no_check_bucket = true` stops rclone from trying to create the destination bucket, which you create in advance.
+
+The config file holds your keys, so keep it private.
+
+Preview the copy, run it, then compare the two sides:
+
+```bash
+rclone copy source:my-source-bucket filone:my-bucket --dry-run
+rclone copy source:my-source-bucket filone:my-bucket --progress
+rclone check source:my-source-bucket filone:my-bucket
+```
+
+`rclone copy` skips files that already match, so you can run it again after an interruption. It never deletes anything at the destination. `rclone check` can't compare hashes for objects that were uploaded in parts, so it may report that some hashes couldn't be checked; it still compares sizes.
+
+rclone keeps each object's content type. Add `--metadata` (`-M`) to also copy user-defined metadata.
+
+Neither tool carries over object tags, ACLs or the source's version history: Fil One doesn't support tagging or ACLs, and each tool copies only the current version of each object.
+
+## After the migration
+
+- Point your applications at the Fil One endpoint, with path-style addressing and the new keys. See [Quickstart](https://docs.filone.com/quickstart) and the [SDK guides](https://docs.filone.com/sdk/overview).
+- Check the operations your applications use against [S3 compatibility](https://docs.filone.com/reference/s3-compatibility). Lifecycle rules, bucket policies, tagging and event notifications aren't available, and that page lists a workaround for each.
+- Delete the local `./migration` folder if you used the AWS CLI.
+
+
+---
+
+# Choosing a region
+
+Source: https://docs.filone.com/guides/choosing-a-region
+
+Fil One has two regions. You pick one for each bucket when you create it, and the choice can't be changed later, so it's worth a minute before your first bucket.
+
+| | Europe (France) | US East (Michigan) |
+|---|---|---|
+| Region ID | `eu-west-1` (default) | `us-east-1` |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` | `https://s3.us-east-1.filonecontent.com` |
+| Create and delete buckets | In the console only | In the console, or over the S3 API with a key that has `CreateBucket` / `DeleteBucket` |
+| Buckets per organization on a paid plan | 100 | 300 |
+
+## What the region fixes
+
+- **Where the data lives.** Objects stay in their bucket's region. If data residency matters to you, choose the region on that basis.
+- **The bucket's region, permanently.** A bucket can't be moved to another region. To change regions, create a new bucket there and copy the data across, for example with the [migration guide](https://docs.filone.com/guides/migration).
+- **Which keys work.** Every API key belongs to one region and only works against that region's endpoint. If you use both regions, you need a key for each. See [Region scope](https://docs.filone.com/security/api-keys#region-scope).
+- **The endpoint your code uses.** The endpoint, the region setting in your client and the key must all match the bucket's region.
+
+## How the regions differ over the S3 API
+
+Most of the S3 API works the same way in both regions: object reads and writes, multipart upload, versioned reads and deletes, Object Lock retention and Legal Hold, and presigned URLs. The differences:
+
+| | `eu-west-1` | `us-east-1` |
+|---|---|---|
+| `CreateBucket`, `DeleteBucket` | Not available. Use the console. | Supported |
+| Bucket management permissions on a key | Can't be granted | Can be granted (not pre-selected) |
+| `CopyObject` of a specific `VersionId` | Not yet confirmed. Plain copy works. | Supported |
+| SSE-C headers | Rejected | Not yet confirmed. Don't send them. |
+
+A few error codes in `eu-west-1` also differ from AWS, for example `AccessDenied` instead of `NotImplemented` for an unsupported operation. See [Known error-code deviations](https://docs.filone.com/reference/s3-compatibility#known-error-code-deviations-in-eu-west-1). `eu-west-1` also has a few [known behavioral issues](https://docs.filone.com/reference/s3-compatibility#known-behavioral-issues-in-eu-west-1), in pagination with `ListObjects`, URL-encoded listings and additional checksums, each with a workaround. [S3 compatibility](https://docs.filone.com/reference/s3-compatibility) has the full per-region table.
+
+## Which one to pick
+
+- If you need the data in Europe, choose `eu-west-1`. If you need it in the US, choose `us-east-1`.
+- If you want to create and delete buckets from code, for example one bucket per customer or per test run, choose `us-east-1`. In `eu-west-1` buckets are created in the console.
+- If you expect more than 100 buckets in one organization, `us-east-1` allows 300 on a paid plan. See [Limits](https://docs.filone.com/limits).
+
+You can use both regions in the same organization, with separate buckets and keys in each.
+
+
+---
+
 # Buckets
 
 Source: https://docs.filone.com/storage/buckets
@@ -579,7 +739,7 @@ Whether you can create a bucket through the S3 API depends on the region. `Creat
 
 To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that permission when you create it. See [API Keys](https://docs.filone.com/security/api-keys).
 
-1. From the dashboard, click **New bucket** to open the create form.
+1. From the **Dashboard**, click **New bucket** to open the create form.
 2. Enter a bucket name.
 3. Choose a **region**: `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
 4. Optionally expand **Advanced settings** to turn on **Versioning**, then **Object Lock**, then **Retention**. Each needs the one before it: until it's on, the next switch shows a **Needs Versioning** or **Needs Object Lock** badge. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years; it starts at 15 days. Leave Versioning off and the bucket keeps only the current copy of each object.
@@ -609,19 +769,24 @@ for bucket in response["Buckets"]:
 A bucket must be empty before it can be deleted, with no objects or object versions left in it.
 
 App:
-Open **Buckets**, choose **Delete bucket** from the bucket's actions menu, and confirm. If the bucket still holds objects, the dashboard tells you it is not empty. Open the bucket and use **Empty bucket** to remove everything first. See [Buckets in the console](https://docs.filone.com/app/buckets#deleting-a-bucket).
+Open **Buckets**, choose **Delete bucket** from the bucket's actions menu, and confirm. If the bucket still holds objects, the console tells you it is not empty. Open the bucket and use **Empty bucket** to remove everything first. See [Buckets in the console](https://docs.filone.com/app/buckets#deleting-a-bucket).
 
-Dashboard deletion works in every region, including `eu-west-1`. Only the Owner and Admin roles can delete buckets.
+Deleting from the console works in every region, including `eu-west-1`. Only the Owner and Admin roles can delete buckets.
 
 AWS CLI:
 ```bash
 aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com --region us-east-1
 ```
 
-`DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the dashboard there.
+`DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the console there.
 
 Info:
 Deleted data is no longer accessible. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data).
+
+## Next steps
+
+- [Objects](https://docs.filone.com/storage/objects): upload, download and delete objects in your bucket
+- [API Keys](https://docs.filone.com/security/api-keys#bucket-scope): limit a key to one bucket
 
 
 ---
@@ -635,7 +800,7 @@ Objects are the files you store in Fil One. Each object consists of the file dat
 ## Uploading objects
 
 App:
-1. Open a bucket from the dashboard.
+1. Open a bucket from **Buckets** in the console.
 2. Click **Upload object**.
 3. Select one or more files, or drag a whole folder in (an optional prefix lets you upload into a subpath), then click **Upload** to start the transfer.
 4. Objects appear in the file list once the upload completes.
@@ -714,13 +879,13 @@ aws s3 rm s3://my-bucket/my-file.txt \
   --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
-On a bucket without versioning, deletion is immediate — the object disappears from the dashboard and API instantly, and there is no recycle bin or soft-delete.
+On a bucket without versioning, deletion is immediate — the object disappears from the console and API instantly, and there is no recycle bin or soft-delete.
 
 On a [versioned](https://docs.filone.com/storage/versioning) bucket, a delete over the S3 API without a version ID places a delete marker instead: the object stops appearing in listings, but prior versions are retained, remain downloadable by version ID, and continue to count as stored storage.
 
 ### What happens to deleted data
 
-When you delete an object or a bucket, the data is immediately removed from your Fil One account and is no longer accessible through the API or the dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and the keys are held by Fil One's storage provider for the region, not by you or by Fil One (see [Encryption](https://docs.filone.com/security/encryption)). The exact duration is set by the storage layer rather than measured by Fil One, and it doesn't affect your ability to manage your data in Fil One.
+When you delete an object or a bucket, the data is immediately removed from your Fil One account and is no longer accessible through the API or the console. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and the keys are held by Fil One's storage provider for the region, not by you or by Fil One (see [Encryption](https://docs.filone.com/security/encryption)). The exact duration is set by the storage layer rather than measured by Fil One, and it doesn't affect your ability to manage your data in Fil One.
 
 ## Presigned URLs
 
@@ -739,7 +904,12 @@ print(url)
 Presigned URLs work for both `GetObject` (downloads) and `PutObject` (uploads). For uploads from the AWS SDK for JavaScript, see the [checksum setting](https://docs.filone.com/sdk/javascript#client-configuration) they need.
 
 Warning: A presigned URL is a credential
-Anyone who has the URL can use it until it expires, without signing in. Share it only with the people who should have access, and keep expiry times short. A **Share** link from the console lasts at most 7 days.
+Anyone who has the URL can use it until it expires, without signing in. Share it only with the people who should have access, and keep expiry times short. A **Share** link from the console lasts at most 7 days (see [Downloading and sharing](https://docs.filone.com/app/buckets#downloading-and-sharing)).
+
+## Next steps
+
+- [Versioning](https://docs.filone.com/storage/versioning): keep earlier versions of an object
+- [Multipart Uploads](https://docs.filone.com/storage/multipart-uploads): upload large files in parts
 
 
 ---
@@ -751,7 +921,7 @@ Source: https://docs.filone.com/storage/multipart-uploads
 For very large objects you must use multipart upload. The single-PUT ceiling is 5 GB, the standard S3 limit (see [Standard S3 limits](https://docs.filone.com/limits#standard-s3-limits)). Multipart upload is also recommended for any file over 100 MB for improved reliability -- if a part fails, you retry only that part instead of the entire file.
 
 Note:
-The Fil One dashboard uploads objects with a single PUT, so multipart applies when you use your own S3 SDK or the AWS CLI, not the console upload flow.
+The Fil One console uploads objects with a single PUT, so multipart applies when you use your own S3 SDK or the AWS CLI, not the console upload flow.
 
 ## How it works
 
@@ -832,6 +1002,11 @@ aws s3api abort-multipart-upload \
   --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
 
+## Next steps
+
+- [Limits & Quotas](https://docs.filone.com/limits#object-limits): object and part size limits
+- [SDKs & Tools](https://docs.filone.com/sdk/overview): client settings for each SDK
+
 
 ---
 
@@ -851,8 +1026,8 @@ When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1
 
 This behavior applies to all objects in versioned buckets.
 
-Warning: Deleting in the dashboard removes a version permanently
-The dashboard never writes a delete marker. Deleting an object there, one at a time or in bulk, permanently deletes the specific version on the row you chose. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](https://docs.filone.com/app/buckets#deleting-objects).
+Warning: Deleting in the console removes a version permanently
+The console never writes a delete marker. Deleting an object there, one at a time or in bulk, permanently deletes the specific version on the row you chose. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](https://docs.filone.com/app/buckets#deleting-objects).
 
 ## Access key permissions for versions
 
@@ -918,7 +1093,7 @@ s3.download_file(
 
 ## Going back to a previous version
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current.
+The Fil One **console** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current.
 
 Info: Region-dependent
 Promoting a version to current with `CopyObject` is confirmed working in `us-east-1`. This has not yet been confirmed in `eu-west-1` — use the download-and-reupload method there instead.
@@ -1063,7 +1238,7 @@ Object Lock is **opt-in** and must be enabled at **bucket creation time**. It ca
 
 To create a bucket with Object Lock:
 
-1. From the dashboard, click **New bucket** to open the create form.
+1. From the **Dashboard**, click **New bucket** to open the create form.
 2. Enter a bucket name and choose a region.
 3. Expand **Advanced settings** and turn on **Versioning**. Until you do, Object Lock shows a **Needs Versioning** badge.
 4. Turn on **Object Lock**.
@@ -1083,7 +1258,7 @@ Object Lock must be enabled at bucket creation. It cannot be added to an existin
 
 In **Compliance mode**, the retention period is absolute. No action can shorten or remove it once set.
 
-In **Governance mode**, standard S3 allows a caller with the bypass permission to delete locked objects early. Fil One does not currently expose that permission, so today a Governance lock behaves like a firm retention lock rather than a routinely-overridable one. Choose it when you want WORM-style protection without positioning it as an absolute regulatory guarantee.
+In **Governance mode**, no key can be granted a bypass permission (see [Key concepts](#key-concepts)), so a Governance lock behaves like a firm retention lock. Choose it when you want WORM-style protection without positioning it as an absolute regulatory guarantee.
 
 Warning:
 Choose your retention mode carefully **at bucket creation** — it is fixed for the life of the bucket and cannot be changed afterwards. There is no update-bucket operation, so you cannot convert a Governance bucket into a Compliance one later. Moving objects into a bucket with a different mode means copying them into it with `CopyObject` over the S3 API (see [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility)) or downloading and re-uploading them. Compliance retention periods, once set, cannot be shortened or removed.
@@ -1129,7 +1304,7 @@ In standard S3, retention can be extended but never shortened: you can move `Ret
 
 ## Checking retention status
 
-The object detail page in the dashboard shows an object's retention status, and displays a lock banner for Compliance-locked objects — so you don't need the CLI just to check. `GetObjectRetention` is also available over the S3 API:
+The object detail page in the console shows an object's retention status, and displays a lock banner for Compliance-locked objects — so you don't need the CLI just to check. `GetObjectRetention` is also available over the S3 API:
 
 ```bash
 aws s3api get-object-retention \
@@ -1159,9 +1334,9 @@ On a versioned bucket, a `DELETE` request without a version ID places a delete m
 
 ## Deleting buckets with locked objects
 
-A bucket can only be deleted once it is empty, and objects under active retention cannot be deleted, so a bucket holding locked versions cannot be removed until their retention expires and you delete them. **Empty bucket** in the dashboard reports locked objects as ones it could not delete and leaves them in place.
+A bucket can only be deleted once it is empty, and objects under active retention cannot be deleted, so a bucket holding locked versions cannot be removed until their retention expires and you delete them. **Empty bucket** in the console reports locked objects as ones it could not delete and leaves them in place.
 
-Once the bucket is empty, delete it from the dashboard in either region (Owner and Admin roles only), or over the S3 API with `DeleteBucket` in `us-east-1`. `DeleteBucket` is not available over the S3 API in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets#deleting-a-bucket).
+Once the bucket is empty, delete it from the console in either region (Owner and Admin roles only), or over the S3 API with `DeleteBucket` in `us-east-1`. `DeleteBucket` is not available over the S3 API in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets#deleting-a-bucket).
 
 ## Object Lock and API keys
 
@@ -1204,6 +1379,11 @@ Object Lock provides WORM-style retention, which is a building block many regula
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
 
+## Next steps
+
+- [Versioning](https://docs.filone.com/storage/versioning): how versions and delete markers work with Object Lock
+- [API Keys](https://docs.filone.com/security/api-keys): the permissions that set retention and Legal Hold
+
 
 ---
 
@@ -1222,13 +1402,13 @@ Fil One supports four sign-in methods:
 - **GitHub**
 - **Email with password**
 
-A new account must verify its email address before the dashboard opens. Until you do, every page redirects to a verification screen.
+A new account must verify its email address before the console opens. Until you do, every page redirects to a verification screen.
 
 ## Two-factor authentication
 
 Two-factor authentication is opt-in per user and managed from **Settings**, under **Security**. Three factor types are supported:
 
-| Factor | Shown in the dashboard as | What it is |
+| Factor | Shown in the console as | What it is |
 |--------|---------------------------|------------|
 | Authenticator app | **Authenticator app (OTP)** | A time-based one-time code from an app such as 1Password, Authy, or Google Authenticator |
 | Security key | **Security key** | A roaming WebAuthn authenticator, for example a YubiKey |
@@ -1242,7 +1422,7 @@ Signing in with a passkey counts as a strong factor, so you aren't asked for a s
 
 ## Passkeys
 
-Passkeys are listed separately from two-factor methods in Settings, under **Passkeys**. If you have none enrolled, the dashboard prompts you to add one on your next sign-in.
+Passkeys are listed separately from two-factor methods in Settings, under **Passkeys**. If you have none enrolled, the console prompts you to add one on your next sign-in.
 
 You can hold up to **20 passkeys** on one account, which is enough to cover several devices without having to retire an old one to add a new one.
 
@@ -1265,9 +1445,9 @@ Four actions require a session that was signed in with two-factor authentication
 - Removing a passkey
 - Regenerating a recovery code
 
-If your current session wasn't, the dashboard sends you back through sign-in to step up before the action proceeds. This means a session signed in with a password alone cannot strip the account's protections.
+If your current session wasn't, the console sends you back through sign-in to step up before the action proceeds. This means a session signed in with a password alone cannot strip the account's protections.
 
-Transferring ownership of an organization has a stricter check: you must have signed in within the last five minutes, and if you have two-factor authentication set up, that sign-in must include it or use a passkey. Otherwise the dashboard sends you back through sign-in first.
+Transferring ownership of an organization has a stricter check: you must have signed in within the last five minutes, and if you have two-factor authentication set up, that sign-in must include it or use a passkey. Otherwise the console sends you back through sign-in first.
 
 ## Changing your password
 
@@ -1290,7 +1470,7 @@ Source: https://docs.filone.com/security/authentication
 All API requests to Fil One must be authenticated using AWS Signature Version 4 (SigV4). This is the same authentication method used by AWS S3, so any S3-compatible SDK or tool handles it automatically.
 
 Note: Looking for account sign-in?
-This page is about signing **API requests**. For the account you log into the dashboard with, including two-factor authentication, passkeys, and recovery codes, see [Account Security](https://docs.filone.com/security/account-security).
+This page is about signing **API requests**. For the account you log into the console with, including two-factor authentication, passkeys, and recovery codes, see [Account Security](https://docs.filone.com/security/account-security).
 
 Note: Keys and endpoints are region-specific
 Every access key belongs to a **single region**, chosen when you create it, and it only authenticates requests to that region's endpoint. Examples below use `eu-west-1`, the default region — for `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1`. If you store data in both regions you need a key for each.
@@ -1314,7 +1494,7 @@ You can create multiple API keys per account. A key can only carry permissions y
 
 ## Revoking an API key
 
-Go to **API Keys** in the left menu, find the key, open its **⋯** action menu, and choose **Delete**. The key stops working once the deletion reaches the key's region, so rotate any dependent credentials rather than assuming an exact cut-off instant.
+Go to **API Keys** in the sidebar, find the key, open its **⋯** action menu, and choose **Delete**. The key stops working once the deletion reaches the key's region, so rotate any dependent credentials rather than assuming an exact cut-off instant.
 
 ## Configuring your client
 
@@ -1421,6 +1601,11 @@ func newClient() *s3.Client {
 - **Rotate keys periodically.** Use **Rotate** in the key's **⋯** menu, then deploy the new credentials. The old secret stops working as soon as the new one is issued. See [Rotating a key](https://docs.filone.com/security/api-keys#rotating-a-key).
 - **Revoke keys immediately** if you suspect they have been compromised.
 
+## Next steps
+
+- [API Keys](https://docs.filone.com/security/api-keys): permissions, bucket scope and expiry
+- [Error Reference](https://docs.filone.com/reference/errors#troubleshooting): what to check when a signed request fails
+
 
 ---
 
@@ -1432,7 +1617,7 @@ API keys authenticate your requests to the Fil One S3 API. Each key consists of 
 
 ## Creating an API key
 
-1. Go to **API Keys** in the left sidebar of the console.
+1. Go to **API Keys** in the sidebar of the console.
 2. Click **Create new key** (this opens a dedicated page).
 3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`). Names are limited to 64 characters (letters, numbers, spaces, and `_ - .`), and names starting with `filone-console` (in any capitalization) are reserved.
 4. Choose the key's **region** (see [Region scope](#region-scope)). It is pre-set to `eu-west-1`, and it is fixed for the life of the key.
@@ -1543,7 +1728,7 @@ Expiring keys are useful for:
 
 ## Viewing and managing keys
 
-Go to **API Keys** in the left sidebar to see your keys. The list shows:
+Go to **API Keys** in the sidebar to see your keys. The list shows:
 
 | Column | Description |
 |--------|-------------|
@@ -1624,6 +1809,11 @@ If your security requirements call for client-side encryption (encrypting data b
 
 Client-side encryption is optional and is in addition to the server-side encryption that Fil One applies automatically.
 
+## Next steps
+
+- [Account Security](https://docs.filone.com/security/account-security): protect the account that manages your keys
+- [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): which encryption headers the API accepts
+
 
 ---
 
@@ -1677,7 +1867,7 @@ Note:
 You can upgrade to a paid plan at any time during the trial or grace period, and an organization Owner can reactivate from **Billing** after the account is disabled too. Upgrading or reactivating restores full access immediately.
 
 Info: What "disabled" means
-Disabling blocks all access to the account: your data is no longer reachable through the API or the dashboard, and access keys stop working. Fil One does not run an automatic purge at this point. To restore access, an organization Owner opens **Billing** and clicks **Reactivate**. To have your data removed, email [support@filone.com](mailto:support@filone.com).
+Disabling blocks all access to the account: your data is no longer reachable through the API or the console, and access keys stop working. Fil One does not run an automatic purge at this point. To restore access, an organization Owner opens **Billing** and clicks **Reactivate**. To have your data removed, email [support@filone.com](mailto:support@filone.com).
 
 ## Paid plan pricing
 
@@ -1691,7 +1881,7 @@ Pricing is usage-based, measured as the average storage consumed across the bill
 
 ## Payment
 
-Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, opened from **Billing** under **Organization** in the left sidebar. See [Billing](https://docs.filone.com/app/billing).
+Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the console, opened from **Billing** under **Organization** in the sidebar. See [Billing](https://docs.filone.com/app/billing).
 
 - Invoices are generated monthly.
 - Usage details are visible on the Billing page to Owners and Admins.
@@ -1699,16 +1889,16 @@ Payments are processed through Stripe. An organization Owner adds a credit card 
 
 ## Payment failures
 
-If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. The **dashboard becomes read-only** from the moment the payment fails, and the Billing page shows **Your last payment failed** with an **Update payment** button.
+If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. The **console becomes read-only** from the moment the payment fails, and the Billing page shows **Your last payment failed** with an **Update payment** button.
 
 If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below).
 
 Warning: Check the Billing page, not your inbox
-Don't rely on an email to tell you a payment has failed. If uploads stop working, open **Billing** in the dashboard: a **Your last payment failed** banner means the card needs updating, and an Owner can fix it with **Update payment**. See [Billing](https://docs.filone.com/app/billing#your-plan).
+Don't rely on an email to tell you a payment has failed. If uploads stop working, open **Billing** in the console: a **Your last payment failed** banner means the card needs updating, and an Owner can fix it with **Update payment**. See [Billing](https://docs.filone.com/app/billing#your-plan).
 
 ## Cancellation
 
-An organization Owner can cancel the paid plan from the **Stripe billing portal**, which opens from **Billing** in the dashboard. Admins can see usage on Billing but can't open the portal. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
+An organization Owner can cancel the paid plan from the **Stripe billing portal**, which opens from **Billing** in the console. Admins can see usage on Billing but can't open the portal. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
 
 | Phase | Duration | What you can do |
 |-------|----------|-----------------|
@@ -1751,12 +1941,17 @@ Illustrative figures for a steady amount stored for the full month, at $5.99 per
 | 2 TB (2,000 GB) | ~$11.98 |
 
 Note:
-These figures are illustrative. Your invoice is the source of truth for exact amounts — open the **Billing** page in the dashboard to see your current usage and charges.
+These figures are illustrative. Your invoice is the source of truth for exact amounts — open the **Billing** page in the console to see your current usage and charges.
 
 If the amount you store changes during the month, it is averaged first. For example, storing 2 TB for the first 10 days and 0.5 TB for the remaining 20 days averages to 1 TB, billed at $5.99 for that month.
 
 Note: If your account predates the current price
 These are the prices for new customers. Organizations that subscribed before the move to $5.99 keep their earlier terms: $4.99 / TB / month with a $4.99 / month minimum, or, for accounts created before any monthly minimum was introduced, per-unit pricing with no minimum. The **Billing** page shows your own rate.
+
+## Next steps
+
+- [Usage](https://docs.filone.com/billing/usage): how storage and egress are measured
+- [Billing in the console](https://docs.filone.com/app/billing): see current usage, add a card and find invoices
 
 
 ---
@@ -1765,7 +1960,7 @@ These are the prices for new customers. Organizations that subscribed before the
 
 Source: https://docs.filone.com/billing/usage
 
-The **Billing** page in the dashboard shows your current usage for the active billing period. It is visible to organization Owners and Admins. See [Billing](https://docs.filone.com/app/billing).
+The **Billing** page in the console shows your current usage for the active billing period. It is visible to organization Owners and Admins. See [Billing](https://docs.filone.com/app/billing).
 
 ## What is measured
 
@@ -1805,13 +2000,13 @@ See [Trial & Billing](https://docs.filone.com/billing/trial) for pricing details
 
 Source: https://docs.filone.com/app/dashboard
 
-The dashboard at [app.filone.com](https://app.filone.com) is the home page of the console, reached from **Dashboard** at the top of the left sidebar. It summarises your plan, usage, and recent activity. A **New bucket** button sits in the header. During the trial, a **Free trial** banner shows the days left and an **Upgrade** button. You can dismiss it with its **×** button.
+The **Dashboard** is the home page of the console at [app.filone.com](https://app.filone.com), reached from **Dashboard** at the top of the sidebar. It summarises your plan, usage, and recent activity. A **New bucket** button sits in the header. During the trial, a **Free trial** banner shows the days left and an **Upgrade** button. You can dismiss it with its **×** button.
 
 For sign-in methods, email verification, two-factor authentication, and passkeys, see [Account Security](https://docs.filone.com/security/account-security).
 
 ## Get started
 
-A new organization opens on a **Get started** page instead of the dashboard, because its dashboard would be all zeros. The page offers **Create bucket** and **Create API key**, which change to **Create another bucket** and **Create another key** once you have one. Below them, **Explore more** links to inviting your team, these docs, and the Fil One team. The page stays at `/get-started` if you want to come back to it.
+A new organization opens on a **Get started** page instead of the Dashboard, because its Dashboard would be all zeros. The page offers **Create bucket** and **Create API key**, which change to **Create another bucket** and **Create another key** once you have one. Below them, **Explore more** links to inviting your team, these docs, and the Fil One team. The page stays at `/get-started` if you want to come back to it.
 
 ## Plan, storage, and egress
 
@@ -1846,7 +2041,7 @@ The feed currently covers bucket and key creation. Each row shows the resource n
 
 ## Account state banners
 
-When your account is restricted, a banner appears above the page on every screen, not just the dashboard:
+When your account is restricted, a banner appears above the page on every screen, not just the Dashboard:
 
 | Situation | What the banner says |
 |-----------|----------------------|
@@ -1861,11 +2056,11 @@ Reads keep working while writes are paused, so your data stays available to down
 
 ---
 
-# App: Buckets
+# App: Buckets in the console
 
 Source: https://docs.filone.com/app/buckets
 
-**Buckets** in the left sidebar is where you create buckets and work with their contents without writing code.
+**Buckets** in the sidebar is where you create buckets and work with their contents without writing code.
 
 This page covers the console specifically. For the concepts, the S3 API equivalents, and code samples, see [Buckets](https://docs.filone.com/storage/buckets), [Objects](https://docs.filone.com/storage/objects), [Versioning](https://docs.filone.com/storage/versioning), and [Object Lock](https://docs.filone.com/storage/object-lock).
 
@@ -1961,7 +2156,7 @@ To bring an earlier version back as the current one, download it and upload it a
 
 **Download** is available on each row in the object list and in the object detail header. It works on any plan, including the trial.
 
-**Share object** generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
+**Share object** generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**. To create a time-limited link from your own code instead, see [Presigned URLs](https://docs.filone.com/storage/objects#presigned-urls).
 
 Sharing is a paid-plan feature. During the trial the button is disabled, with a tooltip pointing to an upgrade.
 
@@ -1992,11 +2187,11 @@ While an account is past due or in a grace period, access is read-only and uploa
 
 ---
 
-# App: API Keys
+# App: API Keys in the console
 
 Source: https://docs.filone.com/app/api-keys
 
-**API Keys** in the left sidebar is where you create the S3 credentials your tools and code use.
+**API Keys** in the sidebar is where you create the S3 credentials your tools and code use.
 
 This page covers the console specifically. For what each permission allows, how signing works, and security guidance, see [API Keys](https://docs.filone.com/security/api-keys) and [Authentication](https://docs.filone.com/security/authentication).
 
@@ -2149,7 +2344,7 @@ Every Fil One account starts as a one-person organization, with you as its **Own
 
 ## Where to find the organization's pages
 
-The organization's pages are in the **Organization** group of the left sidebar. You only see the entries your role can open:
+The organization's pages are in the **Organization** group of the sidebar. You only see the entries your role can open:
 
 | Entry | What it opens | Who sees it |
 |-------|---------------|-------------|
@@ -2157,7 +2352,7 @@ The organization's pages are in the **Organization** group of the left sidebar. 
 | **Billing** | Your plan, usage, payment method, and invoices (see [Billing](https://docs.filone.com/app/billing)) | Owner, Admin |
 | **Audit log** | A record of membership, key, and organization changes (see [Audit log](#audit-log)) | Owner, Admin |
 
-The organization's logo and name sit at the top of the left sidebar. Click them to open the **organization menu**, which holds:
+The organization's logo and name sit at the top of the sidebar. Click them to open the **organization menu**, which holds:
 
 - **Edit organization**, for Owners and Admins: the organization's name and logo, and how to delete it (see [Editing the organization](#editing-the-organization))
 - your organizations, if you belong to more than one (see [Switching organizations](#switching-organizations))
@@ -2321,7 +2516,7 @@ The invitation email links to `app.filone.com/invite/accept`. If you're not sign
 
 ## Switching organizations
 
-If you belong to more than one organization, the organization menu lists them under **Organization**, sorted by name, with a check mark on the one you're in. Choosing another switches the console to that organization and opens its dashboard. With only one membership, the list doesn't appear.
+If you belong to more than one organization, the organization menu lists them under **Organization**, sorted by name, with a check mark on the one you're in. Choosing another switches the console to that organization and opens its console. With only one membership, the list doesn't appear.
 
 The choice is kept per browser tab, so two tabs can be in different organizations at the same time. The sidebar names the organization you're in, so check it before removing people or transferring ownership.
 
@@ -2365,11 +2560,11 @@ Deleting an organization is not available in the console yet. The **Danger zone*
 
 ---
 
-# App: Billing
+# App: Billing in the console
 
 Source: https://docs.filone.com/app/billing
 
-Billing is a page of its own, at `/billing`. Open it from **Billing** in the **Organization** group of the left sidebar (see [Where to find the organization's pages](https://docs.filone.com/app/organization#where-to-find-the-organizations-pages)).
+Billing is a page of its own, at `/billing`. Open it from **Billing** in the **Organization** group of the sidebar (see [Where to find the organization's pages](https://docs.filone.com/app/organization#where-to-find-the-organizations-pages)).
 
 Billing is visible to **Owners** and **Admins**. Every action on it (choosing or changing a plan, adding or updating a card, opening the Stripe portal) is for **Owners** only, so an Admin sees the same figures without the buttons. Members and Read only users see "Billing is managed by your organization's owners and admins" instead. See [Roles and permissions](https://docs.filone.com/app/organization#roles-and-permissions).
 
@@ -2403,8 +2598,8 @@ A banner above the cards flags a problem with the account:
 | **This organization is read-only** (grace period) | **Choose a plan** |
 | **This subscription is canceled** | **Reactivate** |
 
-Note: A failed payment makes the dashboard read-only
-When a payment fails, the dashboard becomes read-only. Check the banner and update your payment method to resume. See [Trial & Billing](https://docs.filone.com/billing/trial).
+Note: A failed payment makes the console read-only
+When a payment fails, the console becomes read-only. Check the banner and update your payment method to resume. See [Trial & Billing](https://docs.filone.com/billing/trial).
 
 ## Usage
 
@@ -2471,7 +2666,7 @@ Organizations that subscribed before the move to $5.99 keep their earlier terms:
 
 Source: https://docs.filone.com/app/settings
 
-**Settings** is in the user menu at the bottom of the left sidebar. It holds your profile, the organizations you belong to, your notification preferences, and your account security. Every member of an organization has their own Settings.
+**Settings** is in the user menu at the bottom of the sidebar. It holds your profile, the organizations you belong to, your notification preferences, and your account security. Every member of an organization has their own Settings.
 
 ## Profile
 
@@ -2488,7 +2683,7 @@ You can change the address again while unverified, so a typo is recoverable.
 
 **If you signed in with Google or GitHub, your name and email are managed there.** Avatar, name, and email are read-only for social sign-ins, labelled *Managed by Google* or *Managed by GitHub* with a link straight to that provider's profile page, so you keep one source of truth for them.
 
-Your organization's name is not part of your profile. Owners and Admins rename it on the **Edit organization** page, opened from the organization menu at the top of the left sidebar, where the name must be 2 to 100 characters, using letters, numbers, spaces, hyphens, and periods only.
+Your organization's name is not part of your profile. Owners and Admins rename it on the **Edit organization** page, opened from the organization menu at the top of the sidebar, where the name must be 2 to 100 characters, using letters, numbers, spaces, hyphens, and periods only.
 
 ## Organizations
 
@@ -2520,7 +2715,7 @@ Deleting an organization is separate, and is covered on the **Edit organization*
 
 Source: https://docs.filone.com/app/support
 
-**Support** and **Documentation** are at the bottom of the left sidebar, above your name. **Support** opens the support page.
+**Support** and **Documentation** are at the bottom of the sidebar, above your name. **Support** opens the support page.
 
 ## The support page
 
@@ -2540,7 +2735,7 @@ Below the form, **Common questions** answers a few frequent questions, such as w
 
 ## Other routes
 
-- **Documentation** at the bottom of the left sidebar opens these docs in a new tab.
+- **Documentation** at the bottom of the sidebar opens these docs in a new tab.
 - The system status indicator links to the Fil One status page, which is the quickest way to check whether an issue is already known. On desktop it sits in the bar along the bottom of the content area; on a phone it is in the sidebar drawer.
 - Account deletion is handled over email at [support@filone.com](mailto:support@filone.com), as noted in [Settings](https://docs.filone.com/app/settings).
 - For volume pricing, SLAs, or the Business plan, **Contact sales team** in the **Choose your plan** dialog on [Billing](https://docs.filone.com/app/billing) reaches the sales team directly. On the trial or with no plan, **Talk to sales** in the **Need help?** panel beside the billing cards does the same.
@@ -2599,12 +2794,7 @@ What doesn't work over the API is listed in [Not supported](#not-supported), eac
 
 ## Endpoint
 
-Endpoints are region-specific. Use the endpoint for the region your bucket lives in:
-
-| Region | Endpoint |
-|--------|----------|
-| Europe (France) `eu-west-1` (default) | `https://s3.eu-west-1.filonecontent.com` |
-| US East (Michigan) `us-east-1` | `https://s3.us-east-1.filonecontent.com` |
+Endpoints are region-specific: `https://s3.<region>.filonecontent.com`, for `eu-west-1` (the default) or `us-east-1`. Use the endpoint for the region your bucket lives in. The full list is in [API Reference: Base endpoint](https://docs.filone.com/reference/overview#base-endpoint).
 
 All requests use HTTPS. HTTP connections are rejected.
 
@@ -2634,7 +2824,7 @@ A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`,
 
 | Operation | `eu-west-1` | `us-east-1` | Notes |
 |-----------|-------------|-------------|-------|
-| `CreateBucket` | ❌ Not available | ✅ Supported | In `eu-west-1`, create buckets in the dashboard. |
+| `CreateBucket` | ❌ Not available | ✅ Supported | In `eu-west-1`, create buckets in the console. |
 | `DeleteBucket` | ❌ Not available | ✅ Supported | The bucket must be empty. |
 | `ListBuckets` | ✅ Supported | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | ✅ Supported | |
@@ -2676,7 +2866,7 @@ A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`,
 
 ### Multipart upload
 
-Multipart upload is supported through the S3 API in **both regions**. Uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling: use the S3 API or CLI for larger objects.
+Multipart upload is supported through the S3 API in **both regions**. Uploads from the Fil One **console** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling: use the S3 API or CLI for larger objects.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -2693,7 +2883,7 @@ Versioning is **opt-in** and configured at bucket creation time. Once enabled on
 
 The versioning operations are in the tables above: `GetBucketVersioning` and `PutBucketVersioning` under [Bucket operations](#bucket-operations), and `ListObjectVersions`, `GetObject` and `DeleteObject` with `VersionId`, and `CopyObject` with a source version under [Object operations](#object-operations).
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject`. In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
+The Fil One **console** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject`. In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
 
 See [Versioning](https://docs.filone.com/storage/versioning) for detailed usage and examples.
 
@@ -2707,7 +2897,7 @@ Object Lock, retention, and Legal Hold are confirmed in **both** regions. The op
 
 | Mode | Status |
 |------|--------|
-| Governance | ✅ Supported — the default when you enable Object Lock. In standard S3, Governance retention can be overridden by a caller with the bypass permission, but **Fil One does not currently expose a grantable bypass permission**, so treat Governance objects as protected for their retention period in practice. |
+| Governance | ✅ Supported — the default when you enable Object Lock. No key can be granted the bypass permission, so Governance objects are protected for their retention period in practice. See [Retention modes](https://docs.filone.com/storage/object-lock#retention-modes). |
 | Compliance | ✅ Supported — no user, including the organization Owner, can delete a locked object or shorten its retention. |
 
 See [Object Lock](https://docs.filone.com/storage/object-lock) for compliance use cases, retention configuration, and examples.
@@ -2813,10 +3003,10 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 
 | Behavior | AWS S3 | Fil One |
 |----------|--------|---------|
-| Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the dashboard; achievable via the API in `us-east-1` using `CopyObject`. |
+| Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the console; achievable via the API in `us-east-1` using `CopyObject`. |
 | Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by Fil One's storage provider for that region; no customer-managed keys. |
-| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
+| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the console only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles: see [Organization](https://docs.filone.com/app/organization#roles-and-permissions). |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected, and never make an object public. |
 | Error codes for missing features | `NotImplemented` (501). | `AccessDenied` (403) in `eu-west-1`. A 403 on a bucket-configuration call means the feature is absent, not that your key lacks permission. |
@@ -2887,8 +3077,10 @@ These come from the Fil One console at [app.filone.com](https://app.filone.com),
 
 ## Troubleshooting
 
+Most first-request failures come from the endpoint, the region, or how the request is signed. [Authentication](https://docs.filone.com/security/authentication) covers request signing, and [Limits & Quotas](https://docs.filone.com/limits) covers size and naming limits.
+
 **`SignatureDoesNotMatch`** -- The most common auth error. Check that:
-1. Your secret key is correct (re-copy from the dashboard if unsure).
+1. Your secret key is correct (re-copy from the console if unsure).
 2. Your system clock is accurate (SigV4 requires clocks within 15 minutes of server time).
 3. You are using the region that matches your key and endpoint (`eu-west-1` or `us-east-1`). A key is scoped to one region and is rejected against the other.
 
@@ -2905,6 +3097,194 @@ These come from the Fil One console at [app.filone.com](https://app.filone.com),
 | `AccessDenied` when deleting an object, although uploads work | The key doesn't have the **Delete** permission. It isn't pre-selected when you create a key | Create a key with **Delete**, or rotate this one with it added. See [API Keys](https://docs.filone.com/security/api-keys#key-permissions). |
 | `BadDigest` when a browser uploads to a presigned URL made with the AWS SDK for JavaScript | SDK v3.729 and later sign a checksum computed when the URL is made, which the real upload doesn't match | Set `requestChecksumCalculation: "WHEN_REQUIRED"` on the `S3Client` that creates the URL. See [JavaScript](https://docs.filone.com/sdk/javascript#presigned-urls). |
 | `list-multipart-uploads` or `abort-multipart-upload` fails with 403 in `us-east-1` | Keys created there before 26 August 2026 don't carry these multipart actions, and existing keys can't be updated | Create a new key. See [Cleaning up incomplete uploads](https://docs.filone.com/storage/multipart-uploads#cleaning-up-incomplete-uploads). |
+
+
+---
+
+# Limits & Quotas
+
+Source: https://docs.filone.com/limits
+
+## Organization limits
+
+| Limit | Trial | Paid |
+|-------|-------|------|
+| Storage | 1 TB (1,000 GB) | No limit |
+| Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
+| API operations | Unlimited | Unlimited |
+| Buckets per organization | Not confirmed | 100 in `eu-west-1`, 300 in `us-east-1` |
+
+During the trial these two caps behave differently: reaching the **storage** cap **write-locks** the account (reads still work), while reaching the **egress** cap **disables** it entirely. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. See [Trial & Billing](https://docs.filone.com/billing/trial).
+
+The bucket limit is provisioned per organization rather than fixed by plan, and it differs by region. On a **paid** plan it is **100 buckets in `eu-west-1`** and **300 in `us-east-1`**. To ask for a higher limit, email [support@filone.com](mailto:support@filone.com).
+
+Each person can own up to **10 organizations**, and each organization can have up to **25 pending invitations** at a time. See [Organization](https://docs.filone.com/app/organization).
+
+The trial lasts 30 days. After it ends, your account enters a 7-day read-only grace period. If you do not upgrade before the grace period ends, the account is disabled and access is blocked. See [Trial & Billing](https://docs.filone.com/billing/trial) for the full timeline and email schedule.
+
+## Object limits
+
+| Limit | Value |
+|-------|-------|
+| Maximum object size | 5 TB |
+| Maximum object size (single PUT) | 5 GB |
+| Maximum parts per multipart upload | 10,000 |
+| Minimum part size (multipart) | 5 MB |
+| Maximum part size (multipart) | 5 GB |
+| Maximum object key length | 1,024 characters in the console; 1,024 bytes (standard S3 limit) through the API |
+| Maximum metadata size per object | 2 KB |
+
+### Standard S3 limits
+
+The **console** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
+
+For objects larger than 5 GB, use [multipart upload](https://docs.filone.com/storage/multipart-uploads).
+
+## Console limits
+
+These apply in the [console](https://docs.filone.com/app/buckets) at app.filone.com, in both regions. They are set in the console, so they don't apply to requests you make with an S3 SDK or the AWS CLI.
+
+| Limit | Value |
+|-------|-------|
+| File size for a console upload | 5 GB. The console uploads each file in a single request. Use the [AWS CLI](https://docs.filone.com/sdk/cli) or an SDK for larger files. |
+| Tags per console upload | 50, up to 128 characters each |
+| Description per console upload | 1,000 characters |
+| Share link expiry | 7 days at most |
+| Default retention on a bucket | 1 day to 100 years (36,500 days) |
+
+## Regions
+
+| Region | Identifier | Status |
+|--------|------------|--------|
+| Europe (France) | `eu-west-1` | Available (default) |
+| US East (Michigan) | `us-east-1` | Available |
+
+The region is selected at bucket creation time and cannot be changed afterward. Access keys are also scoped to a single region — see [API Keys](https://docs.filone.com/security/api-keys).
+
+Bucket creation and deletion through the S3 API are available in `us-east-1` but not in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets).
+
+## API rate limits
+
+Fil One doesn't publish fixed rate limits, and doesn't add its own on top of the S3 endpoint's. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
+
+## Naming constraints
+
+**Bucket names:**
+- 3-63 characters
+- Lowercase letters, numbers, hyphens (no dots — Fil One's naming rules are stricter than AWS S3 here)
+- Must start and end with a letter or number
+- Must not start with `filone-rag-`, which is reserved
+- Unique within Fil One
+
+**Object keys:**
+- Up to 1,024 characters for console uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies (see [Standard S3 limits](#standard-s3-limits))
+- Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility
+
+## Next steps
+
+- [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): what each region supports over the API
+- [Error Reference](https://docs.filone.com/reference/errors): the errors you see when a limit is reached
+
+
+---
+
+# Glossary
+
+Source: https://docs.filone.com/reference/glossary
+
+Short definitions of terms used across these docs. Each links to the page that covers it.
+
+## Access key ID and secret access key
+
+The two halves of an API key. The access key ID identifies the key and is sent with each request. The secret access key signs requests and is never sent. It's shown once, when you create the key. See [Authentication](https://docs.filone.com/security/authentication#api-keys).
+
+## API key
+
+A credential for the S3 API. It belongs to one region and carries a set of permissions, optionally limited to some buckets. See [API keys](https://docs.filone.com/security/api-keys).
+
+## Bucket
+
+A container for objects. You choose its region, versioning and Object Lock settings when you create it, and they can't be changed afterwards. See [Buckets](https://docs.filone.com/storage/buckets).
+
+## Bucket scope
+
+An optional limit on which buckets an API key can work with. Without it, a key reaches every bucket in its region. See [Bucket scope](https://docs.filone.com/security/api-keys#bucket-scope).
+
+## Compliance mode
+
+The stricter Object Lock mode. No one, including the organization Owner, can delete a locked object version or shorten its retention before it expires. See [Retention modes](https://docs.filone.com/storage/object-lock#retention-modes).
+
+## Delete marker
+
+What a versioned bucket records when you delete an object without naming a version. The object disappears from listings, and its earlier versions stay retrievable by version ID. See [Delete markers](https://docs.filone.com/storage/versioning#delete-markers).
+
+## Egress
+
+Data downloaded from Fil One. Paid plans have no egress fees. During the free trial, egress is capped. See [Usage](https://docs.filone.com/billing/usage).
+
+## Endpoint
+
+The base URL for a region's S3 API, such as `https://s3.eu-west-1.filonecontent.com`. Your client, key and bucket must all use the same region. See [S3 compatibility](https://docs.filone.com/reference/s3-compatibility#endpoint).
+
+## Governance mode
+
+The default Object Lock mode. In AWS S3, a caller with a bypass permission can override it. Fil One doesn't let any key be granted that permission, so a Governance-locked object is protected for its retention period. See [Retention modes](https://docs.filone.com/storage/object-lock#retention-modes).
+
+## Legal hold
+
+A flag on an object version, in a bucket with Object Lock, that protects it from deletion until the hold is removed. Setting it needs the **Set legal hold** permission, which only an Owner can grant. See [API keys](https://docs.filone.com/security/api-keys).
+
+## Multipart upload
+
+Uploading one object as several parts, then combining them. It's required above the single-PUT size limit and recommended for large files. See [Multipart uploads](https://docs.filone.com/storage/multipart-uploads).
+
+## Object
+
+A file stored in a bucket under a key (its name), with its metadata. See [Objects](https://docs.filone.com/storage/objects).
+
+## Object Lock
+
+Write-once protection that stops object versions being deleted or overwritten for a retention period. It's enabled when you create a bucket, together with versioning. See [Object Lock](https://docs.filone.com/storage/object-lock).
+
+## Organization
+
+The account that owns buckets, keys and billing. Members join it with a role: Owner, Admin, Member or Read only. See [Organization](https://docs.filone.com/app/organization).
+
+## Path-style addressing
+
+Putting the bucket name in the URL path (`https://s3.<region>.filonecontent.com/my-bucket/my-key`) rather than in the hostname. Fil One only supports path-style URLs, so S3 clients must be set to use them. See [API reference](https://docs.filone.com/reference/overview#request-format).
+
+## Presigned URL
+
+A time-limited URL that lets someone download or upload one object without credentials. See [Presigned URLs](https://docs.filone.com/storage/objects#presigned-urls).
+
+## Proof of Replication (PoRep) and Proof of Spacetime (PoSt)
+
+The cryptographic proofs that Filecoin storage providers submit to show they still hold the data they committed to store. They run at the network level, not per request. See [FAQ](https://docs.filone.com/faq).
+
+## Region
+
+Where a bucket's data is stored: `eu-west-1` (Europe, France) or `us-east-1` (US East, Michigan). See [Choosing a region](https://docs.filone.com/guides/choosing-a-region).
+
+## Retention period
+
+How long an object version under Object Lock can't be deleted or overwritten. A bucket's default is set at creation, from 1 day to 100 years. Retention can be extended but not shortened. See [Object Lock](https://docs.filone.com/storage/object-lock).
+
+## SigV4 (Signature Version 4)
+
+The AWS request-signing scheme that Fil One requires. Some clients need it set explicitly, for example boto3 for presigned URLs. See [S3 compatibility](https://docs.filone.com/reference/s3-compatibility#authentication).
+
+## Version ID
+
+The identifier of one version of an object in a versioned bucket. Use it to read or delete a specific version. See [Versioning](https://docs.filone.com/storage/versioning).
+
+## Versioning
+
+Keeping every version of an object when it's overwritten or deleted. It's set when you create a bucket and can't be suspended afterwards. See [Versioning](https://docs.filone.com/storage/versioning).
+
+## WORM (write once, read many)
+
+Storage that can be written once and then only read for a set period. Object Lock provides it. See [Object Lock](https://docs.filone.com/storage/object-lock).
 
 
 ---
@@ -2937,12 +3317,7 @@ Every SDK and tool needs the same four things:
 | Credentials | Your Access Key ID and Secret Access Key, from **API Keys** in the console |
 | Path-style addressing | **Required.** Fil One does not support virtual-hosted-style URLs — enable path-style in every client (`forcePathStyle`, `addressing_style = path`, `UsePathStyle`, etc.) |
 
-The endpoint is region-specific, and it has to match the region of the bucket you are addressing:
-
-| Region | Endpoint |
-|--------|----------|
-| Europe (France) `eu-west-1` (default) | `https://s3.eu-west-1.filonecontent.com` |
-| US East (Michigan) `us-east-1` | `https://s3.us-east-1.filonecontent.com` |
+The endpoint is region-specific, and it has to match the region of the bucket you are addressing. See [Base endpoint](https://docs.filone.com/reference/overview#base-endpoint) for each region's endpoint.
 
 Access keys are also scoped to a single region, so a key issued for `eu-west-1` will not work against `us-east-1`. Code examples throughout these docs use `eu-west-1` because it is the default — substitute your own region where it differs.
 
@@ -3650,7 +4025,7 @@ aws s3 rm s3://my-bucket/reports/report.pdf --profile filone
 aws s3 rb s3://my-bucket --profile filone-us
 ```
 
-In `eu-west-1` the operation is not available over the S3 API. Delete the bucket from the [Fil One dashboard](https://app.filone.com) instead, via the bucket's actions menu in **Buckets** (Owner and Admin roles only). See [Buckets](https://docs.filone.com/storage/buckets#deleting-a-bucket).
+In `eu-west-1` the operation is not available over the S3 API. Delete the bucket from the [Fil One console](https://app.filone.com) instead, via the bucket's actions menu in **Buckets** (Owner and Admin roles only). See [Buckets](https://docs.filone.com/storage/buckets#deleting-a-bucket).
 
 ## Multipart uploads
 
@@ -3704,9 +4079,9 @@ Within a region, storage is fulfilled by a distributed network of storage provid
 
 On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
 
-On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](https://docs.filone.com/storage/versioning).
+On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the console is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](https://docs.filone.com/storage/versioning).
 
-Once deleted, an object or bucket is no longer accessible through the API or the dashboard. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data).
+Once deleted, an object or bucket is no longer accessible through the API or the console. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data).
 
 ## Can I migrate from AWS S3?
 
@@ -3733,7 +4108,7 @@ Most S3 backup tools work. Before you commit to one, check that it can:
 We haven't tested specific backup products. Three documented gaps are ones some backup tools depend on:
 
 - **Server-side copy of a specific version is unverified in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1`, and plain server-side copy works in `eu-west-1`, but copying a specific `VersionId` has not been verified there. Some tools use `CopyObject` for renames, moves, and deduplication.
-- **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the dashboard first.
+- **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the console first.
 - **No lifecycle rules.** Retention-based pruning has to be handled by the tool itself.
 
 See the [S3 Compatibility Reference](https://docs.filone.com/reference/s3-compatibility) for the full list.
@@ -3756,86 +4131,4 @@ To check an individual object, compare the `ETag` returned by `HeadObject` with 
 
 Underneath, Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs, called Proof of Replication (PoRep) and Proof of Spacetime (PoSt), to show they still hold the data they committed to store. Providers that fail to produce valid proofs are penalised. This runs at the network level, not per request.
 
-Fil One doesn't expose per-object proof data: content identifiers, deal IDs and sealing state aren't shown in the API or the dashboard.
-
-
----
-
-# Limits & Quotas
-
-Source: https://docs.filone.com/limits
-
-## Organization limits
-
-| Limit | Trial | Paid |
-|-------|-------|------|
-| Storage | 1 TB (1,000 GB) | No limit |
-| Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
-| API operations | Unlimited | Unlimited |
-| Buckets per organization | Not confirmed | 100 in `eu-west-1`, 300 in `us-east-1` |
-
-During the trial these two caps behave differently: reaching the **storage** cap **write-locks** the account (reads still work), while reaching the **egress** cap **disables** it entirely. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. See [Trial & Billing](https://docs.filone.com/billing/trial).
-
-The bucket limit is provisioned per organization rather than fixed by plan, and it differs by region. On a **paid** plan it is **100 buckets in `eu-west-1`** and **300 in `us-east-1`**. To ask for a higher limit, email [support@filone.com](mailto:support@filone.com).
-
-Each person can own up to **10 organizations**, and each organization can have up to **25 pending invitations** at a time. See [Organization](https://docs.filone.com/app/organization).
-
-The trial lasts 30 days. After it ends, your account enters a 7-day read-only grace period. If you do not upgrade before the grace period ends, the account is disabled and access is blocked. See [Trial & Billing](https://docs.filone.com/billing/trial) for the full timeline and email schedule.
-
-## Object limits
-
-| Limit | Value |
-|-------|-------|
-| Maximum object size | 5 TB |
-| Maximum object size (single PUT) | 5 GB |
-| Maximum parts per multipart upload | 10,000 |
-| Minimum part size (multipart) | 5 MB |
-| Maximum part size (multipart) | 5 GB |
-| Maximum object key length | 1,024 characters in the dashboard; 1,024 bytes (standard S3 limit) through the API |
-| Maximum metadata size per object | 2 KB |
-
-### Standard S3 limits
-
-The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
-
-For objects larger than 5 GB, use [multipart upload](https://docs.filone.com/storage/multipart-uploads).
-
-## Console limits
-
-These apply in the [console](https://docs.filone.com/app/buckets) at app.filone.com, in both regions. They are set in the console, so they don't apply to requests you make with an S3 SDK or the AWS CLI.
-
-| Limit | Value |
-|-------|-------|
-| File size for a console upload | 5 GB. The console uploads each file in a single request. Use the [AWS CLI](https://docs.filone.com/sdk/cli) or an SDK for larger files. |
-| Tags per console upload | 50, up to 128 characters each |
-| Description per console upload | 1,000 characters |
-| Share link expiry | 7 days at most |
-| Default retention on a bucket | 1 day to 100 years (36,500 days) |
-
-## Regions
-
-| Region | Identifier | Status |
-|--------|------------|--------|
-| Europe (France) | `eu-west-1` | Available (default) |
-| US East (Michigan) | `us-east-1` | Available |
-
-The region is selected at bucket creation time and cannot be changed afterward. Access keys are also scoped to a single region — see [API Keys](https://docs.filone.com/security/api-keys).
-
-Bucket creation and deletion through the S3 API are available in `us-east-1` but not in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets).
-
-## API rate limits
-
-Fil One doesn't publish fixed rate limits, and doesn't add its own on top of the S3 endpoint's. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
-
-## Naming constraints
-
-**Bucket names:**
-- 3-63 characters
-- Lowercase letters, numbers, hyphens (no dots — Fil One's naming rules are stricter than AWS S3 here)
-- Must start and end with a letter or number
-- Must not start with `filone-rag-`, which is reserved
-- Unique within Fil One
-
-**Object keys:**
-- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies (see [Standard S3 limits](#standard-s3-limits))
-- Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility
+Fil One doesn't expose per-object proof data: content identifiers, deal IDs and sealing state aren't shown in the API or the console.

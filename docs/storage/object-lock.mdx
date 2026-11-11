@@ -24,7 +24,7 @@ Object Lock is **opt-in** and must be enabled at **bucket creation time**. It ca
 
 To create a bucket with Object Lock:
 
-1. From the dashboard, click **New bucket** to open the create form.
+1. From the **Dashboard**, click **New bucket** to open the create form.
 2. Enter a bucket name and choose a region.
 3. Expand **Advanced settings** and turn on **Versioning**. Until you do, Object Lock shows a **Needs Versioning** badge.
 4. Turn on **Object Lock**.
@@ -45,7 +45,7 @@ Object Lock must be enabled at bucket creation. It cannot be added to an existin
 
 In **Compliance mode**, the retention period is absolute. No action can shorten or remove it once set.
 
-In **Governance mode**, standard S3 allows a caller with the bypass permission to delete locked objects early. Fil One does not currently expose that permission, so today a Governance lock behaves like a firm retention lock rather than a routinely-overridable one. Choose it when you want WORM-style protection without positioning it as an absolute regulatory guarantee.
+In **Governance mode**, no key can be granted a bypass permission (see [Key concepts](#key-concepts)), so a Governance lock behaves like a firm retention lock. Choose it when you want WORM-style protection without positioning it as an absolute regulatory guarantee.
 
 :::warning
 Choose your retention mode carefully **at bucket creation** — it is fixed for the life of the bucket and cannot be changed afterwards. There is no update-bucket operation, so you cannot convert a Governance bucket into a Compliance one later. Moving objects into a bucket with a different mode means copying them into it with `CopyObject` over the S3 API (see [S3 Compatibility](/reference/s3-compatibility)) or downloading and re-uploading them. Compliance retention periods, once set, cannot be shortened or removed.
@@ -98,7 +98,7 @@ In standard S3, retention can be extended but never shortened: you can move `Ret
 
 ## Checking retention status
 
-The object detail page in the dashboard shows an object's retention status, and displays a lock banner for Compliance-locked objects — so you don't need the CLI just to check. `GetObjectRetention` is also available over the S3 API:
+The object detail page in the console shows an object's retention status, and displays a lock banner for Compliance-locked objects — so you don't need the CLI just to check. `GetObjectRetention` is also available over the S3 API:
 
 ```bash
 aws s3api get-object-retention \
@@ -128,9 +128,9 @@ On a versioned bucket, a `DELETE` request without a version ID places a delete m
 
 ## Deleting buckets with locked objects
 
-A bucket can only be deleted once it is empty, and objects under active retention cannot be deleted, so a bucket holding locked versions cannot be removed until their retention expires and you delete them. **Empty bucket** in the dashboard reports locked objects as ones it could not delete and leaves them in place.
+A bucket can only be deleted once it is empty, and objects under active retention cannot be deleted, so a bucket holding locked versions cannot be removed until their retention expires and you delete them. **Empty bucket** in the console reports locked objects as ones it could not delete and leaves them in place.
 
-Once the bucket is empty, delete it from the dashboard in either region (Owner and Admin roles only), or over the S3 API with `DeleteBucket` in `us-east-1`. `DeleteBucket` is not available over the S3 API in `eu-west-1`. See [Buckets](/storage/buckets#deleting-a-bucket).
+Once the bucket is empty, delete it from the console in either region (Owner and Admin roles only), or over the S3 API with `DeleteBucket` in `us-east-1`. `DeleteBucket` is not available over the S3 API in `eu-west-1`. See [Buckets](/storage/buckets#deleting-a-bucket).
 
 ## Object Lock and API keys
 
@@ -173,3 +173,8 @@ Object Lock provides WORM-style retention, which is a building block many regula
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
+
+## Next steps
+
+- [Versioning](/storage/versioning): how versions and delete markers work with Object Lock
+- [API Keys](/security/api-keys): the permissions that set retention and Legal Hold

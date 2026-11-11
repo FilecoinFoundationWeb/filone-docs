@@ -27,12 +27,7 @@ Every SDK and tool needs the same four things:
 | Credentials | Your Access Key ID and Secret Access Key, from **API Keys** in the console |
 | Path-style addressing | **Required.** Fil One does not support virtual-hosted-style URLs — enable path-style in every client (`forcePathStyle`, `addressing_style = path`, `UsePathStyle`, etc.) |
 
-The endpoint is region-specific, and it has to match the region of the bucket you are addressing:
-
-| Region | Endpoint |
-|--------|----------|
-| Europe (France) `eu-west-1` (default) | `https://s3.eu-west-1.filonecontent.com` |
-| US East (Michigan) `us-east-1` | `https://s3.us-east-1.filonecontent.com` |
+The endpoint is region-specific, and it has to match the region of the bucket you are addressing. See [Base endpoint](/reference/overview#base-endpoint) for each region's endpoint.
 
 Access keys are also scoped to a single region, so a key issued for `eu-west-1` will not work against `us-east-1`. Code examples throughout these docs use `eu-west-1` because it is the default — substitute your own region where it differs.
 

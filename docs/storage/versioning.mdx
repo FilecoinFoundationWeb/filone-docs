@@ -18,8 +18,8 @@ When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1
 
 This behavior applies to all objects in versioned buckets.
 
-:::warning Deleting in the dashboard removes a version permanently
-The dashboard never writes a delete marker. Deleting an object there, one at a time or in bulk, permanently deletes the specific version on the row you chose. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](/app/buckets#deleting-objects).
+:::warning Deleting in the console removes a version permanently
+The console never writes a delete marker. Deleting an object there, one at a time or in bulk, permanently deletes the specific version on the row you chose. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](/app/buckets#deleting-objects).
 :::
 
 ## Access key permissions for versions
@@ -94,7 +94,7 @@ Every version is a full copy of the object and is billed as stored storage. If y
 
 ## Going back to a previous version
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current.
+The Fil One **console** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current.
 
 :::info Region-dependent
 Promoting a version to current with `CopyObject` is confirmed working in `us-east-1`. This has not yet been confirmed in `eu-west-1` — use the download-and-reupload method there instead.

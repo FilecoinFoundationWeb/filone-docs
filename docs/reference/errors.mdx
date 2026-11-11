@@ -1,6 +1,6 @@
 ---
 title: Error Reference
-description: S3 error codes returned by Fil One.
+description: S3 error codes Fil One returns, console error messages, and a troubleshooting table for first requests.
 ---
 
 Fil One returns standard S3 error responses in XML format. The format is standard, but the specific code returned for a given condition does not always match AWS S3, so an application that branches on error codes needs review. See [known error-code deviations](/reference/s3-compatibility#known-error-code-deviations-in-eu-west-1).
@@ -58,8 +58,10 @@ These come from the Fil One console at [app.filone.com](https://app.filone.com),
 
 ## Troubleshooting
 
+Most first-request failures come from the endpoint, the region, or how the request is signed. [Authentication](/security/authentication) covers request signing, and [Limits & Quotas](/limits) covers size and naming limits.
+
 **`SignatureDoesNotMatch`** -- The most common auth error. Check that:
-1. Your secret key is correct (re-copy from the dashboard if unsure).
+1. Your secret key is correct (re-copy from the console if unsure).
 2. Your system clock is accurate (SigV4 requires clocks within 15 minutes of server time).
 3. You are using the region that matches your key and endpoint (`eu-west-1` or `us-east-1`). A key is scoped to one region and is rejected against the other.
 

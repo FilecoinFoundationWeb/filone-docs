@@ -6,7 +6,7 @@ description: Upload large files in parts for reliability and performance.
 For very large objects you must use multipart upload. The single-PUT ceiling is 5 GB, the standard S3 limit (see [Standard S3 limits](/limits#standard-s3-limits)). Multipart upload is also recommended for any file over 100 MB for improved reliability -- if a part fails, you retry only that part instead of the entire file.
 
 :::note
-The Fil One dashboard uploads objects with a single PUT, so multipart applies when you use your own S3 SDK or the AWS CLI, not the console upload flow.
+The Fil One console uploads objects with a single PUT, so multipart applies when you use your own S3 SDK or the AWS CLI, not the console upload flow.
 :::
 
 ## How it works
@@ -89,3 +89,8 @@ aws s3api abort-multipart-upload \
   --upload-id YOUR_UPLOAD_ID \
   --endpoint-url https://s3.eu-west-1.filonecontent.com
 ```
+
+## Next steps
+
+- [Limits & Quotas](/limits#object-limits): object and part size limits
+- [SDKs & Tools](/sdk/overview): client settings for each SDK

@@ -51,7 +51,7 @@ You can upgrade to a paid plan at any time during the trial or grace period, and
 :::
 
 :::info What "disabled" means
-Disabling blocks all access to the account: your data is no longer reachable through the API or the dashboard, and access keys stop working. Fil One does not run an automatic purge at this point. To restore access, an organization Owner opens **Billing** and clicks **Reactivate**. To have your data removed, email [support@filone.com](mailto:support@filone.com).
+Disabling blocks all access to the account: your data is no longer reachable through the API or the console, and access keys stop working. Fil One does not run an automatic purge at this point. To restore access, an organization Owner opens **Billing** and clicks **Reactivate**. To have your data removed, email [support@filone.com](mailto:support@filone.com).
 :::
 
 ## Paid plan pricing
@@ -66,7 +66,7 @@ Pricing is usage-based, measured as the average storage consumed across the bill
 
 ## Payment
 
-Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, opened from **Billing** under **Organization** in the left sidebar. See [Billing](/app/billing).
+Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the console, opened from **Billing** under **Organization** in the sidebar. See [Billing](/app/billing).
 
 - Invoices are generated monthly.
 - Usage details are visible on the Billing page to Owners and Admins.
@@ -74,17 +74,17 @@ Payments are processed through Stripe. An organization Owner adds a credit card 
 
 ## Payment failures
 
-If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. The **dashboard becomes read-only** from the moment the payment fails, and the Billing page shows **Your last payment failed** with an **Update payment** button.
+If a payment fails, your account enters **past due** status and Stripe automatically retries the charge. The **console becomes read-only** from the moment the payment fails, and the Billing page shows **Your last payment failed** with an **Update payment** button.
 
 If all retries are exhausted and the subscription is canceled by Stripe, your account transitions to the paid grace period (see below).
 
 :::warning Check the Billing page, not your inbox
-Don't rely on an email to tell you a payment has failed. If uploads stop working, open **Billing** in the dashboard: a **Your last payment failed** banner means the card needs updating, and an Owner can fix it with **Update payment**. See [Billing](/app/billing#your-plan).
+Don't rely on an email to tell you a payment has failed. If uploads stop working, open **Billing** in the console: a **Your last payment failed** banner means the card needs updating, and an Owner can fix it with **Update payment**. See [Billing](/app/billing#your-plan).
 :::
 
 ## Cancellation
 
-An organization Owner can cancel the paid plan from the **Stripe billing portal**, which opens from **Billing** in the dashboard. Admins can see usage on Billing but can't open the portal. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
+An organization Owner can cancel the paid plan from the **Stripe billing portal**, which opens from **Billing** in the console. Admins can see usage on Billing but can't open the portal. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
 
 | Phase | Duration | What you can do |
 |-------|----------|-----------------|
