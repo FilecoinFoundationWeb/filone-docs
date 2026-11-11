@@ -6,13 +6,13 @@ description: Protect objects from deletion and overwrite with WORM retention pol
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Object Lock lets you enforce Write-Once-Read-Many (WORM) protection on stored objects. Depending on the mode you choose, a locked object cannot be deleted or overwritten until its retention period expires — in **Compliance** mode, not even by the account owner. This is designed for data-retention, legal-preservation, and ransomware-protection use cases. Whether it satisfies a specific regulation is for your own compliance review to decide — see [On regulatory compliance](#on-regulatory-compliance) at the end of this page.
+Object Lock lets you enforce Write-Once-Read-Many (WORM) protection on stored objects. Depending on the mode you choose, a locked object cannot be deleted or overwritten until its retention period expires — in **Compliance** mode, not even by the organization Owner. This is designed for data-retention, legal-preservation, and ransomware-protection use cases. Whether it satisfies a specific regulation is for your own compliance review to decide — see [On regulatory compliance](#on-regulatory-compliance) at the end of this page.
 
 ## Key concepts
 
 **Retention period** — A duration during which an object version cannot be deleted or overwritten.
 
-**Compliance mode** — The strictest protection. No user, including the account owner, can shorten the retention period or delete a locked object before it expires.
+**Compliance mode** — The strictest protection. No user, including the organization Owner, can shorten the retention period or delete a locked object before it expires.
 
 **Governance mode** — A softer protection. In standard S3, a caller holding a special *bypass* permission can override Governance retention and delete objects early. **Fil One does not currently expose a grantable bypass permission**, so in practice a Governance-locked object is protected for its retention period the same way a Compliance one is; the difference is that Governance is not positioned as an absolute, unbypassable guarantee at the platform level.
 
@@ -24,12 +24,12 @@ Object Lock is **opt-in** and must be enabled at **bucket creation time**. It ca
 
 To create a bucket with Object Lock:
 
-1. From the dashboard, click **New bucket**, then **Create bucket**.
-2. Enter a bucket name.
-3. Enable **Versioning**.
-4. Enable **Object Lock**.
-5. Select a retention mode: **Governance** (the default) or **Compliance**.
-6. Set a default retention duration — from 1 day up to 100 years (36,500 days).
+1. From the dashboard, click **New bucket** to open the create form.
+2. Enter a bucket name and choose a region.
+3. Expand **Advanced settings** and turn on **Versioning**. Until you do, Object Lock shows a **Needs Versioning** badge.
+4. Turn on **Object Lock**.
+5. Turn on **Retention** and select a mode: **Governance** (the default) or **Compliance**.
+6. Set a default retention duration, from 1 day up to 100 years (36,500 days). It starts at 15 days.
 7. Click **Create bucket**.
 
 :::warning
@@ -41,7 +41,7 @@ Object Lock must be enabled at bucket creation. It cannot be added to an existin
 | Mode | Can it be overridden early? | Typical use |
 |------|-----------------------------|-------------|
 | **Governance** (default) | Not through any Fil One-granted permission today | Internal-policy retention, audit-friendly workflows |
-| **Compliance** | No — not by anyone, including account owners | Strict, long-term immutable record-keeping |
+| **Compliance** | No — not by anyone, including organization Owners | Strict, long-term immutable record-keeping |
 
 In **Compliance mode**, the retention period is absolute. No action can shorten or remove it once set.
 
@@ -56,31 +56,38 @@ Choose your retention mode carefully **at bucket creation** — it is fixed for 
 The default retention period set at bucket creation is applied automatically to every object uploaded to that bucket.
 
 :::info `PutObjectRetention` needs a granted permission
-Setting or changing retention on an *individual* object version via `PutObjectRetention` works in **both regions**, but only with the matching granular access-key permission, which is never granted automatically. Extending a retention period is straightforward. Shortening one uses the standard S3 bypass-governance-retention mechanism, which is a protocol-level capability of the gateway and not a permission Fil One's own access keys can grant — see [Key concepts](#key-concepts).
+Setting or extending retention on an *individual* object version via `PutObjectRetention` works in **both regions**, but only with the **Set retention** permission, which is never granted automatically and only an organization Owner can grant. Retention can be extended but not shortened: no Fil One access key can be granted the bypass-governance permission. See [Key concepts](#key-concepts).
 :::
 
 Object Lock buckets are always versioned, so a retention call should target a specific version with `--version-id`; without it the call targets whatever the current version is (possibly a delete marker).
+
+The examples use Governance mode. Replace `YYYY-MM-DD` with a date a day or two from now while you're testing: you can extend retention later, but on Fil One you can't shorten it in either mode, because no key can be granted the bypass permission.
+
+:::danger Compliance retention can't be shortened or removed
+If you set `"Mode": "COMPLIANCE"`, nobody, including the organization Owner, can delete that version or shorten its retention until the date passes. The data keeps being billed until then, up to 100 years.
+:::
 
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
     aws s3api put-object-retention \
-      --bucket my-compliance-bucket \
+      --bucket my-bucket \
       --key important-record.pdf \
       --version-id YOUR_VERSION_ID \
-      --retention '{"Mode": "COMPLIANCE", "RetainUntilDate": "2027-12-31T00:00:00Z"}' \
-      --endpoint-url https://s3.us-east-1.filonecontent.com
+      --retention '{"Mode": "GOVERNANCE", "RetainUntilDate": "YYYY-MM-DDT00:00:00Z"}' \
+      --endpoint-url https://s3.us-east-1.filonecontent.com \
+      --region us-east-1
     ```
   </TabItem>
   <TabItem value="python-boto3" label="Python (boto3)">
     ```python
     s3.put_object_retention(
-        Bucket="my-compliance-bucket",
+        Bucket="my-bucket",
         Key="important-record.pdf",
         VersionId="YOUR_VERSION_ID",
         Retention={
-            "Mode": "COMPLIANCE",
-            "RetainUntilDate": "2027-12-31T00:00:00Z",
+            "Mode": "GOVERNANCE",
+            "RetainUntilDate": "YYYY-MM-DDT00:00:00Z",
         },
     )
     ```
@@ -95,9 +102,11 @@ The object detail page in the dashboard shows an object's retention status, and 
 
 ```bash
 aws s3api get-object-retention \
-  --bucket my-compliance-bucket \
+  --bucket my-bucket \
   --key important-record.pdf \
-  --endpoint-url https://s3.us-east-1.filonecontent.com
+  --version-id YOUR_VERSION_ID \
+  --endpoint-url https://s3.us-east-1.filonecontent.com \
+  --region us-east-1
 ```
 
 Returns:
@@ -105,8 +114,8 @@ Returns:
 ```json
 {
   "Retention": {
-    "Mode": "COMPLIANCE",
-    "RetainUntilDate": "2027-12-31T00:00:00Z"
+    "Mode": "GOVERNANCE",
+    "RetainUntilDate": "YYYY-MM-DDT00:00:00+00:00"
   }
 }
 ```
@@ -125,11 +134,11 @@ Once the bucket is empty, delete it from the dashboard in either region (Owner a
 
 ## Object Lock and API keys
 
-`GetBucketVersioning` and `GetBucketObjectLockConfiguration` are selectable permissions that you grant when creating a key — they are not included automatically, so add them if the key needs to read a bucket's versioning or Object Lock settings. Beyond that:
+`GetBucketVersioning` and `GetBucketObjectLockConfiguration` are pre-selected when you create a key. Untick them if the key shouldn't read a bucket's versioning or Object Lock settings. Beyond that:
 
 - A key with **Delete** permission can delete objects in **Governance** mode buckets once retention has expired. Fil One does not expose a bypass permission for deleting *before* expiry.
 - **Compliance** mode cannot be overridden by any key, regardless of permissions.
-- To set retention on an individual version, grant the `PutObjectRetention` granular permission — see the [note above](#setting-per-object-retention). It is available in both regions and is never granted automatically.
+- To set retention on an individual version, grant the **Set retention** permission (Owner-only to grant). See the [note above](#setting-per-object-retention). It is available in both regions and is never granted automatically.
 
 ## Object Lock during trial
 

@@ -4,19 +4,21 @@ description: S3 object storage built for the AI era.
 slug: /
 ---
 
-Fil One is an S3-compatible object storage platform designed for teams that need reliable, cost-effective storage with built-in compliance features. If you've used AWS S3, you already know how to use Fil One.
+import Link from '@docusaurus/Link';
+
+Fil One is an S3-compatible object storage platform designed for teams that need reliable, cost-effective storage, with Object Lock for write-once retention. If you've used AWS S3, you already know how to use Fil One.
 
 ## Get started
 
-<div class="card-grid">
-  <a href="/quickstart"><strong>Quickstart</strong><span>Go from signup to your first upload in under 5 minutes.</span></a>
-  <a href="/reference/s3-compatibility"><strong>S3 Compatibility</strong><span>See which S3 operations are supported and how to connect.</span></a>
-  <a href="/sdk/overview"><strong>SDK Examples</strong><span>Copy-paste code examples for Python, JavaScript, Go, and CLI.</span></a>
+<div className="card-grid">
+  <Link to="/quickstart"><strong>Quickstart</strong><span>Go from signup to your first upload.</span></Link>
+  <Link to="/reference/s3-compatibility"><strong>S3 Compatibility</strong><span>See which S3 operations are supported and how to connect.</span></Link>
+  <Link to="/sdk/overview"><strong>SDK Examples</strong><span>Copy-paste code examples for Python, JavaScript, Go, and CLI.</span></Link>
 </div>
 
 ## Why Fil One
 
-**S3-compatible from day one.** Use the tools you already know — AWS CLI, boto3, any S3-compatible SDK. Point your existing code at our endpoint and it works.
+**S3-compatible from day one.** Use the tools you already know — AWS CLI, boto3, any S3-compatible SDK. Point your existing code at your region's endpoint, turn on path-style addressing, and it works. See [S3 Compatibility](/reference/s3-compatibility) for the operations Fil One does not support.
 
 **Backed by Filecoin.** Fil One stores your data on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs that they are still holding the data they committed to store, or face penalties.
 

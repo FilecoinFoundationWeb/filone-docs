@@ -15,25 +15,24 @@ Bucket names must be:
 - Between 3 and 63 characters
 - Lowercase letters, numbers, and hyphens only (**no dots**)
 - Must start and end with a letter or number
-- Unique within Fil One
+- Unique within the region
+- Not starting with `filone-rag-`, which is reserved
 
 These rules are close to AWS S3's but not identical: in particular Fil One does **not** allow dots (`.`) in bucket names, which AWS S3 permits. If you are migrating a bucket whose name contains a dot, you will need to rename it.
 
 ## Creating a bucket
 
 :::note
-Whether you can create a bucket through the S3 API depends on the region. `CreateBucket` and `DeleteBucket` are supported in `us-east-1`, but not in `eu-west-1` — in that region buckets must be created through the Fil One dashboard. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API in every region.
+Whether you can create a bucket through the S3 API depends on the region. `CreateBucket` and `DeleteBucket` are supported in `us-east-1`, but not in `eu-west-1` — in that region buckets must be created in the Fil One console. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API in every region.
 
 To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that permission when you create it. See [API Keys](/security/api-keys).
 :::
 
-1. From the dashboard, click **New bucket** (or open **Buckets** in the left menu), then click **Create bucket**.
+1. From the dashboard, click **New bucket** to open the create form.
 2. Enter a bucket name.
-3. Choose a **region** — `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
-4. Optionally enable **Versioning**. Leave it off and the bucket keeps only the current copy of each object.
-5. Optionally enable **Object Lock**, then **Retention**. Each requires the one before it, so Object Lock only becomes available once versioning is on, and retention only once Object Lock is on. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years.
-6. Optionally create or configure an API key in the API key section. A key belongs to a single region and must match the bucket's region.
-7. Click **Create bucket** (the button reads **Create bucket and API key** if you expanded the key section). The dashboard then opens the new bucket's page.
+3. Choose a **region**: `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
+4. Optionally expand **Advanced settings** to turn on **Versioning**, then **Object Lock**, then **Retention**. Each needs the one before it: until it's on, the next switch shows a **Needs Versioning** or **Needs Object Lock** badge. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years; it starts at 15 days. Leave Versioning off and the bucket keeps only the current copy of each object.
+5. Click **Create bucket**. The console opens the new bucket's page, which offers **Create API key**. A key belongs to a single region and must match the bucket's region.
 
 Every bucket is created with encryption enabled automatically.
 
@@ -72,7 +71,7 @@ A bucket must be empty before it can be deleted, with no objects or object versi
 
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com
+    aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com --region us-east-1
     ```
 
     `DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the dashboard there.
