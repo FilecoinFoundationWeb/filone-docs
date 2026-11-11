@@ -288,7 +288,7 @@ Security, Billing) hold the concepts and code samples.
   Audit log kept 90 days, CSV export up to 20,000 rows. Organization switching
   is in the organization menu and per browser tab; leave an organization from
   Settings (not as its last Owner). Deleting an organization is not available
-  in the console yet (support@fil.one)
+  in the console yet (support@filone.com)
 - [App - Billing](https://docs.filone.com/app/billing): Plan card, usage card,
   payment method, choosing a plan, invoices, "Need help?" panel. Its own page
   at /billing, opened from the organization menu at the top of the sidebar. Visible to
@@ -309,7 +309,7 @@ Security, Billing) hold the concepts and code samples.
   Account Security. Changing your email RESETS VERIFICATION and re-triggers the
   verification-screen redirect; Google/GitHub sign-ins manage name and email at
   the provider. The "Danger zone" card covers "Delete account": not available in
-  the console yet, email support@fil.one
+  the console yet, email support@filone.com
 - [App - Support](https://docs.filone.com/app/support): The "Talk to an expert" form,
   opened from "Support" in the user menu at the bottom of the sidebar. All fields required, starts empty, four
   categories, ~1 business day response. Replies arrive by email; the console does
