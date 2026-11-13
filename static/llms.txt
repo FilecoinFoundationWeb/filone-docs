@@ -291,8 +291,8 @@ Security, Billing) hold the concepts and code samples.
   creation. Upload is single-PUT (5 GB ceiling); the browser shows the first
   ~1,000 entries; no version restore/promote. Download works on trial; SHARING IS
   A PAID-PLAN FEATURE (links of 1 hour to 7 days)
-- [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Status Active
-  or Expired; Permissions as Read/Write/List/Delete badges plus +n; search and
+- [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Status Active,
+  or Expired from the day after the expiry date in UTC; Permissions as Read/Write/List/Delete badges plus +n; search and
   region/status filters from 5 keys; a row opens a details panel with expiry,
   region, buckets and full permissions; multi-select bulk delete) and create
   flow. Region is REQUIRED and a key works only against its own region's
@@ -303,8 +303,8 @@ Security, Billing) hold the concepts and code samples.
   all; Set retention/Set legal hold are Owner-only. Secret shown ONCE (at
   creation or rotation); downloaded .env/.csv files hold it in plain text, so
   delete them and never commit them. ROTATE keeps name, permissions, buckets,
-  region and expiry; the old secret stops working at once. Deleting a key is the
-  revocation and breaks any application using it immediately
+  region and expiry; the old secret stops working at once; an expired key can't
+  be rotated (Rotate is hidden on it). Deleting a key is the revocation and breaks any application using it immediately
 - [App - AI Agent Toolkit](https://docs.filone.com/app/ai-agent-toolkit): NOT
   RELEASED. A "Coming Soon" page with a waitlist form. What works today:
   ordinary S3 access keys scoped to a bucket, which is how LangChain, LlamaIndex,

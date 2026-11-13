@@ -133,7 +133,7 @@ Go to **API Keys** in the left sidebar to see your keys. The list shows:
 | Buckets | Which buckets the key can access (all, or a specific set) |
 | Permissions | The object permissions as badges, and a **+***n* badge for the rest |
 | Created by | Who created the key, and who rotated it and when. Shown when your organization has more than one member |
-| Status | **Active**, or **Expired** once the expiry date has passed |
+| Status | **Active**, or **Expired** from the day after the expiry date (UTC) |
 
 Click a key's row to see its expiry date, region, buckets, and full permissions. The console doesn't show when a key was last used, so name keys after what uses them. You cannot view the Secret Access Key after creation. See [API Keys in the console](/app/api-keys#the-key-list) for search, filters, and deleting several keys at once.
 
@@ -147,7 +147,7 @@ Rotation gives a key a new Access Key ID and Secret Access Key and keeps everyth
 
 The old secret stops working as soon as the new one is issued, so update your applications right away. If the old key couldn't be revoked, the console tells you it is still active; delete it from the list yourself.
 
-You can't rotate an expired key; create a new one instead. **Rotate** only appears on keys your current role could still create.
+You can't rotate an expired key, so **Rotate** isn't offered on it; delete it and create a new one instead. **Rotate** only appears on keys your current role could still create.
 
 To move an application onto a key with different permissions or buckets, create the new key, switch the application over, then delete the old key.
 
