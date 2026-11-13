@@ -9,7 +9,7 @@ description: Frequently asked questions about Fil One.
 <summary>Is Fil One S3-compatible?</summary>
 <div>
 
-Yes. Fil One provides an S3-compatible API. Any application, SDK, or tool that works with AWS S3 works with Fil One by changing the endpoint URL to your region's endpoint — `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`. See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list of supported operations.
+Yes. Fil One provides an S3-compatible API, and the standard S3 SDKs and tools work with it once you make two changes: set the endpoint to your region's (`https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`), and turn on path-style addressing. Some S3 features are not available, such as bucket policies and lifecycle rules. Check the [S3 Compatibility Reference](/reference/s3-compatibility) for the operations your application uses.
 
 </div>
 </details>
@@ -35,12 +35,14 @@ Within a region, storage is fulfilled by a distributed network of storage provid
 </details>
 
 <details>
-<summary>What happens when I delete an object?</summary>
+<summary>What happens when I delete an object or bucket?</summary>
 <div>
 
 On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
 
-On a bucket **with versioning enabled**, a plain delete places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. See [Versioning](/storage/versioning).
+On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](/storage/versioning).
+
+Once deleted, an object is no longer accessible through the API or the dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — an infrastructure detail set by the storage layer, not a user-facing state. That residual data stays encrypted, with key custody held by the regional storage operator rather than by you or Fil One (see [Encryption](/security/encryption)). The same applies when you delete a bucket.
 
 </div>
 </details>
@@ -80,7 +82,7 @@ The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimit
 
 Fil One exposes an S3-compatible API, so backup software that targets S3 generally works — but check your tool's requirements first. We have not verified specific backup products, and three of the documented gaps are ones backup tools commonly depend on:
 
-- **No server-side copy in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1` but not in `eu-west-1`; some tools use it for renames, moves, and deduplication.
+- **Server-side copy of a specific version is unverified in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1`, and plain server-side copy works in `eu-west-1`, but copying a specific `VersionId` has not been verified there. Some tools use `CopyObject` for renames, moves, and deduplication.
 - **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the dashboard first.
 - **No lifecycle rules.** Retention-based pruning has to be handled by the tool itself.
 
@@ -93,7 +95,9 @@ Path-style addressing is also required, and bucket names cannot contain dots. Ch
 <summary>What durability guarantees do you offer?</summary>
 <div>
 
-Fil One is designed for high durability through distributed storage across multiple providers. Specific durability SLA details are available on request.
+Fil One is designed for high durability through distributed storage across multiple providers. We don't publish a durability figure; for details, email [support@filone.com](mailto:support@filone.com).
+
+Availability is covered separately: the [Fil One SLA](https://www.filone.com/sla) commits to 99.9% monthly uptime, with service credits if it is missed.
 
 </div>
 </details>
@@ -102,7 +106,9 @@ Fil One is designed for high durability through distributed storage across multi
 <summary>Can multiple users access the same account?</summary>
 <div>
 
-Currently, Fil One accounts are single-user. Each account has one login and one set of API keys. Multi-user organization accounts with role-based access are planned for a future release. In the meantime, you can create multiple API keys scoped to specific buckets and permissions to share limited access with other services or team members.
+Yes, through organizations. An organization can have several members, each with a role: **Owner**, **Admin**, **Member**, or **Read only**. See [Organization](/app/organization) and [Roles and permissions](/app/organization#roles-and-permissions).
+
+Access through the S3 API is still per access key. There are no IAM users or bucket policies, so to share limited access with other services, create API keys scoped to specific buckets and permissions.
 
 </div>
 </details>
@@ -114,15 +120,6 @@ Currently, Fil One accounts are single-user. Each account has one login and one 
 Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs — called Proof of Replication (PoRep) and Proof of Spacetime (PoSt) — to prove they are still holding the data they committed to store. Providers that fail to produce valid proofs are penalised. This proof cycle runs at the network level and is not something you trigger or check yourself.
 
 Fil One does not currently expose per-object proof data — content identifiers, deal IDs, and sealing state are not surfaced through the API or the dashboard, so you cannot independently audit an individual object today. For object-level integrity checks in your own application, compare the `ETag` returned by `HeadObject` against a checksum you keep, or apply [Object Lock](/storage/object-lock) to make objects immutable for a fixed retention period.
-
-</div>
-</details>
-
-<details>
-<summary>What happens to my data if I delete it?</summary>
-<div>
-
-When you delete an object or bucket, it is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — an infrastructure detail set by the storage layer, not a user-facing state. That residual data stays encrypted, with key custody held by the regional storage operator rather than by you or Fil One (see [Encryption](/security/encryption)). The data is inaccessible through Fil One from the moment of deletion.
 
 </div>
 </details>

@@ -10,8 +10,17 @@ import TabItem from '@theme/TabItem';
 Choose your language and follow along. Each example uploads a file and verifies it. **Create the bucket first in the dashboard** — `CreateBucket` over the S3 API is not available in `eu-west-1`, the default region these examples use.
 
 :::note The endpoint depends on your bucket's region
-These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://us-east-1.s3.fil.one` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
+These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
 :::
+
+Each example reads your key from the standard AWS environment variables, the same names the console's **Download .env** writes. Set them in your shell before you run an example, and keep the secret out of your code:
+
+```bash
+export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+```
+
+The Python and JavaScript examples upload `my-file.txt`, so create it first: `echo "hello" > my-file.txt`.
 
 <Tabs>
   <TabItem value="python" label="Python">
@@ -25,18 +34,17 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
 
     s3 = boto3.client(
         "s3",
-        endpoint_url="https://eu-west-1.s3.fil.one",
-        aws_access_key_id="YOUR_ACCESS_KEY",
-        aws_secret_access_key="YOUR_SECRET_KEY",
+        endpoint_url="https://s3.eu-west-1.filonecontent.com",
         region_name="eu-west-1",
-        config=Config(s3={"addressing_style": "path"}),
+        # Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
     )
 
     # Upload a file (create the bucket first in the dashboard)
-    s3.upload_file("my-file.txt", "my-sdk-bucket", "my-file.txt")
+    s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
 
     # Verify
-    response = s3.list_objects_v2(Bucket="my-sdk-bucket")
+    response = s3.list_objects_v2(Bucket="my-bucket")
     for obj in response.get("Contents", []):
         print(f"{obj['Key']}  ({obj['Size']} bytes)")
     ```
@@ -47,30 +55,32 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
     npm install @aws-sdk/client-s3
     ```
 
+    Save this as `upload.mjs` (it uses ES modules and top-level `await`), then run `node upload.mjs`:
+
     ```javascript
     import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
     import { readFileSync } from "fs";
 
     const client = new S3Client({
-      endpoint: "https://eu-west-1.s3.fil.one",
+      endpoint: "https://s3.eu-west-1.filonecontent.com",
       region: "eu-west-1",
       forcePathStyle: true,
-      credentials: {
-        accessKeyId: "YOUR_ACCESS_KEY",
-        secretAccessKey: "YOUR_SECRET_KEY",
-      },
+      // SDK v3.729+ adds checksums Fil One doesn't accept on presigned uploads
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
+      // Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
     });
 
     // Upload a file (create the bucket first in the dashboard)
     await client.send(new PutObjectCommand({
-      Bucket: "my-sdk-bucket",
+      Bucket: "my-bucket",
       Key: "my-file.txt",
       Body: readFileSync("my-file.txt"),
     }));
 
     // Verify
     const { Contents } = await client.send(
-      new ListObjectsV2Command({ Bucket: "my-sdk-bucket" })
+      new ListObjectsV2Command({ Bucket: "my-bucket" })
     );
     Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
     ```
@@ -78,9 +88,13 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
 
   <TabItem value="go" label="Go">
     ```bash
+    mkdir filone-quickstart && cd filone-quickstart
+    go mod init example.com/filone-quickstart
     go get github.com/aws/aws-sdk-go-v2/service/s3
     go get github.com/aws/aws-sdk-go-v2/credentials
     ```
+
+    Save this as `main.go` and run `go run .`:
 
     ```go
     package main
@@ -88,6 +102,7 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
     import (
         "context"
         "fmt"
+        "log"
         "os"
         "strings"
 
@@ -98,12 +113,12 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
 
     func main() {
         client := s3.New(s3.Options{
-            BaseEndpoint:  aws.String("https://eu-west-1.s3.fil.one"),
+            BaseEndpoint:  aws.String("https://s3.eu-west-1.filonecontent.com"),
             Region:        "eu-west-1",
             UsePathStyle:  true,
             Credentials: credentials.NewStaticCredentialsProvider(
-                os.Getenv("FIL_ACCESS_KEY"),
-                os.Getenv("FIL_SECRET_KEY"),
+                os.Getenv("AWS_ACCESS_KEY_ID"),
+                os.Getenv("AWS_SECRET_ACCESS_KEY"),
                 "",
             ),
         })
@@ -111,16 +126,22 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
         ctx := context.Background()
 
         // Upload (create the bucket first in the dashboard)
-        client.PutObject(ctx, &s3.PutObjectInput{
-            Bucket: aws.String("my-sdk-bucket"),
+        _, err := client.PutObject(ctx, &s3.PutObjectInput{
+            Bucket: aws.String("my-bucket"),
             Key:    aws.String("hello.txt"),
             Body:   strings.NewReader("Hello from Go!"),
         })
+        if err != nil {
+            log.Fatal(err)
+        }
 
         // List
-        out, _ := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
-            Bucket: aws.String("my-sdk-bucket"),
+        out, err := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+            Bucket: aws.String("my-bucket"),
         })
+        if err != nil {
+            log.Fatal(err)
+        }
         for _, obj := range out.Contents {
             fmt.Printf("%s (%d bytes)\n", *obj.Key, *obj.Size)
         }
@@ -132,7 +153,7 @@ These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`,
 For more detailed examples including multipart uploads and presigned URLs, see the dedicated SDK pages:
 
 <div class="card-grid">
-  <a href="/sdk/python"><strong>Python</strong></a>
-  <a href="/sdk/javascript"><strong>JavaScript</strong></a>
-  <a href="/sdk/go"><strong>Go</strong></a>
+  <a href="/sdk/python"><strong>Python</strong><span>boto3: uploads, downloads, multipart, presigned URLs.</span></a>
+  <a href="/sdk/javascript"><strong>JavaScript</strong><span>AWS SDK v3: the same operations from Node.js.</span></a>
+  <a href="/sdk/go"><strong>Go</strong><span>aws-sdk-go-v2: the same operations from Go.</span></a>
 </div>

@@ -15,25 +15,24 @@ Bucket names must be:
 - Between 3 and 63 characters
 - Lowercase letters, numbers, and hyphens only (**no dots**)
 - Must start and end with a letter or number
-- Unique within Fil One
+- Unique within the region
+- Not starting with `filone-rag-`, which is reserved
 
 These rules are close to AWS S3's but not identical: in particular Fil One does **not** allow dots (`.`) in bucket names, which AWS S3 permits. If you are migrating a bucket whose name contains a dot, you will need to rename it.
 
 ## Creating a bucket
 
 :::note
-Whether you can create a bucket through the S3 API depends on the region. `CreateBucket` and `DeleteBucket` are supported in `us-east-1`, but not in `eu-west-1` — in that region buckets must be created through the Fil One dashboard. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API in every region.
+Whether you can create a bucket through the S3 API depends on the region. `CreateBucket` and `DeleteBucket` are supported in `us-east-1`, but not in `eu-west-1` — in that region buckets must be created in the Fil One console. All other S3 operations (uploading, downloading, listing objects, etc.) work normally via the API in every region.
 
 To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that permission when you create it. See [API Keys](/security/api-keys).
 :::
 
-1. From the dashboard, click **New bucket** (or open **Buckets** in the left menu), then click **Create bucket**.
+1. From the dashboard, click **New bucket** to open the create form.
 2. Enter a bucket name.
-3. Choose a **region** — `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
-4. Optionally enable **Versioning**. Leave it off and the bucket keeps only the current copy of each object.
-5. Optionally enable **Object Lock**, then **Retention**. Each requires the one before it, so Object Lock only becomes available once versioning is on, and retention only once Object Lock is on. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years.
-6. Optionally create or configure an API key in the API key section. A key belongs to a single region and must match the bucket's region.
-7. Click **Create bucket** (the button reads **Create bucket and API key** if you expanded the key section).
+3. Choose a **region**: `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
+4. Optionally expand **Advanced settings** to turn on **Versioning**, then **Object Lock**, then **Retention**. Each needs the one before it: until it's on, the next switch shows a **Needs Versioning** or **Needs Object Lock** badge. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years; it starts at 15 days. Leave Versioning off and the bucket keeps only the current copy of each object.
+5. Click **Create bucket**. The console opens the new bucket's page, which offers **Create API key**. A key belongs to a single region and must match the bucket's region.
 
 Every bucket is created with encryption enabled automatically.
 
@@ -46,7 +45,7 @@ Region, versioning, Object Lock, and retention cannot be changed after the bucke
 <Tabs>
   <TabItem value="aws-cli" label="AWS CLI">
     ```bash
-    aws s3 ls --endpoint-url https://eu-west-1.s3.fil.one
+    aws s3 ls --endpoint-url https://s3.eu-west-1.filonecontent.com
     ```
   </TabItem>
 
@@ -61,11 +60,23 @@ Region, versioning, Object Lock, and retention cannot be changed after the bucke
 
 ## Deleting a bucket
 
-:::note
-Deleting a bucket from the dashboard is not yet available. The delete button is visible but disabled while the underlying storage layer completes support for this operation, and it will be enabled in a future release.
+A bucket must be empty before it can be deleted, with no objects or object versions left in it.
 
-In the meantime you can delete a bucket through the S3 API in `us-east-1`, using a key that has the `DeleteBucket` permission. The bucket must be empty. `DeleteBucket` is not available in `eu-west-1`.
-:::
+<Tabs>
+  <TabItem value="app" label="App">
+    Open **Buckets**, choose **Delete bucket** from the bucket's actions menu, and confirm. If the bucket still holds objects, the dashboard tells you it is not empty. Open the bucket and use **Empty bucket** to remove everything first. See [Buckets in the console](/app/buckets#deleting-a-bucket).
+
+    Dashboard deletion works in every region, including `eu-west-1`. Only the Owner and Admin roles can delete buckets.
+  </TabItem>
+
+  <TabItem value="aws-cli" label="AWS CLI">
+    ```bash
+    aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com --region us-east-1
+    ```
+
+    `DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the dashboard there.
+  </TabItem>
+</Tabs>
 
 :::info Logical deletion and Filecoin storage
 When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](/security/encryption). The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.

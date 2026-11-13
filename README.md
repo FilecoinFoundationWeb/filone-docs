@@ -1,6 +1,6 @@
 # Fil One Docs
 
-User-facing documentation for [docs.fil.one](https://docs.fil.one). Built with [Docusaurus](https://docusaurus.io/) and deployed to [Vercel](https://vercel.com/).
+User-facing documentation for [docs.filone.com](https://docs.filone.com). Built with [Docusaurus](https://docusaurus.io/) and deployed to [Vercel](https://vercel.com/).
 
 Before editing content, read [`AGENTS.md`](./AGENTS.md) — guidelines for anyone (human or AI agent) changing this repo, including the rule that `static/llms.txt` and `static/llms-full.txt` must be updated alongside any factual change to `docs/**`.
 
@@ -40,10 +40,9 @@ Static output goes to `./build/`.
    - **Install Command:** `npm install`
 4. Click **Deploy**.
 
-### Custom domain (docs.fil.one)
+### Custom domains
 
-1. In the Vercel project dashboard, go to **Settings > Domains**.
-2. Add `docs.fil.one` and set a CNAME record pointing to `cname.vercel-dns.com`.
+The `filone-docs` Vercel project serves `docs.filone.com`, the canonical host, and `docs.fil.one`, which keeps serving until it redirects to `docs.filone.com`. Their DNS records are managed in Terraform in `fil-one/infrastructure` (`environments/prod/filone-com.tf` and `environments/prod/fil-one.tf`), using the CNAME target Vercel recommends for the project. To attach another domain, add it under **Settings > Domains** in the Vercel project, then add its CNAME, and any `_vercel` verification TXT record Vercel asks for, in that Terraform rather than in the Cloudflare dashboard.
 
 ### Automatic deploys
 

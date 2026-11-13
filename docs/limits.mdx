@@ -3,18 +3,20 @@ title: Limits & Quotas
 description: Service limits, quotas, and constraints.
 ---
 
-## Account limits
+## Organization limits
 
 | Limit | Trial | Paid |
 |-------|-------|------|
 | Storage | 1 TB (1,000 GB) | No limit |
 | Egress bandwidth | 2 TB (cumulative over the trial) | No limit |
 | API operations | Unlimited | Unlimited |
-| Buckets per account | — | 100 in `eu-west-1`, 300 in `us-east-1` |
+| Buckets per organization | Not confirmed | 100 in `eu-west-1`, 300 in `us-east-1` |
 
 During the trial these two caps behave differently: reaching the **storage** cap **write-locks** the account (reads still work), while reaching the **egress** cap **disables** it entirely. Trial egress is a single cumulative budget for the whole 30 days, not a monthly amount that resets. See [Trial & Billing](/billing/trial).
 
-The bucket limit is provisioned per account rather than fixed by plan, and it differs by region. On a **paid** plan it is **100 buckets in `eu-west-1`** and **300 in `us-east-1`**. Contact support if you need a higher limit.
+The bucket limit is provisioned per organization rather than fixed by plan, and it differs by region. On a **paid** plan it is **100 buckets in `eu-west-1`** and **300 in `us-east-1`**. To ask for a higher limit, email [support@filone.com](mailto:support@filone.com).
+
+Each person can own up to **10 organizations**, and each organization can have up to **25 pending invitations** at a time. See [Organization](/app/organization).
 
 The trial lasts 30 days. After it ends, your account enters a 7-day read-only grace period. If you do not upgrade before the grace period ends, the account is disabled and access is blocked. See [Trial & Billing](/billing/trial) for the full timeline and email schedule.
 
@@ -27,14 +29,26 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 | Maximum parts per multipart upload | 10,000 |
 | Minimum part size (multipart) | 5 MB |
 | Maximum part size (multipart) | 5 GB |
-| Maximum object key length | 1,024 bytes |
+| Maximum object key length | 1,024 characters in the dashboard; 1,024 bytes (standard S3 limit) through the API |
 | Maximum metadata size per object | 2 KB |
 
 :::note Which of these are Fil One-specific
-The **maximum object key length (1,024 bytes)** is enforced by Fil One and verified in code. The other values in this table (maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
+The **dashboard** rejects object keys longer than **1,024 characters** when you upload, which is verified in code. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
 :::
 
 For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
+
+## Console limits
+
+These apply in the [console](/app/buckets) at app.filone.com, in both regions. They are set in the console, so they don't apply to requests you make with an S3 SDK or the AWS CLI.
+
+| Limit | Value |
+|-------|-------|
+| File size for a console upload | 5 GB. The console uploads each file in a single request. Use the [AWS CLI](/sdk/cli) or an SDK for larger files. |
+| Tags per console upload | 50, up to 128 characters each |
+| Description per console upload | 1,000 characters |
+| Share link expiry | 7 days at most |
+| Default retention on a bucket | 1 day to 100 years (36,500 days) |
 
 ## Regions
 
@@ -49,7 +63,7 @@ Bucket creation and deletion through the S3 API are available in `us-east-1` but
 
 ## API rate limits
 
-Rate limits are enforced by the underlying storage gateway. Fil One does not impose additional rate limits on top of these. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. Contact support if you are consistently hitting limits at scale.
+Rate limits are enforced by the underlying storage gateway. Fil One does not impose additional rate limits on top of these. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
 
 ## Naming constraints
 
@@ -57,8 +71,9 @@ Rate limits are enforced by the underlying storage gateway. Fil One does not imp
 - 3-63 characters
 - Lowercase letters, numbers, hyphens (no dots — Fil One's naming rules are stricter than AWS S3 here)
 - Must start and end with a letter or number
+- Must not start with `filone-rag-`, which is reserved
 - Unique within Fil One
 
 **Object keys:**
-- Up to 1,024 bytes (UTF-8)
+- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies but is not independently confirmed
 - Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility

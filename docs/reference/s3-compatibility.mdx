@@ -3,7 +3,7 @@ title: S3 Compatibility
 description: Supported S3 operations, authentication, and endpoint configuration.
 ---
 
-Fil One provides an S3-compatible API. If your application works with AWS S3, it works with Fil One — point your SDK or CLI at our endpoint and authenticate with your API keys.
+Fil One provides an S3-compatible API. It works with standard S3 SDKs and tools once you set the endpoint and enable path-style addressing; see the gaps below. Authenticate with your [API keys](/security/api-keys).
 
 ## Endpoint
 
@@ -11,8 +11,8 @@ Endpoints are region-specific. Use the endpoint for the region your bucket lives
 
 | Region | Endpoint |
 |--------|----------|
-| Europe (France) `eu-west-1` (default) | `https://eu-west-1.s3.fil.one` |
-| US East (Michigan) `us-east-1` | `https://us-east-1.s3.fil.one` |
+| Europe (France) `eu-west-1` (default) | `https://s3.eu-west-1.filonecontent.com` |
+| US East (Michigan) `us-east-1` | `https://s3.us-east-1.filonecontent.com` |
 
 All requests use HTTPS. HTTP connections are rejected.
 
@@ -22,7 +22,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 
 | Parameter | Value |
 |-----------|-------|
-| Endpoint | `https://<region>.s3.fil.one` |
+| Endpoint | `https://s3.<region>.filonecontent.com` |
 | Region | `eu-west-1` or `us-east-1` |
 | Signature version | SigV4 |
 | Path style | Required |
@@ -37,7 +37,7 @@ Specific size and count limits quoted in this table (5 TB max object, 5 GB singl
 :::warning How unsupported operations respond in `eu-west-1`
 In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed by a compatibility test run against the region.
 
-A 403 from `PutBucketVersioning`, `PutBucketPolicy`, `PutBucketAcl`, `PutBucketEncryption`, `PutBucketLifecycleConfiguration`, or the tagging operations means *the feature is absent*, not that your key lacks a permission. Don't spend time auditing your access-key scopes for these. Code that branches on `NotImplemented` to degrade gracefully needs to treat 403 on these operations the same way.
+A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`, or the tagging operations means *the feature is absent*, not that your key lacks a permission. Bucket-configuration calls such as `PutBucketVersioning` and `PutBucketEncryption` can't be granted to any key, so they fail the same way. Don't spend time auditing your access-key scopes for these. Code that branches on `NotImplemented` to degrade gracefully needs to treat 403 on these operations the same way.
 :::
 
 ### Bucket operations
@@ -49,11 +49,11 @@ A 403 from `PutBucketVersioning`, `PutBucketPolicy`, `PutBucketAcl`, `PutBucketE
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
 | `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets, `Suspended` is never returned. |
-| `PutBucketVersioning` | ⚠️ Region-dependent | Rejected with `AccessDenied` in `eu-west-1`, for enable as well as suspend requests: versioning there is set at bucket creation and cannot be changed over the API at all. In `us-east-1`, accepted for SDK compatibility, but versioning still cannot be suspended once enabled. |
+| `PutBucketVersioning` | ❌ Not available to access keys | No access key can be granted this action, in either region. Versioning is set when you create the bucket in the console and cannot be changed afterwards. |
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
-| `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention policy in Governance or Compliance mode. |
-| `GetBucketEncryption` | ⚠️ Region-dependent | Returns `AccessDenied` in `eu-west-1` rather than an encryption configuration. Supported in `us-east-1`. Encryption is always on regardless of what this call returns. |
-| `PutBucketEncryption` | ⚠️ Region-dependent | Rejected with `AccessDenied` in `eu-west-1`, including a valid SSE-S3 default rule. In `us-east-1`, accepted for SDK compatibility but has no effect. Encryption cannot be modified or disabled in either region. |
+| `PutBucketObjectLockConfiguration` | ❌ Not available to access keys | No access key can be granted this action, in either region. Object Lock and the default retention are set when you create the bucket in the console. |
+| `GetBucketEncryption` | ❌ Not available to access keys | No access key can be granted this action, in either region. Encryption is always on. |
+| `PutBucketEncryption` | ❌ Not available to access keys | No access key can be granted this action, in either region. Encryption cannot be modified or disabled. |
 | `DeleteBucketEncryption` | ❌ Not supported | Rejected with `AccessDenied` in `eu-west-1`. Encryption cannot be disabled. |
 | `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`. See [ACLs](#acls). |
 | `PutBucketAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
@@ -81,11 +81,11 @@ A 403 from `PutBucketVersioning`, `PutBucketPolicy`, `PutBucketAcl`, `PutBucketE
 | `HeadObject` | ✅ Supported | |
 | `ListObjectsV2` | ✅ Supported | |
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
-| `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. In `eu-west-1`, most copy operations pass a compatibility run, so plain server-side copy works there, but **copying a specific `VersionId` is still unverified** in that region because the test harness cannot configure versioning over the API. Verify a version-promote copy against your own bucket before relying on it. |
+| `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. In `eu-west-1`, most copy operations pass a compatibility run, so plain server-side copy works there, but **copying a specific `VersionId` is not yet confirmed** in that region. Verify a version-promote copy against your own bucket before relying on it. |
 | `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
-| `PutObjectRetention` | ✅ Supported | Set, extend, or (via S3's bypass-governance-retention mechanism) shorten a version's retention. Requires the matching access-key permission. |
+| `PutObjectRetention` | ✅ Supported | Set or extend a version's retention. Retention can't be shortened, because no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
 | `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
-| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the matching access-key permission. |
+| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
 | `GetObjectAttributes` | ❌ Not supported | Returns `AccessDenied` in `eu-west-1`. Use `HeadObject` for size, ETag, and metadata instead. |
 | `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`, including on objects uploaded with a canned-ACL header. |
 | `PutObjectAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
@@ -117,8 +117,8 @@ Versioning is **opt-in** and configured at bucket creation time. Once enabled on
 | `ListObjectVersions` | ✅ Supported | Lists all versions and delete markers in a bucket. |
 | `GetObject` with `VersionId` | ✅ Supported | Retrieves a specific historical version by ID. |
 | `DeleteObject` with `VersionId` | ✅ Supported | Permanently deletes a specific version, bypassing delete markers. |
-| `PutBucketVersioning` (suspend) | ❌ Rejected | Versioning cannot be suspended once enabled. Suspend requests return an error. In `eu-west-1` that error is `AccessDenied`, and enable requests are rejected the same way. |
-| `CopyObject` with `x-amz-copy-source-version-id` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — copy a specific version onto the current key to promote it. Still unverified in `eu-west-1`: plain copy works there, but the version-id form could not be tested because versioning cannot be configured over the API in that region. |
+| `PutBucketVersioning` | ❌ Not available to access keys | Versioning is set at bucket creation and cannot be suspended or changed. |
+| `CopyObject` with `x-amz-copy-source-version-id` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — copy a specific version onto the current key to promote it. Not yet confirmed in `eu-west-1`: plain copy works there, but the version-id form has not been tested. |
 
 The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject` (see above). In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
 
@@ -129,24 +129,24 @@ See [Versioning](/storage/versioning) for detailed usage and examples.
 Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and Compliance mode are supported. Object Lock requires versioning, and both are set at bucket creation time.
 
 :::note Where the evidence comes from
-Object Lock, retention, and Legal Hold work in **both** regions. `us-east-1` is covered by an automated compatibility suite (39/39 object-lock tests passing). `eu-west-1` was verified by engineering testing rather than by that suite: a compatibility run against the region could not exercise these operations, because the harness was unable to create an Object-Lock-enabled bucket to test against, which was a limitation of the test setup and not a product gap.
+Object Lock, retention, and Legal Hold are verified in **both** regions: by an automated compatibility suite in `us-east-1`, and by engineering testing in `eu-west-1`.
 :::
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy. |
-| `PutBucketObjectLockConfiguration` | ✅ Supported | Sets the default retention (Governance or Compliance mode, 1 day – 100 years). |
+| `PutBucketObjectLockConfiguration` | ❌ Not available to access keys | The default retention (Governance or Compliance, 1 day – 100 years) is set when you create the bucket in the console. |
 | `GetObjectRetention` | ✅ Supported | Returns the retention setting for a specific object version. |
-| `PutObjectRetention` | ✅ Supported | Extend a retention period, or shorten one via S3's bypass-governance-retention mechanism (correctly rejected without it). Requires the matching access-key permission. |
+| `PutObjectRetention` | ✅ Supported | Set or extend a retention period. It can't be shortened: no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
 | `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
-| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the matching access-key permission. |
+| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
 
 **Object Lock modes:**
 
 | Mode | Status |
 |------|--------|
 | Governance | ✅ Supported — the default when you enable Object Lock. In standard S3, Governance retention can be overridden by a caller with the bypass permission, but **Fil One does not currently expose a grantable bypass permission**, so treat Governance objects as protected for their retention period in practice. |
-| Compliance | ✅ Supported — no user, including the account owner, can delete a locked object or shorten its retention. |
+| Compliance | ✅ Supported — no user, including the organization Owner, can delete a locked object or shorten its retention. |
 
 See [Object Lock](/storage/object-lock) for compliance use cases, retention configuration, and examples.
 
@@ -155,7 +155,7 @@ See [Object Lock](/storage/object-lock) for compliance use cases, retention conf
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | Presigned `GetObject` | ✅ Supported | Generate time-limited download URLs without requiring API credentials. |
-| Presigned `PutObject` | ✅ Supported | Generate time-limited upload URLs for direct client or browser uploads. |
+| Presigned `PutObject` | ✅ Supported | Generate time-limited upload URLs for direct client or browser uploads. With the AWS SDK for JavaScript v3.729 or later, set `requestChecksumCalculation: "WHEN_REQUIRED"` on the client, or the upload fails with `BadDigest`. See [JavaScript](/sdk/javascript#presigned-urls). |
 
 ### Server-side encryption
 
@@ -165,11 +165,10 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 |---------|--------|-------|
 | Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
-| `GetBucketEncryption` | ⚠️ Region-dependent | Supported in `us-east-1`. Returns `AccessDenied` in `eu-west-1`, so you cannot read back a configuration there. Encryption is on either way. |
-| `PutBucketEncryption` | ⚠️ Region-dependent | Rejected with `AccessDenied` in `eu-west-1`, even for a valid SSE-S3 rule. Accepted but ineffective in `us-east-1`. Encryption cannot be modified or disabled. |
-| SSE-S3 (`AES256`) | ⚠️ Region-dependent | Accepted in `us-east-1`. In `eu-west-1` the bucket-level SSE-S3 configuration operations are rejected with `AccessDenied`. Encryption is applied automatically in both regions, so no header is needed. |
+| `GetBucketEncryption` / `PutBucketEncryption` | ❌ Not available to access keys | No access key can be granted these actions, in either region. Encryption is on either way and cannot be modified or disabled. |
+| SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
-| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`. |
+| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`; not yet confirmed in `us-east-1`. Don't send them. |
 | Client-side encryption | ✅ Optional | Encrypt data in your own application before upload. AWS's S3 Encryption Client exists only for some SDKs (Java, .NET, Go, Ruby) — not boto3, the CLI, or JS v3 — so with those you supply your own crypto. Server-side encryption is still applied on top. |
 
 See [Encryption](/security/encryption) for details.
@@ -187,17 +186,17 @@ How an ACL request fails depends on **how** you send it. Confirmed in `eu-west-1
 
 So a tool that uploads with `--acl public-read` will appear to work, while a tool that sets ACLs as a separate step will fail outright. In neither case does the object become publicly readable. If you need unauthenticated access to an object, use a [presigned URL](#presigned-urls).
 
-Per-bucket access control via API key scoping is planned for a future release.
+To limit what a key can reach, scope it to specific buckets when you create it. See [Bucket scope](/security/api-keys#bucket-scope).
 
 ## Not yet supported
 
 | Feature | Timeline | Notes |
 |---------|----------|-------|
-| Lifecycle rules (expiration, transitions) | Phase 2 | Planned. Affects archival and cleanup workflows. |
-| Event notifications (SNS/SQS/Lambda triggers) | Phase 2 | Planned. |
-| Object and bucket tagging | Phase 2 | Planned. |
-| Additional regions | Phase 2 | `eu-west-1` and `us-east-1` are available today. |
-| IAM / multi-user accounts / RBAC | Phase 2 | Single-user accounts only. |
+| Lifecycle rules (expiration, transitions) | Planned | Affects archival and cleanup workflows. |
+| Event notifications (SNS/SQS/Lambda triggers) | Planned | |
+| Object and bucket tagging | Planned | |
+| Additional regions | Planned | `eu-west-1` and `us-east-1` are available today. |
+| IAM users, roles, and bucket policies on the S3 API | Not yet supported | The S3 API has no IAM users, roles, or bucket policies. Access is controlled by each access key's permissions and bucket scope. Team members and roles exist in the console: see [Organization](/app/organization#roles-and-permissions). |
 | S3 Select | Not planned | |
 | S3 Inventory | Not planned | |
 | S3 Batch Operations | Not planned | |
@@ -239,7 +238,7 @@ Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 
 
 ## Known behavioral issues in `eu-west-1`
 
-These are confirmed deviations that can affect a correctly written S3 client. They are open engineering issues, not intended behavior.
+These are confirmed deviations that can affect a correctly written S3 client. They are known issues, not intended behavior.
 
 | Area | Issue | Workaround |
 |------|-------|------------|
@@ -257,7 +256,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
 | Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
-| IAM and policies | Full IAM with users, roles, and bucket policies. | Single-user accounts. No IAM or bucket policies. Key-based auth only. |
+| IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles: see [Organization](/app/organization#roles-and-permissions). |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected, and never make an object public. |
 | Error codes for missing features | `NotImplemented` (501). | `AccessDenied` (403) in `eu-west-1`. A 403 on a bucket-configuration call means the feature is absent, not that your key lacks permission. |
 | Lifecycle rules | Supported (expiration, storage class transitions). | Not supported. Planned for a future release. |
