@@ -36,7 +36,7 @@ Critical integration notes for developers:
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  One and NOT customer-managed. The cipher is AES-256. Do not name an SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
   or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
   confirmed in us-east-1 — send no encryption headers at all. No access key can
@@ -1543,7 +1543,7 @@ Fil One encrypts all data by default. There is nothing to configure — encrypti
 
 ## Encryption at rest
 
-All objects stored in Fil One are encrypted at rest. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
+All objects stored in Fil One are encrypted at rest with AES-256. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
 
 Encryption is performed by the S3 storage gateway for the region your bucket lives in, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
 
@@ -1561,13 +1561,80 @@ This applies to all API operations, including uploads, downloads, presigned URLs
 
 Encryption keys are held by the **regional storage operator** that fulfils storage for your bucket's region, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
 
-If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, [contact support](https://docs.filone.com/app/support) — those details are set by the regional operator rather than by Fil One.
+If your compliance requirements depend on who holds key material for a given region, [contact support](https://docs.filone.com/app/support) — that is set by the regional operator rather than by Fil One. For certifications and compliance documents, see [Certifications & Trust](https://docs.filone.com/security/certifications-and-trust).
 
 ## Client-side encryption
 
 If your security requirements call for client-side encryption (encrypting data before it reaches the network), encrypt the bytes in your own application before uploading. Note that AWS's dedicated **S3 Encryption Client** exists only for some SDKs (Java, .NET, Go, Ruby) — **boto3, the AWS CLI, and the JavaScript SDK v3 do not provide one** — so with Python, the CLI, or JavaScript you must handle encryption yourself with a standard crypto library. Fil One stores whatever bytes you send: if you encrypt client-side, the stored object is the encrypted blob.
 
 Client-side encryption is optional and is in addition to the server-side encryption that Fil One applies automatically.
+
+
+---
+
+# Certifications & Trust
+
+Source: https://docs.filone.com/security/certifications-and-trust
+
+This page summarizes the [Fil One Trust center](https://www.filone.com/trust). The Trust center is the authoritative source: if the two ever differ, go by the Trust center.
+
+## What is certified today
+
+Certification covers two scopes: the data centers that store your objects, and the network and software Fil One runs on top of them.
+
+| Scope | Status | Certifications |
+|-------|--------|----------------|
+| Data centers | **Current** | All Fil One storage runs in data centers that are ISO/IEC 27001 certified, SOC 2 Type II attested, and PCI DSS certified. |
+| Fil One (the network and software) | **In progress** | ISO/IEC 27001 certification and a SOC 2 Type II attestation are being pursued. |
+
+Fil One itself is not yet SOC 2 or ISO/IEC 27001 certified as a company. The certifications above that are current apply to the data center facilities.
+
+## Frameworks
+
+| Framework | Status | What's available |
+|-----------|--------|------------------|
+| HIPAA / HITECH | Supported | A Business Associate Agreement (BAA) on request. Sign a BAA with Fil One before storing any protected health information (PHI). |
+| CJIS Security Policy | Supported | A CJIS Security Addendum. [Talk to sales](https://www.filone.com/contact-sales). |
+| GDPR | Supported | A Data Processing Addendum (DPA) on request. You are the controller for personal data you store, and Fil One processes it on your instructions. |
+| SOC 2 Type II | In progress | The report will be available under NDA after the audit. |
+| ISO/IEC 27001 | In progress | The certificate will be available once Fil One is certified. |
+| NIST SP 800-53 | In progress | A control mapping will be available once it's complete. |
+
+## Where your data is stored
+
+You choose each bucket's region when you create it: `eu-west-1` (Europe) or `us-east-1` (US). The region can't be changed later, so data written to a bucket stays where you put it. To keep data in the EU, create the bucket in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets).
+
+## Built-in controls
+
+- **Encryption at rest:** AES-256 on every object, always on. You can also encrypt client-side before upload. See [Encryption](https://docs.filone.com/security/encryption).
+- **TLS on every request:** all traffic to the S3 endpoints runs over TLS.
+- **Object Lock and versioning:** turned on per bucket, when you create it, for compliance retention. See [Object Lock](https://docs.filone.com/storage/object-lock) and [Versioning](https://docs.filone.com/storage/versioning).
+- **Scoped access keys:** each key carries its own permissions and can be limited to specific buckets. See [API Keys](https://docs.filone.com/security/api-keys).
+- **Storage proofs:** Fil One runs on Filecoin, where storage providers continuously prove, with cryptographic proofs recorded on a public blockchain, that they still hold the data.
+
+## Who holds the encryption keys
+
+Server-side encryption keys are held by the regional storage operator that serves your bucket's region. If your policy requires you to hold the keys, encrypt client-side before upload. Fil One then stores only ciphertext. See [Client-side encryption](https://docs.filone.com/security/encryption#client-side-encryption).
+
+## Documents and policies
+
+Public policies:
+
+- [Privacy Policy](https://www.filone.com/privacy)
+- [Terms of Use](https://www.filone.com/terms)
+- [Service Level Agreement](https://www.filone.com/sla)
+- [Acceptable Use Policy](https://www.filone.com/aup)
+
+Available on request:
+
+- [Data Processing Addendum (DPA)](https://www.filone.com/trust/request?doc=dpa)
+- [Business Associate Agreement (BAA)](https://www.filone.com/trust/request?doc=baa)
+
+## Contact
+
+- Security questions: [security@filone.com](mailto:security@filone.com)
+- Legal terms: [legal@filone.com](mailto:legal@filone.com)
+- Anything else about compliance: [talk to sales](https://www.filone.com/contact-sales)
 
 
 ---

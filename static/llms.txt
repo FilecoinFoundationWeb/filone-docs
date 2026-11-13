@@ -36,7 +36,7 @@ Critical integration notes for developers:
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  One and NOT customer-managed. The cipher is AES-256. Do not name an SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
   or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
   confirmed in us-east-1 — send no encryption headers at all. No access key can
@@ -185,10 +185,21 @@ Critical integration notes for developers:
   `filone-console` are reserved
 - [Encryption](https://docs.filone.com/security/encryption): server-side
   encryption always on for all objects; TLS in transit; keys held by the regional
-  operator (no customer-managed keys, cipher unconfirmed). SSE-KMS rejected in
+  operator (no customer-managed keys); AES-256 at rest. SSE-KMS rejected in
   both regions; SSE-C rejected in eu-west-1, not yet confirmed in us-east-1.
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
+- [Certifications & Trust](https://docs.filone.com/security/certifications-and-trust):
+  summary of the Trust center (https://www.filone.com/trust), which is
+  authoritative. CURRENT: the data centers storing Fil One data are ISO/IEC
+  27001 certified, SOC 2 Type II attested and PCI DSS certified. IN PROGRESS:
+  ISO/IEC 27001 and SOC 2 Type II for Fil One itself; Fil One is NOT yet SOC 2 or
+  ISO 27001 certified as a company. Frameworks: HIPAA/HITECH supported (BAA on
+  request, sign before storing PHI), CJIS supported (Security Addendum via
+  sales), GDPR supported (DPA on request; customer is controller); SOC 2 Type
+  II, ISO/IEC 27001 and NIST SP 800-53 in progress. Bucket region (eu-west-1 or
+  us-east-1) is fixed at creation. DPA/BAA request forms on the Trust center;
+  security@filone.com, legal@filone.com
 
 ## Billing
 
