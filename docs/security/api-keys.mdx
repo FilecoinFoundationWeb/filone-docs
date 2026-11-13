@@ -10,14 +10,14 @@ API keys authenticate your requests to the Fil One S3 API. Each key consists of 
 
 ## Creating an API key
 
-1. Go to **API Keys** in the left menu of the dashboard.
+1. Go to **API Keys** in the left sidebar of the console.
 2. Click **Create new key** (this opens a dedicated page).
 3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`). Names are limited to 64 characters (letters, numbers, spaces, and `_ - .`), and names starting with `filone-console` (in any capitalization) are reserved.
 4. Choose the key's **region** (see [Region scope](#region-scope)). It is pre-set to `eu-west-1`, and it is fixed for the life of the key.
-5. Set the key's permissions and bucket scope (see below). At least one permission is required, and you can only grant permissions your role holds (see [Who can create and manage keys](#who-can-create-and-manage-keys)).
+5. Set the key's permissions and bucket scope (see below). **Read**, **Write**, and **List** are pre-selected, along with the two bucket configuration reads. For a read-only key, untick **Write**. At least one permission is required, and you can only grant permissions your role holds (see [Who can create and manage keys](#who-can-create-and-manage-keys)).
 6. Optionally set an expiration: **Never expires**, **30 days**, or a **Custom** date.
 7. Click **Create API key**.
-8. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, [rotate the key](#rotating-a-key) to get a new one.
+8. **Copy the Secret Access Key immediately.** It is shown only once. If you lose it, [rotate the key](#rotating-a-key) to get a new one. If you use **Download .env** or **Download .csv**, the file holds the secret in plain text: move it into your secrets store or credential file, delete the download, and never commit it.
 
 ## Key permissions
 
@@ -32,11 +32,11 @@ Each key can be granted a combination of the following object-level permissions:
 | **List** | `ListObjectsV2` / `ListBucket`, and listing in-progress multipart uploads (`ListBucketMultipartUploads`) |
 | **Delete** | `DeleteObject` |
 
-You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload new objects and overwrite existing ones, but cannot delete them.
+You can grant any combination of these permissions. A key with only **Read** and **List** permissions is suitable for read-only access, such as a CDN or analytics pipeline. A key with **Write** but not **Delete** can upload new objects and overwrite existing ones, but cannot delete them. Overwriting replaces an object's data, so on a bucket without [versioning](/storage/versioning) a **Write** key can still destroy data. Use versioning or [Object Lock](/storage/object-lock) if that matters.
 
 The **Read** grant differs by region. In `us-east-1` it also includes `ListBucket`, so a key with **Read** but not **List** can still list object names there. In `eu-west-1`, **Read** does not include listing.
 
-Listing the *names* of your buckets (`ListAllMyBuckets`) is granted to every key automatically and is not one of the permissions above. Note that the operator's documented **Write** grant covers `PutObject` and `AbortMultipartUpload`; the `CreateMultipartUpload` / `UploadPart` / `CompleteMultipartUpload` operations are not separately enumerated in the grant map.
+Listing the *names* of your buckets (`ListAllMyBuckets`) is granted to every key automatically and is not one of the permissions above. Multipart uploads (`CreateMultipartUpload`, `UploadPart`, `CompleteMultipartUpload`) need **Write**. See [Multipart Uploads](/storage/multipart-uploads).
 
 ### Bucket management permissions
 
@@ -92,7 +92,11 @@ A key can only carry permissions that your [role](/app/organization#roles-and-pe
 - **Members** can create keys, and see, rotate, and delete only the keys they created.
 - **Admins** and **Owners** can create keys and see, rotate, and delete every key in the organization.
 
-Keys follow the person who created them. If a member's role is narrowed, any key they created that the new role couldn't create is revoked. Removing a member from the organization revokes the keys they created.
+Keys follow the person who created them.
+
+:::warning Membership changes revoke keys
+If a member's role is narrowed, any key they created that the new role couldn't create is revoked. Removing a member from the organization revokes every key they created, and so does transferring ownership for keys an Admin can't hold. The revoked keys stop working immediately, and the member is emailed a list of them. Before you change someone's access, move any application that uses their keys onto a new key.
+:::
 
 ## Region scope
 
@@ -102,7 +106,7 @@ The region also determines which permissions are available: the bucket managemen
 
 ## Bucket scope
 
-By default, a key has access to all buckets in your account. You can restrict a key to one or more specific buckets, which limits **object operations** to that set. Note that listing your bucket *names* (`ListAllMyBuckets`) is always permitted, so bucket scoping restricts access to bucket **contents** rather than hiding that other buckets exist.
+By default, a key has access to all buckets in the key's region. You can restrict a key to one or more specific buckets, which limits **object operations** to that set. Note that listing your bucket *names* (`ListAllMyBuckets`) is always permitted, so bucket scoping restricts access to bucket **contents** rather than hiding that other buckets exist.
 
 This is useful when:
 - Different services need access to different buckets
@@ -111,7 +115,7 @@ This is useful when:
 
 ## Key expiration
 
-You can set an expiration date when creating a key. After the expiration date, the key no longer authenticates and requests signed with it fail with a `403` (typically `AccessDenied` or `InvalidAccessKeyId`).
+You can set an expiration date when creating a key. The key works through the whole of that day (UTC) and stops at the start of the next one. After that, the key no longer authenticates and requests signed with it fail with a `403` (typically `AccessDenied` or `InvalidAccessKeyId`).
 
 Expiring keys are useful for:
 - Temporary access grants
@@ -120,19 +124,18 @@ Expiring keys are useful for:
 
 ## Viewing and managing keys
 
-Go to **API Keys** in the left menu to see your keys. The list shows:
+Go to **API Keys** in the left sidebar to see your keys. The list shows:
 
 | Column | Description |
 |--------|-------------|
 | Name | The label you gave the key at creation, with the Access Key ID shown beneath it |
 | Region | The region the key belongs to (hidden on narrow screens) |
 | Buckets | Which buckets the key can access (all, or a specific set) |
-| Permissions | The permissions granted to the key |
+| Permissions | The object permissions as badges, and a **+***n* badge for the rest |
 | Created by | Who created the key, and who rotated it and when. Shown when your organization has more than one member |
-| Status | Currently always **Active** |
-| Last Used | Currently always **Never** |
+| Status | **Active**, or **Expired** once the expiry date has passed |
 
-**Status** and **Last Used** are placeholders for now, and the list doesn't show a key's expiry date, so keep your own record of when each key expires. You cannot view the Secret Access Key after creation.
+Click a key's row to see its expiry date, region, buckets, and full permissions. The console doesn't show when a key was last used, so name keys after what uses them. You cannot view the Secret Access Key after creation. See [API Keys in the console](/app/api-keys#the-key-list) for search, filters, and deleting several keys at once.
 
 ## Rotating a key
 
@@ -150,7 +153,7 @@ To move an application onto a key with different permissions or buckets, create 
 
 ## Revoking a key
 
-Find the key in **API Keys**, open its **⋯** action menu, and choose **Delete**. Deletion is forwarded to the regional storage operator; the key stops working once that change propagates, so treat revocation as taking effect quickly rather than at a guaranteed instant, and rotate anything that depended on it.
+Find the key in **API Keys**, open its **⋯** action menu, and choose **Delete**. A deleted key can't be restored. Anything that uses it loses access, so switch your applications to another key first. The key stays in your list until its revocation is confirmed. Treat revocation as taking effect quickly rather than at a guaranteed instant.
 
 ## Security best practices
 
@@ -159,8 +162,8 @@ Find the key in **API Keys**, open its **⋯** action menu, and choose **Delete*
 - **Scope keys to specific buckets** when possible, especially for external integrations.
 - **Set expiration dates** on keys that are only needed temporarily.
 - **Rotate keys periodically.** Use **Rotate** on the key, then update your application with the new credentials. See [Rotating a key](#rotating-a-key).
-- **Revoke keys immediately** if you suspect compromise, and rotate anything that depended on them. Revocation is forwarded to the storage operator, so treat it as effective quickly rather than assuming a precise cut-off instant.
-- **Never hardcode credentials** in source code. Use environment variables or a secrets manager.
-- **Give each AI agent its own narrowly scoped key,** read-only if it only reads, and keep the key out of the agent's prompt and project files. See [Use with an AI Agent](/sdk/ai-agents).
+- **Revoke keys immediately** if you suspect compromise, and rotate anything that depended on them. Treat revocation as effective quickly rather than assuming a precise cut-off instant.
+- **Never hardcode credentials** in source code. Use environment variables or a secrets manager, and keep downloaded `.env` and `.csv` credential files out of version control.
+- **Don't paste keys into AI tools.** Give a coding agent its own narrowly scoped key in a named profile instead. See [Use with an AI Agent](/sdk/ai-agents).
 
 See [Authentication](/security/authentication) for how to configure your S3 client with your API keys.

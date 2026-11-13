@@ -35,9 +35,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any",
         "offers": {
-          "@type": "UnitPriceSpecification",
-          "price": "5.99",
-          "priceCurrency": "USD"
+          "@type": "Offer",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "5.99",
+            "priceCurrency": "USD",
+            "unitText": "TB per month"
+          }
         },
         "featureList": [
           "S3-compatible API",
@@ -121,7 +125,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           {
             type: "html",
             position: "right",
-            value: '<a href="https://app.filone.com/login" class="navbar-btn-secondary">Login</a>',
+            value: '<a href="https://app.filone.com/login" class="navbar-btn-secondary">Log in</a>',
           },
           {
             type: "html",

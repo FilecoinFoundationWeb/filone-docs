@@ -11,7 +11,7 @@ Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, 
 
 ## Installation
 
-Use **AWS CLI v2**. Version 1 (`pip install awscli`) does not read `endpoint_url` from `~/.aws/config`, so the profile setup below silently won't work — install v2 instead:
+Use **AWS CLI v2**, version 2.13 or later, so the CLI reads `endpoint_url` from your profile. `pip install awscli` installs v1; install v2 instead:
 
 ```bash
 brew install awscli
@@ -86,17 +86,18 @@ aws s3 ls --endpoint-url https://s3.eu-west-1.filonecontent.com
 
 ### Create a bucket
 
-`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.filone.com) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+`CreateBucket` is region-dependent. It is not available in `eu-west-1`: create the bucket in the [Fil One console](https://app.filone.com) there, with **New bucket**. In `us-east-1`, use a `us-east-1` profile (here `filone-us`, set up like `filone` above but with the `us-east-1` endpoint, region and key) whose key has the `CreateBucket` permission:
 
 ```bash
-aws s3 mb s3://my-bucket --profile filone
+aws s3 mb s3://my-bucket --profile filone-us
 ```
 
-Note that versioning and Object Lock can only be set when the bucket is created, and only from the dashboard. See [Buckets](/storage/buckets).
+Versioning and Object Lock can only be set when the bucket is created, and only in the console. See [Buckets](/storage/buckets).
 
 ### Upload a file
 
 ```bash
+# report.pdf is any local file
 aws s3 cp report.pdf s3://my-bucket/reports/report.pdf --profile filone
 ```
 
@@ -134,10 +135,10 @@ aws s3 rm s3://my-bucket/reports/report.pdf --profile filone
 
 ### Delete a bucket
 
-`DeleteBucket` support depends on the region. In `us-east-1` you can remove an empty bucket with a key that has the `DeleteBucket` permission:
+`DeleteBucket` support depends on the region. In `us-east-1` you can remove an empty bucket with a `us-east-1` profile whose key has the `DeleteBucket` permission:
 
 ```bash
-aws s3 rb s3://my-bucket --profile filone
+aws s3 rb s3://my-bucket --profile filone-us
 ```
 
 In `eu-west-1` the operation is not available over the S3 API. Delete the bucket from the [Fil One dashboard](https://app.filone.com) instead, via the bucket's actions menu in **Buckets** (Owner and Admin roles only). See [Buckets](/storage/buckets#deleting-a-bucket).

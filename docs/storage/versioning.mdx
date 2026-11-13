@@ -8,9 +8,9 @@ import TabItem from '@theme/TabItem';
 
 Versioning is **opt-in** and configured at bucket creation time. Once enabled on a bucket, it cannot be suspended or disabled. Every time you upload an object with the same key on a versioned bucket, Fil One creates a new version rather than overwriting the previous one.
 
-This means your data is always recoverable — you can retrieve any previous state of an object using its version ID.
+Overwrites, and S3 API deletes without a version ID, keep every earlier version, so you can retrieve any previous state of an object by its version ID. Deleting a specific version, including any delete in the console, removes that version permanently.
 
-To enable versioning, turn on the **Versioning** toggle when creating a bucket in the dashboard. Versioning is required for [Object Lock](/storage/object-lock).
+To enable versioning, expand **Advanced settings** when you create a bucket in the console and turn on **Versioning**. Versioning is required for [Object Lock](/storage/object-lock).
 
 ## How versions work
 
