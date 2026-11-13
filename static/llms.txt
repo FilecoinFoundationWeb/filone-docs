@@ -264,6 +264,33 @@ Critical integration notes for developers:
   `aws s3 rb` work in us-east-1 only (shown with a `filone-us` profile); in
   eu-west-1 create and delete buckets in the console (Owner and Admin roles)
 
+## Integrations
+
+- [Integrations](https://docs.filone.com/integrations): Setup guides for common transfer, backup, NAS, DevOps, analytics, and AI tools
+- [Integration connection settings](https://docs.filone.com/integrations/connection-settings): Endpoints (https://s3.eu-west-1.filonecontent.com, https://s3.us-east-1.filonecontent.com), region, SigV4, path-style, and credential settings
+- [Check a setup](https://docs.filone.com/integrations/validate-an-integration): Optional steps to copy a small fixture, restore it, and compare checksums
+- [rclone](https://docs.filone.com/integrations/data-movement/rclone): provider Other, force_path_style, config example, rclone check validation
+- [Cyberduck and Mountain Duck](https://docs.filone.com/integrations/data-movement/cyberduck-mountain-duck): bookmark, mount, restore, and troubleshooting guidance
+- [AWS CLI and SDKs](https://docs.filone.com/integrations/data-movement/aws-cli-sdk): the reference clients, with setup in the SDK guides
+- [Acronis Cyber Protect](https://docs.filone.com/integrations/backup/acronis-cyber-protect): S3-compatible storage, backup, restore, and integrity validation
+- [Comet Backup](https://docs.filone.com/integrations/backup/comet-backup): Storage Vault setup and restore validation
+- [MSP360](https://docs.filone.com/integrations/backup/msp360): S3-compatible storage account and recovery workflow
+- [NAKIVO Backup and Replication](https://docs.filone.com/integrations/backup/nakivo): repository, recovery, and verification guidance
+- [Synology Cloud Sync](https://docs.filone.com/integrations/nas/synology-cloud-sync): custom S3 task and download recovery
+- [QNAP HBS](https://docs.filone.com/integrations/nas/qnap-hbs): HBS storage space, backup, and restore
+- [TrueNAS Cloud Sync](https://docs.filone.com/integrations/nas/truenas-cloud-sync): credential, push, pull, and integrity workflow
+- [Velero](https://docs.filone.com/integrations/devops/velero): Kubernetes backup, restore, and volume-scope validation
+- [Harbor](https://docs.filone.com/integrations/devops/harbor): registry push, pull, digest, and garbage-collection guidance
+- [Terraform S3 backend](https://docs.filone.com/integrations/devops/terraform): endpoints and use_path_style backend settings, state migration, recovery, and concurrency validation
+- [Elasticsearch searchable snapshots](https://docs.filone.com/integrations/logging/elasticsearch-snapshots): s3 repository client settings, repository verification, restore, and searchable-snapshot validation
+- [Splunk SmartStore](https://docs.filone.com/integrations/logging/splunk-smartstore): remote storage, eviction, search, and recovery validation
+- [Apache Iceberg](https://docs.filone.com/integrations/data-ai/apache-iceberg): S3FileIO, catalog, commits, and recovery validation
+- [Databricks](https://docs.filone.com/integrations/data-ai/databricks): custom-endpoint compute, read, write, and fresh-cluster recovery
+- [Delta Lake](https://docs.filone.com/integrations/data-ai/delta-lake): transaction log, checkpoints, concurrency, and recovery
+- [DuckDB](https://docs.filone.com/integrations/data-ai/duckdb): httpfs read, write, and cache-independent validation
+- [Hugging Face Datasets](https://docs.filone.com/integrations/data-ai/hugging-face-datasets): load, streaming, cache clearing, and package-version guidance
+- [Ray Data](https://docs.filone.com/integrations/data-ai/ray-data): distributed reads, writes, worker configuration, and retry validation
+
 ## Console
 
 The browser console at app.filone.com, one page per console screen. No code
