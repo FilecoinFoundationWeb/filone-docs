@@ -273,7 +273,9 @@ Critical integration notes for developers:
   AGENTS.md/CLAUDE.md that names the profile and region, never a key. Rules agents
   get wrong: path-style addressing, NO encryption headers, no CreateBucket/
   DeleteBucket in eu-west-1, key/endpoint/region must match, versioning and
-  Object Lock fixed at bucket creation
+  Object Lock fixed at bucket creation. The console has a shorter version (API
+  Keys > Connection details > "Use with an AI agent"), filled in for a chosen
+  region; its profile doesn't store the endpoint, so its instructions give it
 
 ## Console
 

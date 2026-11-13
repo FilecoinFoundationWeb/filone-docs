@@ -5,6 +5,8 @@ description: Let a coding agent work with your Fil One buckets without putting y
 
 A coding agent such as Claude Code, Cursor, or Codex can work with Fil One the same way any S3 client does. Fil One is S3-compatible, so the agent uses the AWS CLI or an AWS SDK it already knows. This guide covers how to give it access safely, and the few rules agents tend to get wrong against Fil One.
 
+The console has a shorter version of steps 2 and 3, filled in for the region you pick: on the [**API Keys**](/app/api-keys) page, open the **Connection details** tab and go to the **Use with an AI agent** section, below **Connect**. Its profile commands don't store the endpoint, so its agent instructions give the endpoint directly. The steps below also store the endpoint in the profile, and keep the secret out of your shell history.
+
 ## 1. Create a key for the agent
 
 Give each agent its own key rather than reusing one from your application or your own machine. If the agent misbehaves or its key leaks, you can [delete that key](/app/api-keys#revoking-a-key) without breaking anything else.
