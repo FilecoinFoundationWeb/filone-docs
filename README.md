@@ -60,12 +60,13 @@ docs/                    # All documentation pages (MDX)
   app/                   # Dashboard guides
   reference/             # API reference, S3 compat, errors
   sdk/                   # SDK examples per language
-  bucket-intelligence.mdx
   faq.mdx
   limits.mdx
   introduction.mdx
 docusaurus.config.js     # Site config (navbar, theme, JSON-LD structured data)
 sidebars.js              # Sidebar navigation structure
+scripts/                 # CI checks: mirror coverage, snippet syntax
+.github/                 # CI workflow, PR template, Dependabot
 src/                     # Custom React components and CSS
   css/custom.css         # Custom styles
 static/                  # Served as-is at the site root
@@ -82,4 +83,7 @@ vercel.json              # Vercel deployment config
 2. Edit or add `.mdx` files in `docs/`.
 3. Follow [`AGENTS.md`](./AGENTS.md) — it covers keeping `static/llms.txt` / `static/llms-full.txt` in sync, checking `docusaurus.config.js` for claims outside `docs/**`, and verifying facts before publishing them.
 4. Run `npm start` to preview locally.
-5. Open a PR. Vercel will create a preview deployment.
+5. Run the checks in [`AGENTS.md`](./AGENTS.md#checks-that-run-on-every-pr). CI runs the same ones.
+6. Open a PR and fill in the template. Vercel creates a preview deployment.
+
+[`CONTRIBUTING.md`](./CONTRIBUTING.md) covers when a product change needs a docs change, which pages a product change usually affects, and how to test snippets.

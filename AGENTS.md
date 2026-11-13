@@ -41,3 +41,15 @@ npm run build
 ```
 
 This catches MDX syntax errors (broken JSX, unclosed tags, invalid frontmatter) that won't show up just from reading the file.
+
+## Checks that run on every PR
+
+`.github/workflows/build.yaml` runs these, and you can run them locally:
+
+```bash
+npm run build                      # MDX errors and broken internal links
+node scripts/check-mirrors.mjs     # every page has an entry in both llms mirrors
+node scripts/check-snippets.mjs    # snippets parse, no untagged blocks, no real-looking keys
+```
+
+A PR that changes `docs/**` but neither mirror fails unless its description ticks **No mirror change needed** with a reason. None of these checks can tell whether a fact is *true*; that is what the rules above and [CONTRIBUTING.md](CONTRIBUTING.md) are for.
