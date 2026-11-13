@@ -36,7 +36,7 @@ Critical integration notes for developers:
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  One and NOT customer-managed. The cipher is AES-256. Do not name an SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
   or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
   confirmed in us-east-1 — send no encryption headers at all. No access key can
@@ -1543,7 +1543,7 @@ Fil One encrypts all data by default. There is nothing to configure — encrypti
 
 ## Encryption at rest
 
-All objects stored in Fil One are encrypted at rest. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
+All objects stored in Fil One are encrypted at rest with AES-256. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
 
 Encryption is performed by the S3 storage gateway for the region your bucket lives in, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
 
@@ -1561,7 +1561,7 @@ This applies to all API operations, including uploads, downloads, presigned URLs
 
 Encryption keys are held by the **regional storage operator** that fulfils storage for your bucket's region, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
 
-If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, [contact support](https://docs.filone.com/app/support) — those details are set by the regional operator rather than by Fil One.
+If your compliance requirements depend on who holds key material for a given region, [contact support](https://docs.filone.com/app/support) — that is set by the regional operator rather than by Fil One. For certifications and compliance documents, see [Certifications & Trust](https://docs.filone.com/security/certifications-and-trust).
 
 ## Client-side encryption
 
