@@ -34,9 +34,8 @@ Critical integration notes for developers:
 - Credentials: the console's Download .env uses the standard AWS_ACCESS_KEY_ID /
   AWS_SECRET_ACCESS_KEY names, which every SDK reads automatically
 - All buckets are private by default; all data is encrypted at rest and in
-  transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
-  regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  transit (TLS); encryption cannot be disabled. Keys are held by Fil One's storage
+  provider for each region, NOT by Fil One and NOT customer-managed. Do not name a specific cipher or SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
   or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
   confirmed in us-east-1 — send no encryption headers at all. No access key can
@@ -108,19 +107,20 @@ Critical integration notes for developers:
 
 - [Introduction](https://docs.filone.com/): What Fil One is, who it is for, and
   where to start
-- [Quickstart](https://docs.filone.com/quickstart): Create an account (email,
-  Google, or GitHub), create a bucket in the console (leave Advanced settings at
-  their defaults for a first bucket), create an API key, and upload your first
-  object — covers App, AWS CLI (a `filone` profile, not your default one),
-  Python, and JavaScript paths
-- [Quickstart - AWS CLI](https://docs.filone.com/quickstart/cli): AWS CLI v2.13+
-  with a named `filone` profile holding endpoint_url and path-style addressing;
-  `my-bucket` throughout; CreateBucket from the CLI only with a us-east-1
-  profile (`filone-us`)
-- [Quickstart - SDK](https://docs.filone.com/quickstart/sdk): Copy-paste examples
-  for Python (boto3), JavaScript (AWS SDK v3, saved as `upload.mjs`), and Go
-  (`go mod init` first) that upload and verify; create the bucket in the
-  console first. Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+- [Quickstart](https://docs.filone.com/quickstart): The main path. Sign up
+  (email, Google, or GitHub), verify your email, name your organization, then
+  use the Get started page to create a bucket and an API key (Read, Write and
+  List pre-selected; Download .env saves `credentials.env`). Then tabs for AWS
+  CLI (a `filone` profile, not your default one, with an `aws s3 ls` credential
+  check), Python, JavaScript (`upload.mjs`), Go, and the console
+- [Quickstart - AWS CLI](https://docs.filone.com/quickstart/cli): The `filone`
+  profile as config files (plus a `filone-us` profile for us-east-1), a
+  credential check, CreateBucket from the CLI in us-east-1 only (the permission
+  is not pre-selected), then upload, list and download of `my-bucket`
+- [Quickstart - SDK](https://docs.filone.com/quickstart/sdk): Setup notes for
+  Python (boto3), JavaScript (AWS SDK v3) and Go: the client settings each SDK
+  needs and why, credentials from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+  (`credentials.env`), the endpoint per region, and creating buckets
 
 ## Storage
 
@@ -184,8 +184,8 @@ Critical integration notes for developers:
   that exceed it, and they are emailed which keys. Names starting with
   `filone-console` are reserved
 - [Encryption](https://docs.filone.com/security/encryption): server-side
-  encryption always on for all objects; TLS in transit; keys held by the regional
-  operator (no customer-managed keys, cipher unconfirmed). SSE-KMS rejected in
+  encryption always on for all objects; TLS in transit; keys held by Fil One's storage
+  provider for the region (no customer-managed keys, cipher unconfirmed). SSE-KMS rejected in
   both regions; SSE-C rejected in eu-west-1, not yet confirmed in us-east-1.
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
@@ -225,7 +225,8 @@ Critical integration notes for developers:
   DeleteObject, ListObjectsV2, multipart, presigned URLs supported; bucket
   configuration calls such as PutBucketVersioning, PutBucketObjectLockConfiguration
   and Get/PutBucketEncryption not available to access keys; bucket policies,
-  lifecycle rules and IAM users/roles not supported on the S3 API); how
+  lifecycle rules and IAM users/roles not supported on the S3 API, each with a
+  workaround using supported operations); how
   unsupported operations respond in eu-west-1 (AccessDenied, not
   NotImplemented); known error-code deviations and known issues; the JS SDK
   checksum setting for presigned uploads

@@ -138,241 +138,126 @@ Fil One is an S3-compatible object storage platform designed for teams that need
 
 Source: https://docs.filone.com/quickstart
 
-This guide walks you through creating an account, setting up credentials, and uploading your first object. Choose the path that fits your workflow.
+This guide takes you from a new account to your first uploaded object. In steps 4 and 5, pick the tab for the tool you use: your choice carries over between the two steps.
+
+Info: What you'll need
+- A web browser, to sign up and to create a bucket and an API key in the [Fil One console](https://app.filone.com).
+- To work from a terminal or code: [AWS CLI v2](https://docs.filone.com/sdk/cli) (version 2.13 or later), or Python with boto3, Node.js with the AWS SDK for JavaScript v3, or Go with aws-sdk-go-v2. To upload from the console, you need nothing else.
+- About 10 minutes.
 
 ## 1. Create your account
 
 1. Go to [app.filone.com](https://app.filone.com) and sign up with your email, Google, or GitHub.
-2. Verify your email address.
-3. You're in. No credit card needed — your 30-day free trial starts automatically.
+2. Verify your email address. The console shows **Verify your email to get started** until you open the link in the email, then click **I verified my email**.
+3. Name your organization, then click **Create organization**. The organization holds your buckets, API keys and billing.
+4. You land on the **Get started** page, which has shortcuts to **Create bucket** and **Create API key**.
+
+Your 30-day free trial starts automatically, with no credit card. Each person gets one trial, on the first organization they own. See [Free trial](https://docs.filone.com/billing/trial).
 
 ## 2. Create a bucket
 
-From the dashboard, click **New bucket** to open the create form. Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
+On the **Get started** page, click **Create bucket**. (Later, use **New bucket** on the dashboard or **Create bucket** on the **Buckets** page; they open the same form.) Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
 
 | Setting | Options | Notes |
 |---------|---------|-------|
 | Region | `eu-west-1` Europe (France) or `us-east-1` US East (Michigan) | Defaults to `eu-west-1`. Cannot be changed later. |
 | Encryption | Always on | All data is encrypted at rest. Nothing to configure. |
 
-Leave everything else at its default for your first bucket, and click **Create bucket**.
+Leave everything else at its default for your first bucket, and click **Create bucket**. The examples below use a bucket named `my-bucket`: use your own bucket's name instead.
 
 Warning: Some settings can only be chosen now
 Versioning, Object Lock, and retention sit under **Advanced settings** on the create form, and can only be turned on when the bucket is created. Neither can be turned off later, and Object Lock can stop you deleting data you're paying for. Read [Versioning](https://docs.filone.com/storage/versioning) and [Object Lock](https://docs.filone.com/storage/object-lock) before you enable them on a bucket you plan to keep.
 
-## 3. Upload your first object
+## 3. Create an API key
 
-Choose your preferred method. The App requires no API key. For CLI and SDK access, open your new bucket and click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. You'll get two values:
+You need a key for the CLI and the SDKs, not for uploading in the console. On the **Get started** page, click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. Create it in the **same region as your bucket**: a key belongs to one region and is rejected by the other. **Read**, **Write** and **List** are selected by default, which is enough for this guide.
+
+You'll get two values:
 
 - **Access Key ID** — identifies the key (safe to store in config)
 - **Secret Access Key** — authenticates your requests (treat like a password)
 
 Note:
-Your secret key is shown once. Copy it and store it securely. If you lose it, rotate the key from its **⋯** menu in **API Keys** to get a new secret. See [API Keys](https://docs.filone.com/app/api-keys#rotating-a-key).
+Your secret key is shown once. Copy it, or click **Download .env** to save a `credentials.env` file that sets `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Store it securely, and never commit it to a repository. If you lose the secret, rotate the key from its **⋯** menu in **API Keys** to get a new one. See [API Keys](https://docs.filone.com/app/api-keys#rotating-a-key).
 
-A key also belongs to a single region, so create it in the same region as your bucket.
+## 4. Set up your tool
 
-The examples below use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1` instead.
-
-App:
-1. Open your bucket from the dashboard.
-2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
-3. Your objects appear in the file list once the upload completes.
-4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
+The examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1` instead. Path-style addressing is required: Fil One does not support virtual-hosted-style URLs.
 
 AWS CLI:
-Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](https://docs.filone.com/sdk/cli). Enter your key's ID and secret when prompted, and leave the other prompts empty:
+Create a `filone` profile, so you don't overwrite your default AWS credentials. Enter your key's ID and secret when prompted, and leave the other prompts empty:
 
 ```bash
 aws configure --profile filone
 aws configure set region eu-west-1 --profile filone
 aws configure set endpoint_url https://s3.eu-west-1.filonecontent.com --profile filone
-# Path-style is required: Fil One does not support virtual-hosted URLs
 aws configure set s3.addressing_style path --profile filone
 ```
 
-Upload a file:
+Check that the key works before you upload anything:
 
 ```bash
-echo "hello" > my-file.txt
-aws s3 cp my-file.txt s3://my-bucket/my-file.txt --profile filone
+aws s3 ls --profile filone
 ```
 
-Verify it's there:
+You should see a line for `my-bucket`. If you get an error instead, see [Troubleshooting](https://docs.filone.com/reference/errors#troubleshooting): a key, endpoint and region that don't all match is the most common cause.
 
+Python:
 ```bash
-aws s3 ls s3://my-bucket/ --profile filone
+pip install boto3
 ```
 
-Python (boto3):
-Create `my-file.txt` first, for example with `echo "hello" > my-file.txt`.
-
-```python
-import boto3
-from botocore.config import Config
-
-s3 = boto3.client(
-    "s3",
-    endpoint_url="https://s3.eu-west-1.filonecontent.com",
-    aws_access_key_id="YOUR_ACCESS_KEY",
-    aws_secret_access_key="YOUR_SECRET_KEY",
-    region_name="eu-west-1",
-    config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
-)
-
-# Upload a file
-s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
-
-# List objects to confirm
-response = s3.list_objects_v2(Bucket="my-bucket")
-for obj in response.get("Contents", []):
-    print(obj["Key"], obj["Size"])
-```
-
-JavaScript (AWS SDK v3):
-Save this as `upload.mjs` (it uses ES modules and top-level `await`), then run `node upload.mjs`:
-
-```javascript
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { readFileSync } from "fs";
-
-const client = new S3Client({
-  endpoint: "https://s3.eu-west-1.filonecontent.com",
-  region: "eu-west-1",
-  forcePathStyle: true,
-  // SDK v3.729+ adds checksums Fil One doesn't accept on presigned uploads
-  requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
-  credentials: {
-    accessKeyId: "YOUR_ACCESS_KEY",
-    secretAccessKey: "YOUR_SECRET_KEY",
-  },
-});
-
-// Upload a file
-await client.send(new PutObjectCommand({
-  Bucket: "my-bucket",
-  Key: "my-file.txt",
-  Body: readFileSync("my-file.txt"),
-}));
-
-// List objects to confirm
-const { Contents } = await client.send(
-  new ListObjectsV2Command({ Bucket: "my-bucket" })
-);
-Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
-```
-
-## What's next
-
-- [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): Full list of supported operations and headers.
-- [SDK Examples](https://docs.filone.com/sdk/overview): Detailed examples for Python, JavaScript, Go, and CLI.
-- [Billing & Trial](https://docs.filone.com/billing/trial): What's included in your trial and how to upgrade.
-
-
----
-
-# Quickstart - AWS CLI
-
-Source: https://docs.filone.com/quickstart/cli
-
-Use the AWS CLI to upload, list and download objects in a Fil One bucket. You need a Fil One account and an API key. To create a key, open **API Keys** in the [console](https://app.filone.com), click **Create new key**, and pick the same region as your bucket. The secret is shown once.
-
-## 1. Install the AWS CLI
-
-Use **AWS CLI v2**, version 2.13 or later, so the CLI reads `endpoint_url` from your profile:
-
-```bash
-brew install awscli
-# or follow the official installer:
-# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
-```
-
-## 2. Configure credentials
-
-Set up a named profile, so you don't overwrite your default AWS credentials and don't have to pass `--endpoint-url` on every command:
-
-```ini
-# ~/.aws/config
-[profile filone]
-endpoint_url = https://s3.eu-west-1.filonecontent.com
-region = eu-west-1
-s3 =
-    addressing_style = path
-```
-
-The `addressing_style = path` line is required — Fil One only supports path-style URLs, and the CLI otherwise defaults to virtual-hosted style, which fails.
-
-Note: The endpoint depends on your bucket's region
-The example above uses `eu-west-1`, the default region. If your bucket is in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and `region = us-east-1` instead. The endpoint and the region must both match the bucket you are working with, and your access key has to belong to that region too.
-
-If you use both regions, set up a profile per region (`[profile filone-eu]`, `[profile filone-us]`) and pick with `--profile`.
-
-```ini
-# ~/.aws/credentials
-[filone]
-aws_access_key_id = YOUR_ACCESS_KEY
-aws_secret_access_key = YOUR_SECRET_KEY
-```
-
-## 3. Create a bucket
-
-Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket**, enter `my-bucket` (or your own name), and click **Create bucket**.
-
-In `us-east-1` you can create a bucket from the CLI, using a key that has the `CreateBucket` permission. This requires a `us-east-1` profile — define one the same way as the `filone` profile above but with the `us-east-1` endpoint and region (shown here as `filone-us`):
-
-```bash
-aws s3 mb s3://my-bucket --profile filone-us
-```
-
-Versioning and Object Lock can only be turned on when you create the bucket in the console. See [Buckets](https://docs.filone.com/storage/buckets).
-
-The steps below use the `filone` profile (`eu-west-1`). If your bucket is in `us-east-1`, use `--profile filone-us` instead: the profile, the key and the bucket must all be in the same region.
-
-## 4. Upload a file
-
-```bash
-echo "hello" > my-file.txt
-aws s3 cp my-file.txt s3://my-bucket/ --profile filone
-```
-
-## 5. List objects
-
-```bash
-aws s3 ls s3://my-bucket/ --profile filone
-```
-
-## 6. Download the file
-
-```bash
-aws s3 cp s3://my-bucket/my-file.txt ./downloaded.txt --profile filone
-```
-
-
----
-
-# Quickstart - SDK
-
-Source: https://docs.filone.com/quickstart/sdk
-
-Choose your language and follow along. Each example uploads a file and verifies it. **Create the bucket first in the dashboard** — `CreateBucket` over the S3 API is not available in `eu-west-1`, the default region these examples use.
-
-Note: The endpoint depends on your bucket's region
-These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
-
-Each example reads your key from the standard AWS environment variables, the same names the console's **Download .env** writes. Set them in your shell before you run an example, and keep the secret out of your code:
+Load your key into the standard AWS environment variables. If you downloaded `credentials.env`, run `source credentials.env`. Otherwise:
 
 ```bash
 export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
 ```
 
-The Python and JavaScript examples upload `my-file.txt`, so create it first: `echo "hello" > my-file.txt`.
+JavaScript:
+```bash
+npm install @aws-sdk/client-s3
+```
+
+Load your key into the standard AWS environment variables. If you downloaded `credentials.env`, run `source credentials.env`. Otherwise:
+
+```bash
+export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+```
+
+Go:
+```bash
+mkdir filone-quickstart && cd filone-quickstart
+go mod init example.com/filone-quickstart
+go get github.com/aws/aws-sdk-go-v2/service/s3
+go get github.com/aws/aws-sdk-go-v2/credentials
+```
+
+Load your key into the standard AWS environment variables. If you downloaded `credentials.env`, run `source credentials.env`. Otherwise:
+
+```bash
+export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+```
+
+Console:
+Nothing to set up. You're already signed in to the console.
+
+## 5. Upload your first object
+
+Create a file to upload first, for example with `echo "hello" > my-file.txt`. The SDK examples list your buckets before they upload, so a credential problem shows up before anything else happens. If that first call fails, see [Troubleshooting](https://docs.filone.com/reference/errors#troubleshooting).
+
+AWS CLI:
+```bash
+aws s3 cp my-file.txt s3://my-bucket/my-file.txt --profile filone
+aws s3 ls s3://my-bucket/ --profile filone
+```
+
+For downloads and more commands, see [Quickstart - AWS CLI](https://docs.filone.com/quickstart/cli).
 
 Python:
-```bash
-pip install boto3
-```
+Save this as `upload.py`, then run `python3 upload.py`:
 
 ```python
 import boto3
@@ -386,24 +271,29 @@ s3 = boto3.client(
     config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
 )
 
-# Upload a file (create the bucket first in the dashboard)
+# Check the credentials: list the buckets this key can see
+for bucket in s3.list_buckets()["Buckets"]:
+    print("bucket:", bucket["Name"])
+
+# Upload a file
 s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
 
-# Verify
+# List the bucket to confirm
 response = s3.list_objects_v2(Bucket="my-bucket")
 for obj in response.get("Contents", []):
     print(f"{obj['Key']}  ({obj['Size']} bytes)")
 ```
 
 JavaScript:
-```bash
-npm install @aws-sdk/client-s3
-```
-
 Save this as `upload.mjs` (it uses ES modules and top-level `await`), then run `node upload.mjs`:
 
 ```javascript
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  ListBucketsCommand,
+  PutObjectCommand,
+  ListObjectsV2Command,
+} from "@aws-sdk/client-s3";
 import { readFileSync } from "fs";
 
 const client = new S3Client({
@@ -416,39 +306,36 @@ const client = new S3Client({
   // Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
 });
 
-// Upload a file (create the bucket first in the dashboard)
+// Check the credentials: list the buckets this key can see
+const { Buckets } = await client.send(new ListBucketsCommand({}));
+Buckets?.forEach((b) => console.log("bucket:", b.Name));
+
+// Upload a file
 await client.send(new PutObjectCommand({
   Bucket: "my-bucket",
   Key: "my-file.txt",
   Body: readFileSync("my-file.txt"),
 }));
 
-// Verify
+// List the bucket to confirm
 const { Contents } = await client.send(
   new ListObjectsV2Command({ Bucket: "my-bucket" })
 );
-Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
+Contents?.forEach((obj) => console.log(`${obj.Key}  (${obj.Size} bytes)`));
 ```
 
 Go:
-```bash
-mkdir filone-quickstart && cd filone-quickstart
-go mod init example.com/filone-quickstart
-go get github.com/aws/aws-sdk-go-v2/service/s3
-go get github.com/aws/aws-sdk-go-v2/credentials
-```
-
-Save this as `main.go` and run `go run .`:
+Save this as `main.go` in the `filone-quickstart` folder, then run `go run .`:
 
 ```go
 package main
 
 import (
+    "bytes"
     "context"
     "fmt"
     "log"
     "os"
-    "strings"
 
     "github.com/aws/aws-sdk-go-v2/aws"
     "github.com/aws/aws-sdk-go-v2/credentials"
@@ -457,29 +344,41 @@ import (
 
 func main() {
     client := s3.New(s3.Options{
-        BaseEndpoint:  aws.String("https://s3.eu-west-1.filonecontent.com"),
-        Region:        "eu-west-1",
-        UsePathStyle:  true,
+        BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
+        Region:       "eu-west-1",
+        UsePathStyle: true,
         Credentials: credentials.NewStaticCredentialsProvider(
             os.Getenv("AWS_ACCESS_KEY_ID"),
             os.Getenv("AWS_SECRET_ACCESS_KEY"),
             "",
         ),
     })
-
     ctx := context.Background()
 
-    // Upload (create the bucket first in the dashboard)
-    _, err := client.PutObject(ctx, &s3.PutObjectInput{
+    // Check the credentials: list the buckets this key can see
+    buckets, err := client.ListBuckets(ctx, &s3.ListBucketsInput{})
+    if err != nil {
+        log.Fatal(err)
+    }
+    for _, b := range buckets.Buckets {
+        fmt.Println("bucket:", aws.ToString(b.Name))
+    }
+
+    // Upload a file
+    data, err := os.ReadFile("my-file.txt")
+    if err != nil {
+        log.Fatal(err)
+    }
+    _, err = client.PutObject(ctx, &s3.PutObjectInput{
         Bucket: aws.String("my-bucket"),
-        Key:    aws.String("hello.txt"),
-        Body:   strings.NewReader("Hello from Go!"),
+        Key:    aws.String("my-file.txt"),
+        Body:   bytes.NewReader(data),
     })
     if err != nil {
         log.Fatal(err)
     }
 
-    // List
+    // List the bucket to confirm
     out, err := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
         Bucket: aws.String("my-bucket"),
     })
@@ -487,12 +386,167 @@ func main() {
         log.Fatal(err)
     }
     for _, obj := range out.Contents {
-        fmt.Printf("%s (%d bytes)\n", *obj.Key, *obj.Size)
+        fmt.Printf("%s  (%d bytes)\n", aws.ToString(obj.Key), aws.ToInt64(obj.Size))
     }
 }
 ```
 
-For more detailed examples including multipart uploads and presigned URLs, see the dedicated SDK pages:
+Console:
+1. Open your bucket from the dashboard.
+2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
+3. Your objects appear in the file list once the upload completes.
+4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
+
+Tip: Deleting needs its own permission
+A key with the default permissions can upload and read but not delete. To delete objects over the S3 API, use a key that also has the **Delete** permission. See [API Keys](https://docs.filone.com/security/api-keys#key-permissions).
+
+## What's next
+
+- [More with the AWS CLI](https://docs.filone.com/quickstart/cli): Profile file, both regions, downloads and syncing.
+- [SDK setup notes](https://docs.filone.com/quickstart/sdk): Credentials, regions and the client settings Fil One needs.
+- [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): Full list of supported operations and headers.
+- [Free trial](https://docs.filone.com/billing/trial): What's included in your trial and how to upgrade.
+
+
+---
+
+# Quickstart - AWS CLI
+
+Source: https://docs.filone.com/quickstart/cli
+
+The [Quickstart](https://docs.filone.com/quickstart?tool=cli) covers signup, the bucket and the API key, and uploads a first file with the AWS CLI. This page adds what the Quickstart skips: the profile as a config file, a profile per region, and creating a bucket from the CLI. For every other command, see [AWS CLI](https://docs.filone.com/sdk/cli).
+
+You need an API key in the same region as your bucket. To create one, open **API Keys** in the [console](https://app.filone.com) and click **Create new key**. The secret is shown once.
+
+## 1. Install the AWS CLI
+
+Use **AWS CLI v2**, version 2.13 or later, so the CLI reads `endpoint_url` from your profile:
+
+```bash
+brew install awscli
+# or follow the official installer:
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+```
+
+## 2. Configure a profile
+
+The `aws configure` commands in the Quickstart write these two files, and you can also edit them directly. A named profile keeps your default AWS credentials untouched, and you don't have to pass `--endpoint-url` on every command:
+
+```ini
+# ~/.aws/config
+[profile filone]
+endpoint_url = https://s3.eu-west-1.filonecontent.com
+region = eu-west-1
+s3 =
+    addressing_style = path
+```
+
+```ini
+# ~/.aws/credentials
+[filone]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+```
+
+The `addressing_style = path` line is required. Fil One only supports path-style URLs, and the CLI otherwise defaults to virtual-hosted style, which fails.
+
+Note: The endpoint depends on your bucket's region
+The example above uses `eu-west-1`, the default region. The endpoint, the region and your access key must all match the region of the bucket you work with. If you use both regions, add a second profile:
+
+```ini
+# ~/.aws/config
+[profile filone-us]
+endpoint_url = https://s3.us-east-1.filonecontent.com
+region = us-east-1
+s3 =
+    addressing_style = path
+```
+
+Then add a `[filone-us]` section with your `us-east-1` key to `~/.aws/credentials`, and choose the region with `--profile filone-us`.
+
+Check the profile before you use it:
+
+```bash
+aws s3 ls --profile filone
+```
+
+It lists the buckets in the key's region. If you get an error, see [Troubleshooting](https://docs.filone.com/reference/errors#troubleshooting).
+
+## 3. Create a bucket
+
+Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket** on the dashboard, enter `my-bucket` (or your own name), and click **Create bucket**.
+
+In `us-east-1` you can create a bucket from the CLI, with the `filone-us` profile and a key that has the `CreateBucket` permission. That permission isn't selected by default when you create a key:
+
+```bash
+aws s3 mb s3://my-bucket --profile filone-us
+```
+
+Versioning and Object Lock can only be turned on when you create the bucket in the console. See [Buckets](https://docs.filone.com/storage/buckets).
+
+## 4. Upload, list and download
+
+The commands below use the `filone` profile (`eu-west-1`). For a bucket in `us-east-1`, use `--profile filone-us`.
+
+```bash
+echo "hello" > my-file.txt
+aws s3 cp my-file.txt s3://my-bucket/ --profile filone
+aws s3 ls s3://my-bucket/ --profile filone
+aws s3 cp s3://my-bucket/my-file.txt ./downloaded.txt --profile filone
+```
+
+For syncing folders, deleting objects, presigned URLs and multipart uploads, see [AWS CLI](https://docs.filone.com/sdk/cli).
+
+
+---
+
+# Quickstart - SDK
+
+Source: https://docs.filone.com/quickstart/sdk
+
+The complete upload programs for [Python](https://docs.filone.com/quickstart?tool=python), [JavaScript](https://docs.filone.com/quickstart?tool=javascript) and [Go](https://docs.filone.com/quickstart?tool=go) are in step 5 of the Quickstart. This page explains the settings they use, so you can apply them to your own code.
+
+## Client settings
+
+Every S3 client that talks to Fil One needs these settings. The SDK defaults are written for AWS, and some of them fail against Fil One.
+
+| Setting | Why | Python (boto3) | JavaScript (SDK v3) | Go (aws-sdk-go-v2) |
+|---------|-----|----------------|---------------------|--------------------|
+| Endpoint | Send requests to Fil One, not AWS | `endpoint_url="https://s3.eu-west-1.filonecontent.com"` | `endpoint: "https://s3.eu-west-1.filonecontent.com"` | `BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com")` |
+| Region | Must match the endpoint and the key | `region_name="eu-west-1"` | `region: "eu-west-1"` | `Region: "eu-west-1"` |
+| Path-style addressing | Fil One doesn't support virtual-hosted-style URLs | `Config(s3={"addressing_style": "path"})` | `forcePathStyle: true` | `UsePathStyle: true` |
+| Signature version | Presigned URLs must use SigV4 | `Config(signature_version="s3v4")` | Default | Default |
+| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not needed: presigned URLs carry no checksum | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not needed: presigned URLs carry no checksum |
+
+## Credentials
+
+Keep the secret out of your code. The Quickstart programs read the key from the standard AWS environment variables, which every AWS SDK picks up:
+
+```bash
+export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+```
+
+When you create a key, **Download .env** in the console saves a `credentials.env` file with these two lines, so `source credentials.env` sets them. The secret is shown only at creation: if you lose it, rotate the key. See [API Keys](https://docs.filone.com/app/api-keys#rotating-a-key).
+
+## Regions
+
+Fil One has two regions, each with its own endpoint:
+
+| Region | Endpoint |
+|--------|----------|
+| `eu-west-1` (default) | `https://s3.eu-west-1.filonecontent.com` |
+| `us-east-1` | `https://s3.us-east-1.filonecontent.com` |
+
+The endpoint, the region setting and the access key must all refer to the bucket's region. A key belongs to one region and is rejected by the other, so code that works with buckets in both regions needs two clients and two keys.
+
+## Creating buckets
+
+Create buckets in the [console](https://app.filone.com) unless you work only in `us-east-1`. `CreateBucket` over the S3 API is not available in `eu-west-1`. In `us-east-1` it works with a key that has the `CreateBucket` permission, which isn't selected by default. Versioning and Object Lock can only be turned on in the console, when the bucket is created. See [Buckets](https://docs.filone.com/storage/buckets).
+
+## Next steps
+
+For downloads, multipart uploads and presigned URLs, see the SDK pages:
 
 - [Python](https://docs.filone.com/sdk/python): boto3: uploads, downloads, multipart, presigned URLs.
 - [JavaScript](https://docs.filone.com/sdk/javascript): AWS SDK v3: the same operations from Node.js.
@@ -566,8 +620,8 @@ aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com -
 
 `DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the dashboard there.
 
-Info: Logical deletion and Filecoin storage
-When you delete a bucket and its objects, the data is immediately removed from your Fil One account and is no longer accessible via the API or dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](https://docs.filone.com/security/encryption). The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
+Info:
+Deleted data is no longer accessible. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data).
 
 
 ---
@@ -664,8 +718,9 @@ On a bucket without versioning, deletion is immediate — the object disappears 
 
 On a [versioned](https://docs.filone.com/storage/versioning) bucket, a delete over the S3 API without a version ID places a delete marker instead: the object stops appearing in listings, but prior versions are retained, remain downloadable by version ID, and continue to count as stored storage.
 
-Info: Logical deletion and Filecoin storage
-When you delete an object, it is immediately removed from your Fil One account and is no longer accessible. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](https://docs.filone.com/security/encryption). The exact duration is set by the storage layer rather than measured by Fil One, and it does not affect your ability to manage your data in Fil One.
+### What happens to deleted data
+
+When you delete an object or a bucket, the data is immediately removed from your Fil One account and is no longer accessible through the API or the dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period after deletion before it naturally expires. That residual data stays encrypted, and the keys are held by Fil One's storage provider for the region, not by you or by Fil One (see [Encryption](https://docs.filone.com/security/encryption)). The exact duration is set by the storage layer rather than measured by Fil One, and it doesn't affect your ability to manage your data in Fil One.
 
 ## Presigned URLs
 
@@ -693,7 +748,7 @@ Anyone who has the URL can use it until it expires, without signing in. Share it
 
 Source: https://docs.filone.com/storage/multipart-uploads
 
-For very large objects you must use multipart upload. Under standard S3 behaviour the single-PUT ceiling is 5 GB — this is an AWS S3 limit that Fil One's storage gateway is expected to follow but that we have not independently confirmed (see [Limits](https://docs.filone.com/limits)). Multipart upload is also recommended for any file over 100 MB for improved reliability -- if a part fails, you retry only that part instead of the entire file.
+For very large objects you must use multipart upload. The single-PUT ceiling is 5 GB, the standard S3 limit (see [Standard S3 limits](https://docs.filone.com/limits#standard-s3-limits)). Multipart upload is also recommended for any file over 100 MB for improved reliability -- if a part fails, you retry only that part instead of the entire file.
 
 Note:
 The Fil One dashboard uploads objects with a single PUT, so multipart applies when you use your own S3 SDK or the AWS CLI, not the console upload flow.
@@ -754,7 +809,7 @@ s3.upload_file(
 | Maximum part size | 5 GB |
 
 Note:
-These are the standard AWS S3 multipart limits. Fil One's storage gateway is expected to follow them, but we have not independently confirmed the exact values — treat them as guidance and test against your own workload before hard-coding a part size. See [Limits](https://docs.filone.com/limits).
+These are the standard AWS S3 multipart limits. Treat them as guidance and test against your own workload before hard-coding a part size. See [Standard S3 limits](https://docs.filone.com/limits#standard-s3-limits).
 
 ## Cleaning up incomplete uploads
 
@@ -1125,7 +1180,7 @@ Retention outlives the trial: a lock you set during the trial still applies afte
 
 ## Object Lock and the Filecoin storage model
 
-When you delete an object after its retention period expires, it is immediately removed from your Fil One account and inaccessible via the API and dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires; the exact duration is set by the storage layer rather than measured by Fil One. That residual data stays encrypted, and key custody sits with the regional storage operator rather than with you or Fil One — see [Encryption](https://docs.filone.com/security/encryption). Whether that bounded persistence matters for a particular regulatory obligation is a question for your own compliance review — this documentation does not make that determination.
+When you delete an object after its retention period expires, it is immediately removed from your Fil One account. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data). Whether that bounded persistence matters for a particular regulatory obligation is a question for your own compliance review. This documentation doesn't make that determination.
 
 ## Common use cases
 
@@ -1144,7 +1199,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement at the storage gateway is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
+- Retention enforcement is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
@@ -1259,7 +1314,7 @@ You can create multiple API keys per account. A key can only carry permissions y
 
 ## Revoking an API key
 
-Go to **API Keys** in the left menu, find the key, open its **⋯** action menu, and choose **Delete**. Deletion is forwarded to the regional storage operator; the key stops working once that change propagates, so rotate any dependent credentials rather than assuming an exact cut-off instant.
+Go to **API Keys** in the left menu, find the key, open its **⋯** action menu, and choose **Delete**. The key stops working once the deletion reaches the key's region, so rotate any dependent credentials rather than assuming an exact cut-off instant.
 
 ## Configuring your client
 
@@ -1545,7 +1600,7 @@ Fil One encrypts all data by default. There is nothing to configure — encrypti
 
 All objects stored in Fil One are encrypted at rest. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
 
-Encryption is performed by the S3 storage gateway for the region your bucket lives in, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
+Encryption is performed by the storage infrastructure in your bucket's region, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
 
 **Do not send encryption headers.** Fil One applies its own server-side encryption, and you cannot request a specific mode. Uploads specifying `ServerSideEncryption: aws:kms` (SSE-KMS) are **rejected in both regions**: with `InvalidRequest` in `us-east-1`, and with `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation (`PutObject`, `CopyObject`, and `CreateMultipartUpload` are all affected). SSE-C headers are rejected in `eu-west-1`; this is not yet confirmed in `us-east-1`, so don't send them there either. Omit encryption headers entirely: encryption is applied either way.
 
@@ -1559,9 +1614,9 @@ This applies to all API operations, including uploads, downloads, presigned URLs
 
 ## Key management
 
-Encryption keys are held by the **regional storage operator** that fulfils storage for your bucket's region, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
+Encryption keys are held by **Fil One's storage provider for your bucket's region**, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
 
-If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, [contact support](https://docs.filone.com/app/support) — those details are set by the regional operator rather than by Fil One.
+If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, [contact support](https://docs.filone.com/app/support). Those details are set by the region's storage provider rather than by Fil One.
 
 ## Client-side encryption
 
@@ -1596,6 +1651,8 @@ The storage and egress figures above are hard limits, not soft allowances, and r
 
 - **Storage reaching 1 TB** puts the account into a **write-locked** state — you can still read and download, but new uploads are rejected.
 - **Egress reaching 2 TB** **disables the account** — the same state as an account whose grace period has ended, with no read or write access until you upgrade. There is no read-only grace period first.
+
+Upgrading to a paid plan lifts both caps as soon as the upgrade completes.
 
 Trial egress is a **single cumulative budget** across the whole 30 days, not a monthly amount that resets. Enforcement runs on a twice-daily usage job (around 07:00 and 19:00 UTC), so a cap may be exceeded for a few hours before access changes.
 
@@ -1669,7 +1726,7 @@ Source: https://docs.filone.com/billing/pricing
 
 Fil One is priced at **$5.99 / TB / month**, with a **$5.99 / month minimum**. If you store less than 1 TB, you are billed the $5.99 minimum.
 
-No egress fees, no per-request charges, no hidden costs.
+No egress fees and no per-request charges.
 
 This is the self-service **Pay as you go** plan. For volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team. See [Billing](https://docs.filone.com/app/billing#choosing-a-plan).
 
@@ -2536,7 +2593,9 @@ See the [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility) p
 
 Source: https://docs.filone.com/reference/s3-compatibility
 
-Fil One provides an S3-compatible API. It works with standard S3 SDKs and tools once you set the endpoint and enable path-style addressing; see the gaps below. Authenticate with your [API keys](https://docs.filone.com/security/api-keys).
+Fil One provides an S3-compatible API. Standard S3 SDKs and tools work once you set the regional endpoint and enable path-style addressing. Object reads and writes, multipart upload, versioned reads and deletes, Object Lock retention and Legal Hold, and presigned URLs all work in both regions. Authenticate with your [API keys](https://docs.filone.com/security/api-keys).
+
+What doesn't work over the API is listed in [Not supported](#not-supported), each with a workaround where one exists: bucket configuration, ACLs and bucket policies, tagging, lifecycle rules, and event notifications.
 
 ## Endpoint
 
@@ -2564,70 +2623,60 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 ## Supported operations
 
 Note: About the numeric limits below
-Specific size and count limits quoted in this table (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](https://docs.filone.com/limits).
+Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](https://docs.filone.com/limits).
 
 Warning: How unsupported operations respond in `eu-west-1`
-In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed by a compatibility test run against the region.
+In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed in that region.
 
 A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`, or the tagging operations means *the feature is absent*, not that your key lacks a permission. Bucket-configuration calls such as `PutBucketVersioning` and `PutBucketEncryption` can't be granted to any key, so they fail the same way. Don't spend time auditing your access-key scopes for these. Code that branches on `NotImplemented` to degrade gracefully needs to treat 403 on these operations the same way.
 
 ### Bucket operations
 
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `CreateBucket` | ⚠️ Region-dependent | Supported in `us-east-1`. Not available in `eu-west-1` — create buckets there via the dashboard. |
-| `DeleteBucket` | ⚠️ Region-dependent | Supported in `us-east-1` (the bucket must be empty). Not available in `eu-west-1`. |
-| `ListBuckets` | ✅ Supported | |
-| `HeadBucket` | ✅ Supported | |
-| `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets, `Suspended` is never returned. |
-| `PutBucketVersioning` | ❌ Not available to access keys | No access key can be granted this action, in either region. Versioning is set when you create the bucket in the console and cannot be changed afterwards. |
-| `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
-| `PutBucketObjectLockConfiguration` | ❌ Not available to access keys | No access key can be granted this action, in either region. Object Lock and the default retention are set when you create the bucket in the console. |
-| `GetBucketEncryption` | ❌ Not available to access keys | No access key can be granted this action, in either region. Encryption is always on. |
-| `PutBucketEncryption` | ❌ Not available to access keys | No access key can be granted this action, in either region. Encryption cannot be modified or disabled. |
-| `DeleteBucketEncryption` | ❌ Not supported | Rejected with `AccessDenied` in `eu-west-1`. Encryption cannot be disabled. |
-| `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`. See [ACLs](#acls). |
-| `PutBucketAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. |
-| `PutBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. |
-| `PutBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetBucketNotificationConfiguration` | ❌ Not supported | Event notifications are not supported. |
-| `PutBucketNotificationConfiguration` | ❌ Not supported | Event notifications are not supported. |
-| `GetBucketTagging` | ❌ Not supported | Bucket and object tagging are not implemented. |
-| `PutBucketTagging` | ❌ Not supported | Bucket and object tagging are not implemented. |
-| `GetBucketLogging` | ❌ Not supported | Server access logging is not implemented. |
-| `PutBucketLogging` | ❌ Not supported | Rejected in `eu-west-1` (`MalformedXML`, even for a well-formed configuration). |
-| `GetPublicAccessBlock` | ❌ Not supported | Public access is never permitted, so there is no block configuration to read. |
-| `PutPublicAccessBlock` | ❌ Not supported | Rejected in `eu-west-1` (`MalformedXML`, even for a well-formed configuration). All buckets are private unconditionally. |
+| Operation | `eu-west-1` | `us-east-1` | Notes |
+|-----------|-------------|-------------|-------|
+| `CreateBucket` | ❌ Not available | ✅ Supported | In `eu-west-1`, create buckets in the dashboard. |
+| `DeleteBucket` | ❌ Not available | ✅ Supported | The bucket must be empty. |
+| `ListBuckets` | ✅ Supported | ✅ Supported | |
+| `HeadBucket` | ✅ Supported | ✅ Supported | |
+| `GetBucketVersioning` | ✅ Supported | ✅ Supported | Returns `Enabled` for versioned buckets. `Suspended` is never returned. |
+| `PutBucketVersioning` | ❌ No key can be granted it | ❌ No key can be granted it | Versioning is set when you create the bucket in the console and cannot be changed afterwards. |
+| `GetBucketObjectLockConfiguration` | ✅ Supported | ✅ Supported | Returns the bucket-level default retention policy, if set. |
+| `PutBucketObjectLockConfiguration` | ❌ No key can be granted it | ❌ No key can be granted it | Object Lock and the default retention (Governance or Compliance, 1 day – 100 years) are set when you create the bucket in the console. |
+| `GetBucketEncryption`, `PutBucketEncryption` | ❌ No key can be granted them | ❌ No key can be granted them | Encryption is always on, and cannot be modified or disabled. |
+| `DeleteBucketEncryption` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | Encryption cannot be disabled. |
+| `GetBucketAcl`, `PutBucketAcl` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | The ACL model is not implemented. See [ACLs](#acls). |
+| `GetBucketPolicy`, `PutBucketPolicy` | ❌ Not supported (`PutBucketPolicy`: `AccessDenied`) | ❌ Not supported | Bucket policies are not implemented. |
+| `GetBucketLifecycleConfiguration`, `PutBucketLifecycleConfiguration` | ❌ Not supported (`PutBucketLifecycleConfiguration`: `AccessDenied`) | ❌ Not supported | Planned for a future release. |
+| `GetBucketNotificationConfiguration`, `PutBucketNotificationConfiguration` | ❌ Not supported | ❌ Not supported | Event notifications are not supported. |
+| `GetBucketTagging`, `PutBucketTagging` | ❌ Not supported | ❌ Not supported | Bucket and object tagging are not implemented. |
+| `GetBucketLogging`, `PutBucketLogging` | ❌ Not supported (`PutBucketLogging`: `MalformedXML`, even for a well-formed configuration) | ❌ Not supported | Server access logging is not implemented. |
+| `GetPublicAccessBlock`, `PutPublicAccessBlock` | ❌ Not supported (`PutPublicAccessBlock`: `MalformedXML`, even for a well-formed configuration) | ❌ Not supported | Public access is never permitted, so there is no block configuration to read. All buckets are private unconditionally. |
 
 ### Object operations
 
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `PutObject` | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
-| `GetObject` | ✅ Supported | Supports range requests (`Range` header). Supports `VersionId` to retrieve a specific version. |
-| `DeleteObject` | ✅ Supported | Creates a delete marker on versioned buckets. Pass `VersionId` to permanently delete a specific version. |
-| `DeleteObjects` | ✅ Supported | Bulk delete up to 1,000 objects per request. |
-| `HeadObject` | ✅ Supported | |
-| `ListObjectsV2` | ✅ Supported | |
-| `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
-| `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. In `eu-west-1`, most copy operations pass a compatibility run, so plain server-side copy works there, but **copying a specific `VersionId` is not yet confirmed** in that region. Verify a version-promote copy against your own bucket before relying on it. |
-| `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
-| `PutObjectRetention` | ✅ Supported | Set or extend a version's retention. Retention can't be shortened, because no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
-| `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
-| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
-| `GetObjectAttributes` | ❌ Not supported | Returns `AccessDenied` in `eu-west-1`. Use `HeadObject` for size, ETag, and metadata instead. |
-| `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`, including on objects uploaded with a canned-ACL header. |
-| `PutObjectAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetObjectTagging` | ❌ Not supported | Object tagging is not implemented. Returns `AccessDenied` in `eu-west-1`. |
-| `PutObjectTagging` | ❌ Not supported | Object tagging is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `RestoreObject` | ❌ Not applicable | Fil One has a single storage class. There are no archival tiers to restore from. |
-| `SelectObjectContent` | ❌ Not planned | S3 Select is not planned. |
+| Operation | `eu-west-1` | `us-east-1` | Notes |
+|-----------|-------------|-------------|-------|
+| `PutObject` | ✅ Supported | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
+| `GetObject` | ✅ Supported | ✅ Supported | Supports range requests (`Range` header). Supports `VersionId` to retrieve a specific version. |
+| `DeleteObject` | ✅ Supported | ✅ Supported | Creates a delete marker on versioned buckets. Pass `VersionId` to permanently delete a specific version, bypassing delete markers. |
+| `DeleteObjects` | ✅ Supported | ✅ Supported | Bulk delete up to 1,000 objects per request. |
+| `HeadObject` | ✅ Supported | ✅ Supported | |
+| `ListObjectsV2` | ✅ Supported | ✅ Supported | |
+| `ListObjectVersions` | ✅ Supported | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
+| `CopyObject` | ✅ Plain server-side copy. Copying a specific `VersionId` (`x-amz-copy-source-version-id`) is **not yet confirmed**. | ✅ Supported, including copying a specific `VersionId` onto the current key | Copying an older version onto the current key promotes it. In `eu-west-1`, verify a version-promote copy against your own bucket before relying on it. |
+| `GetObjectRetention` | ✅ Supported | ✅ Supported | Returns the Object Lock retention for a specific version. |
+| `PutObjectRetention` | ✅ Supported | ✅ Supported | Set or extend a version's retention. Retention can't be shortened, because no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
+| `GetObjectLegalHold` | ✅ Supported | ✅ Supported | Requires the matching access-key permission. |
+| `PutObjectLegalHold` | ✅ Supported | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
+| `GetObjectAttributes` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | Use `HeadObject` for size, ETag, and metadata instead. |
+| `GetObjectAcl`, `PutObjectAcl` | ❌ Not supported (`AccessDenied`, including on objects uploaded with a canned-ACL header) | ❌ Not supported | The ACL model is not implemented. See [ACLs](#acls). |
+| `GetObjectTagging`, `PutObjectTagging` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | Object tagging is not implemented. |
+| `RestoreObject` | Not applicable | Not applicable | Fil One has a single storage class. There are no archival tiers to restore from. |
+| `SelectObjectContent` | ❌ Not planned | ❌ Not planned | S3 Select is not planned. |
 
 ### Multipart upload
 
-Multipart upload is supported through the S3 API in **all regions**. Note that uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling — use the S3 API or CLI for larger objects.
+Multipart upload is supported through the S3 API in **both regions**. Uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling: use the S3 API or CLI for larger objects.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -2642,16 +2691,9 @@ Multipart upload is supported through the S3 API in **all regions**. Note that u
 
 Versioning is **opt-in** and configured at bucket creation time. Once enabled on a bucket, it cannot be suspended or disabled. Every upload to an existing key on a versioned bucket creates a new version rather than overwriting.
 
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets. |
-| `ListObjectVersions` | ✅ Supported | Lists all versions and delete markers in a bucket. |
-| `GetObject` with `VersionId` | ✅ Supported | Retrieves a specific historical version by ID. |
-| `DeleteObject` with `VersionId` | ✅ Supported | Permanently deletes a specific version, bypassing delete markers. |
-| `PutBucketVersioning` | ❌ Not available to access keys | Versioning is set at bucket creation and cannot be suspended or changed. |
-| `CopyObject` with `x-amz-copy-source-version-id` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — copy a specific version onto the current key to promote it. Not yet confirmed in `eu-west-1`: plain copy works there, but the version-id form has not been tested. |
+The versioning operations are in the tables above: `GetBucketVersioning` and `PutBucketVersioning` under [Bucket operations](#bucket-operations), and `ListObjectVersions`, `GetObject` and `DeleteObject` with `VersionId`, and `CopyObject` with a source version under [Object operations](#object-operations).
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject` (see above). In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
+The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject`. In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
 
 See [Versioning](https://docs.filone.com/storage/versioning) for detailed usage and examples.
 
@@ -2659,17 +2701,7 @@ See [Versioning](https://docs.filone.com/storage/versioning) for detailed usage 
 
 Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and Compliance mode are supported. Object Lock requires versioning, and both are set at bucket creation time.
 
-Note: Where the evidence comes from
-Object Lock, retention, and Legal Hold are verified in **both** regions: by an automated compatibility suite in `us-east-1`, and by engineering testing in `eu-west-1`.
-
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy. |
-| `PutBucketObjectLockConfiguration` | ❌ Not available to access keys | The default retention (Governance or Compliance, 1 day – 100 years) is set when you create the bucket in the console. |
-| `GetObjectRetention` | ✅ Supported | Returns the retention setting for a specific object version. |
-| `PutObjectRetention` | ✅ Supported | Set or extend a retention period. It can't be shortened: no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
-| `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
-| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
+Object Lock, retention, and Legal Hold are confirmed in **both** regions. The operations are in the tables above: `GetBucketObjectLockConfiguration` and `PutBucketObjectLockConfiguration` under [Bucket operations](#bucket-operations), and `GetObjectRetention`, `PutObjectRetention`, `GetObjectLegalHold` and `PutObjectLegalHold` under [Object operations](#object-operations).
 
 **Object Lock modes:**
 
@@ -2689,16 +2721,15 @@ See [Object Lock](https://docs.filone.com/storage/object-lock) for compliance us
 
 ### Server-side encryption
 
-Encryption is **always enabled** on every Fil One bucket. There is nothing to configure.
+Encryption is **always enabled** on every Fil One bucket. There is nothing to configure. `GetBucketEncryption` and `PutBucketEncryption` can't be granted to any key, in either region (see [Bucket operations](#bucket-operations)).
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
-| `GetBucketEncryption` / `PutBucketEncryption` | ❌ Not available to access keys | No access key can be granted these actions, in either region. Encryption is on either way and cannot be modified or disabled. |
 | SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
-| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`; not yet confirmed in `us-east-1`. Don't send them. |
+| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by Fil One's storage provider for that region. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`; not yet confirmed in `us-east-1`. Don't send them. |
 | Client-side encryption | ✅ Optional | Encrypt data in your own application before upload. AWS's S3 Encryption Client exists only for some SDKs (Java, .NET, Go, Ruby) — not boto3, the CLI, or JS v3 — so with those you supply your own crypto. Server-side encryption is still applied on top. |
 
 See [Encryption](https://docs.filone.com/security/encryption) for details.
@@ -2718,19 +2749,19 @@ So a tool that uploads with `--acl public-read` will appear to work, while a too
 
 To limit what a key can reach, scope it to specific buckets when you create it. See [Bucket scope](https://docs.filone.com/security/api-keys#bucket-scope).
 
-## Not yet supported
+## Not supported
 
-| Feature | Timeline | Notes |
-|---------|----------|-------|
-| Lifecycle rules (expiration, transitions) | Planned | Affects archival and cleanup workflows. |
-| Event notifications (SNS/SQS/Lambda triggers) | Planned | |
-| Object and bucket tagging | Planned | |
+| Feature | Status | Workaround |
+|---------|--------|------------|
+| Lifecycle rules (expiration, transitions) | Planned | Run a scheduled script that lists objects with `ListObjectsV2` and deletes old ones with `DeleteObjects`. Objects under Object Lock retention can't be deleted until their retention expires. |
+| Event notifications (SNS/SQS/Lambda triggers) | Planned | Poll `ListObjectsV2` on a schedule and compare it with the previous listing. |
+| Object and bucket tagging | Planned | Store key-value pairs as user metadata (`x-amz-meta-*` headers) when you upload, and read them back with `HeadObject`. |
 | Additional regions | Planned | `eu-west-1` and `us-east-1` are available today. |
-| IAM users, roles, and bucket policies on the S3 API | Not yet supported | The S3 API has no IAM users, roles, or bucket policies. Access is controlled by each access key's permissions and bucket scope. Team members and roles exist in the console: see [Organization](https://docs.filone.com/app/organization#roles-and-permissions). |
-| S3 Select | Not planned | |
-| S3 Inventory | Not planned | |
-| S3 Batch Operations | Not planned | |
-| Multiple storage classes | Not planned | Single storage class. |
+| IAM users, roles, and bucket policies on the S3 API | Not supported | Access is controlled by each access key's permissions and [bucket scope](https://docs.filone.com/security/api-keys#bucket-scope): create one key per application with only what it needs. Team members and roles exist in the console: see [Organization](https://docs.filone.com/app/organization#roles-and-permissions). |
+| S3 Select | Not planned | Download the object, or a byte range with a `Range` header on `GetObject`, and filter it in your application. |
+| S3 Inventory | Not planned | List objects with `ListObjectsV2`, or versions with `ListObjectVersions`. |
+| S3 Batch Operations | Not planned | Script the operation over a listing. `DeleteObjects` deletes up to 1,000 objects per request. |
+| Multiple storage classes | Not planned | None needed: there is a single storage class. |
 
 ## Error responses
 
@@ -2752,7 +2783,7 @@ See the [Error Reference](https://docs.filone.com/reference/errors) for a full l
 
 ### Known error-code deviations in `eu-west-1`
 
-Confirmed by a compatibility test run against the region.
+These are confirmed in `eu-west-1`.
 
 | Condition | AWS S3 returns | Fil One `eu-west-1` returns |
 |-----------|----------------|------------------------------|
@@ -2784,8 +2815,8 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 |----------|--------|---------|
 | Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the dashboard; achievable via the API in `us-east-1` using `CopyObject`. |
 | Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
-| Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
-| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
+| Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by Fil One's storage provider for that region; no customer-managed keys. |
+| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles: see [Organization](https://docs.filone.com/app/organization#roles-and-permissions). |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected, and never make an object public. |
 | Error codes for missing features | `NotImplemented` (501). | `AccessDenied` (403) in `eu-west-1`. A 403 on a bucket-configuration call means the feature is absent, not that your key lacks permission. |
@@ -2793,7 +2824,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Object Lock modes | Compliance and Governance. | Compliance and Governance, in both regions, with Legal Hold. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
 | Regions | 30+ globally. | Two: `eu-west-1` and `us-east-1`. Additional regions planned. |
-| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage may persist for a bounded period until the sealed sector naturally expires. That residual data stays encrypted. |
+| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One. The underlying storage may persist for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data). |
 
 
 ---
@@ -2819,7 +2850,7 @@ Fil One returns standard S3 error responses in XML format. The format is standar
 ## Common error codes
 
 Note:
-Fil One returns standard S3-style error XML. The specific codes and HTTP statuses below are the common AWS S3 values, provided as a guide — the authoritative set is produced by the storage gateway and has not been exhaustively verified against Fil One. Handle unlisted codes defensively.
+Fil One returns standard S3-style error XML. The specific codes and HTTP statuses below are the common AWS S3 values, provided as a guide. Not every code has been checked against Fil One, so handle codes that aren't listed here defensively.
 
 ### Client errors (4xx)
 
@@ -3675,7 +3706,7 @@ On a bucket **without versioning**, the object disappears from your account imme
 
 On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](https://docs.filone.com/storage/versioning).
 
-Once deleted, an object is no longer accessible through the API or the dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — an infrastructure detail set by the storage layer, not a user-facing state. That residual data stays encrypted, with key custody held by the regional storage operator rather than by you or Fil One (see [Encryption](https://docs.filone.com/security/encryption)). The same applies when you delete a bucket.
+Once deleted, an object or bucket is no longer accessible through the API or the dashboard. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](https://docs.filone.com/storage/objects#what-happens-to-deleted-data).
 
 ## Can I migrate from AWS S3?
 
@@ -3693,19 +3724,25 @@ The 30-day trial includes 1 TB of storage, 2 TB of egress bandwidth, and unlimit
 
 ## Can I use Fil One for backups?
 
-Fil One exposes an S3-compatible API, so backup software that targets S3 generally works — but check your tool's requirements first. We have not verified specific backup products, and three of the documented gaps are ones backup tools commonly depend on:
+Most S3 backup tools work. Before you commit to one, check that it can:
+
+- use **path-style addressing** (bucket names can't contain dots, either),
+- sign requests with **SigV4**,
+- point at a custom endpoint: your bucket's region, `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`.
+
+We haven't tested specific backup products. Three documented gaps are ones some backup tools depend on:
 
 - **Server-side copy of a specific version is unverified in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1`, and plain server-side copy works in `eu-west-1`, but copying a specific `VersionId` has not been verified there. Some tools use `CopyObject` for renames, moves, and deduplication.
 - **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the dashboard first.
 - **No lifecycle rules.** Retention-based pruning has to be handled by the tool itself.
 
-Path-style addressing is also required, and bucket names cannot contain dots. Check your tool against the [S3 Compatibility Reference](https://docs.filone.com/reference/s3-compatibility) before committing to it.
+See the [S3 Compatibility Reference](https://docs.filone.com/reference/s3-compatibility) for the full list.
 
 ## What durability guarantees do you offer?
 
-Fil One is designed for high durability through distributed storage across multiple providers. We don't publish a durability figure; for details, email [support@filone.com](mailto:support@filone.com).
+The [Fil One SLA](https://www.filone.com/sla) commits to 99.9% monthly uptime, with service credits if it is missed.
 
-Availability is covered separately: the [Fil One SLA](https://www.filone.com/sla) commits to 99.9% monthly uptime, with service credits if it is missed.
+Fil One stores data on Filecoin, where storage providers must keep proving they still hold the data they committed to store (see the data integrity question below). We don't publish a durability percentage. For details, email [support@filone.com](mailto:support@filone.com).
 
 ## Can multiple users access the same account?
 
@@ -3715,9 +3752,11 @@ Access through the S3 API is still per access key. There are no IAM users or buc
 
 ## How does Filecoin protect the integrity of stored data?
 
-Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs — called Proof of Replication (PoRep) and Proof of Spacetime (PoSt) — to prove they are still holding the data they committed to store. Providers that fail to produce valid proofs are penalised. This proof cycle runs at the network level and is not something you trigger or check yourself.
+To check an individual object, compare the `ETag` returned by `HeadObject` with a checksum you keep. To stop an object changing for a fixed period, use [Object Lock](https://docs.filone.com/storage/object-lock).
 
-Fil One does not currently expose per-object proof data — content identifiers, deal IDs, and sealing state are not surfaced through the API or the dashboard, so you cannot independently audit an individual object today. For object-level integrity checks in your own application, compare the `ETag` returned by `HeadObject` against a checksum you keep, or apply [Object Lock](https://docs.filone.com/storage/object-lock) to make objects immutable for a fixed retention period.
+Underneath, Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs, called Proof of Replication (PoRep) and Proof of Spacetime (PoSt), to show they still hold the data they committed to store. Providers that fail to produce valid proofs are penalised. This runs at the network level, not per request.
+
+Fil One doesn't expose per-object proof data: content identifiers, deal IDs and sealing state aren't shown in the API or the dashboard.
 
 
 ---
@@ -3755,8 +3794,9 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 | Maximum object key length | 1,024 characters in the dashboard; 1,024 bytes (standard S3 limit) through the API |
 | Maximum metadata size per object | 2 KB |
 
-Note: Which of these are Fil One-specific
-The **dashboard** rejects object keys longer than **1,024 characters** when you upload, which is verified in code. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
+### Standard S3 limits
+
+The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
 
 For objects larger than 5 GB, use [multipart upload](https://docs.filone.com/storage/multipart-uploads).
 
@@ -3785,7 +3825,7 @@ Bucket creation and deletion through the S3 API are available in `us-east-1` but
 
 ## API rate limits
 
-Rate limits are enforced by the underlying storage gateway. Fil One does not impose additional rate limits on top of these. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
+Fil One doesn't publish fixed rate limits, and doesn't add its own on top of the S3 endpoint's. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
 
 ## Naming constraints
 
@@ -3797,5 +3837,5 @@ Rate limits are enforced by the underlying storage gateway. Fil One does not imp
 - Unique within Fil One
 
 **Object keys:**
-- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies but is not independently confirmed
+- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies (see [Standard S3 limits](#standard-s3-limits))
 - Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility

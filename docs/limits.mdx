@@ -32,9 +32,9 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 | Maximum object key length | 1,024 characters in the dashboard; 1,024 bytes (standard S3 limit) through the API |
 | Maximum metadata size per object | 2 KB |
 
-:::note Which of these are Fil One-specific
-The **dashboard** rejects object keys longer than **1,024 characters** when you upload, which is verified in code. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits** that Fil One's storage gateway is expected to follow but that we have **not independently confirmed**. Treat them as guidance rather than guaranteed values, and test against your own workload before hard-coding an exact figure.
-:::
+### Standard S3 limits
+
+The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
 
 For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
 
@@ -63,7 +63,7 @@ Bucket creation and deletion through the S3 API are available in `us-east-1` but
 
 ## API rate limits
 
-Rate limits are enforced by the underlying storage gateway. Fil One does not impose additional rate limits on top of these. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
+Fil One doesn't publish fixed rate limits, and doesn't add its own on top of the S3 endpoint's. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
 
 ## Naming constraints
 
@@ -75,5 +75,5 @@ Rate limits are enforced by the underlying storage gateway. Fil One does not imp
 - Unique within Fil One
 
 **Object keys:**
-- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies but is not independently confirmed
+- Up to 1,024 characters for dashboard uploads; through the S3 API, the standard S3 limit of 1,024 bytes (UTF-8) applies (see [Standard S3 limits](#standard-s3-limits))
 - Any UTF-8 character is valid, but avoid control characters and characters that require special URL encoding for best compatibility
