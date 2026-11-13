@@ -222,8 +222,10 @@ Critical integration notes for developers:
   agent (Claude Code, Cursor, Codex) access without its keys in a prompt or file.
   One key per agent, scoped to the buckets it needs, read-only (Read + List) if
   it only reads; key stored in a named AWS CLI profile (`filone`), never pasted
-  into chat, AGENTS.md/CLAUDE.md, or a project .env. A copyable instructions
-  block for AGENTS.md/CLAUDE.md that names the profile, never a key. Rules agents
+  into chat, AGENTS.md/CLAUDE.md, or a project .env. Endpoint is region-specific
+  (https://s3.<bucket_region>.filonecontent.com; copy it from the console's
+  Buckets page or the bucket's API Keys tab). A copyable instructions block for
+  AGENTS.md/CLAUDE.md that names the profile and region, never a key. Rules agents
   get wrong: path-style addressing, NO encryption headers, no CreateBucket/
   DeleteBucket in eu-west-1, key/endpoint/region must match, versioning and
   Object Lock fixed at bucket creation
