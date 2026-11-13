@@ -181,14 +181,14 @@ App:
 4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
 
 AWS CLI:
-Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](https://docs.filone.com/sdk/cli). Enter your key's ID and secret when prompted, and leave the other prompts empty:
+Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](https://docs.filone.com/sdk/cli). The last command asks for your key's ID and secret: paste each when prompted, and press Enter at the other prompts to keep their values. It comes last so that pasting the whole block doesn't feed the other commands to the prompt as answers:
 
 ```bash
-aws configure --profile filone
 aws configure set region eu-west-1 --profile filone
 aws configure set endpoint_url https://s3.eu-west-1.filonecontent.com --profile filone
 # Path-style is required: Fil One does not support virtual-hosted URLs
 aws configure set s3.addressing_style path --profile filone
+aws configure --profile filone
 ```
 
 Upload a file:
@@ -3663,14 +3663,16 @@ Then run this yourself, in your own terminal, not through the agent, replacing
 <bucket_region> with the bucket's region:
 
 ```bash
-aws configure --profile filone
-# Paste the Access Key ID and Secret Access Key when prompted.
-# Region: <bucket_region>. Output format: press Enter.
+aws configure set region <bucket_region> --profile filone
 aws configure set endpoint_url https://s3.<bucket_region>.filonecontent.com --profile filone
 aws configure set s3.addressing_style path --profile filone
+aws configure --profile filone
 ```
 
-The interactive prompt keeps the secret out of shell history; endpoint_url (AWS
+The last command asks for the Access Key ID and Secret Access Key: paste each
+when prompted, then press Enter to keep the region and output format. It comes
+last so that pasting the whole block doesn't feed the other commands to the
+prompt as answers. The prompt keeps the secret out of shell history; endpoint_url (AWS
 CLI v2) sends requests to Fil One, not AWS. For both regions, create one
 profile per region (e.g. `filone-eu`, `filone-us`).
 

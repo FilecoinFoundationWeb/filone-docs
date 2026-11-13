@@ -54,14 +54,14 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
-    Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](/sdk/cli). Enter your key's ID and secret when prompted, and leave the other prompts empty:
+    Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](/sdk/cli). The last command asks for your key's ID and secret: paste each when prompted, and press Enter at the other prompts to keep their values. It comes last so that pasting the whole block doesn't feed the other commands to the prompt as answers:
 
     ```bash
-    aws configure --profile filone
     aws configure set region eu-west-1 --profile filone
     aws configure set endpoint_url https://s3.eu-west-1.filonecontent.com --profile filone
     # Path-style is required: Fil One does not support virtual-hosted URLs
     aws configure set s3.addressing_style path --profile filone
+    aws configure --profile filone
     ```
 
     Upload a file:
