@@ -3,7 +3,7 @@ title: Billing
 description: Reading the Fil One billing page, adding a payment method, and finding your invoices.
 ---
 
-Billing is a page of its own, at `/billing`. Open it from **Billing** in the organization menu, at the top of the left sidebar (see [The organization menu](/app/organization#the-organization-menu)).
+Billing is a page of its own, at `/billing`. Open it from **Billing** in the **Organization** group of the left sidebar (see [Where to find the organization's pages](/app/organization#where-to-find-the-organizations-pages)).
 
 Billing is visible to **Owners** and **Admins**. Every action on it (choosing or changing a plan, adding or updating a card, opening the Stripe portal) is for **Owners** only, so an Admin sees the same figures without the buttons. Members and Read only users see "Billing is managed by your organization's owners and admins" instead. See [Roles and permissions](/app/organization#roles-and-permissions).
 
@@ -15,16 +15,19 @@ The **Plan** card names your plan and carries a status badge:
 
 | Status | Badge | Plan name and detail line |
 |--------|-------|---------------------------|
-| Trial | **Trial** | **Free trial**, with how many days until the trial ends. The trial's storage and egress limits are on the [usage card](#usage) |
-| Paid | **Active** | **Pay as you go**, with your per-TB rate and the renewal date |
+| Trial | **Active** (blue) | **Free trial**. The trial's storage and egress limits are on the [usage card](#usage) |
+| Paid | **Active** (green) | **Pay as you go**, with your per-TB rate and the renewal date |
+| Billed manually | **Active** (green) | The name on your agreement, or **Custom plan**, with **Billed manually** |
 | Payment failed | **Payment failed** (amber) | Your plan name, rate, and renewal date, as for a paid plan |
 | Grace period | **Grace period** | Your plan name and rate, and how many days until access ends |
 | Canceled | **Canceled** | Your plan name and rate, and the date it was canceled |
 | No plan | None | **No plan**, with **Choose a plan to start storing data** |
 
-If your plan was set up with the sales team, the card shows the name on your agreement, and **Custom pricing** where there is no single per-TB rate to show.
+If your plan was set up with the sales team, the card shows the name on your agreement, and **Custom pricing** where there is no single per-TB rate to show. An organization billed manually by the sales team has no payment method to manage in the console.
 
 The button in this card is **Upgrade** on the trial, **Manage plan** on a paid plan (including one whose payment failed), **Reactivate** once the subscription is canceled, and **Choose a plan** during the grace period or with no plan.
+
+A canceled subscription can be restarted at any time: an Owner clicks **Reactivate**, and the banner confirms "Your data is still here." Access returns as soon as the new subscription starts, without contacting support.
 
 A banner above the cards flags a problem with the account:
 
@@ -67,7 +70,7 @@ The **Payment method** card shows one of three things:
 **Update**, **Manage**, and **Manage plan** open the Stripe customer portal, where the card details are entered and stored. Fil One does not hold your card number.
 
 :::note Cancelling
-Cancellation is handled in the Stripe portal, reached through **Manage plan**.
+Cancellation is handled in the Stripe portal, reached through **Manage plan**, so only Owners can cancel.
 :::
 
 ## Choosing a plan

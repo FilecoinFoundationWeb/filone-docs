@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Go from zero to your first upload in under 5 minutes.
+description: Create an account, a bucket and an API key, then upload your first object from the console, the AWS CLI, Python or JavaScript.
 ---
 
 import Tabs from '@theme/Tabs';
@@ -11,45 +11,30 @@ This guide walks you through creating an account, setting up credentials, and up
 
 ## 1. Create your account
 
-1. Go to [app.filone.com](https://app.filone.com) and sign up with your email or SSO.
+1. Go to [app.filone.com](https://app.filone.com) and sign up with your email, Google, or GitHub.
 2. Verify your email address.
 3. You're in. No credit card needed — your 30-day free trial starts automatically.
 
 ## 2. Create a bucket
 
-From the dashboard, click **New bucket** to open your buckets, then **Create bucket**. Give it a name (lowercase letters, numbers, and hyphens — note that Fil One does **not** allow dots, unlike AWS S3) and choose your settings:
+From the dashboard, click **New bucket** to open the create form. Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
 
 | Setting | Options | Notes |
 |---------|---------|-------|
 | Region | `eu-west-1` Europe (France) or `us-east-1` US East (Michigan) | Defaults to `eu-west-1`. Cannot be changed later. |
-| Encryption | Always on | All data is encrypted at rest by default. Nothing to configure. |
-| Versioning | Off by default | Keeps a history of every version of an object. |
-| Object Lock | Off by default | WORM protection. Requires versioning. |
-| Retention | Off by default | A default retention period applied to new objects. Requires Object Lock. |
+| Encryption | Always on | All data is encrypted at rest. Nothing to configure. |
 
-:::warning These settings are permanent
-Region, versioning, Object Lock, and retention are all fixed **at creation**. There is no way to turn versioning or Object Lock on for an existing bucket, or to move a bucket to another region — you would have to create a new bucket and copy your data across. If you think you will want version history or WORM protection, enable it now.
+Leave everything else at its default for your first bucket, and click **Create bucket**.
+
+:::warning Some settings can only be chosen now
+Versioning, Object Lock, and retention sit under **Advanced settings** on the create form, and can only be turned on when the bucket is created. Neither can be turned off later, and Object Lock can stop you deleting data you're paying for. Read [Versioning](/storage/versioning) and [Object Lock](/storage/object-lock) before you enable them on a bucket you plan to keep.
 :::
-
-The three object settings nest, so you enable them in order:
-
-1. **Versioning** — turn this on first. Object Lock stays greyed out until you do.
-2. **Object Lock** — becomes available once versioning is on. Retention stays greyed out until you enable it.
-3. **Retention** — becomes available once Object Lock is on. Choose a mode and a duration:
-   - **Governance** (the default): in standard S3, a caller with a bypass permission can override it. Fil One does not currently expose a grantable bypass permission, so in practice protected objects cannot be deleted or modified until the retention period expires. See [Object Lock](/storage/object-lock).
-   - **Compliance**: no one can delete or modify objects until the retention period expires.
-
-   The duration can be set in days or years, from 1 day up to 100 years.
-
-See [Versioning](/storage/versioning) and [Object Lock](/storage/object-lock) for the full picture before committing to either.
-
-You will also see an optional **API key** section during bucket creation. Expand it to create a new key scoped to this bucket in one step. If you plan to use the CLI or SDK, set up your key at this step — otherwise skip it and go to **API Keys** in the left menu later. Note that a key belongs to a single region, so it must match the region you picked above.
 
 ## 3. Upload your first object
 
-Choose your preferred method. The App requires no API key. For CLI and SDK access, go to **API Keys** in the left menu and click **Create new key**. You'll get two values:
+Choose your preferred method. The App requires no API key. For CLI and SDK access, open your new bucket and click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. You'll get two values:
 
-- **Access Key ID** — identifies your account (safe to store in config)
+- **Access Key ID** — identifies the key (safe to store in config)
 - **Secret Access Key** — authenticates your requests (treat like a password)
 
 :::note
@@ -69,31 +54,33 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
-    Configure the CLI to point at Fil One:
+    Create a `filone` profile so you don't overwrite your default AWS credentials. Requires [AWS CLI v2](/sdk/cli). Enter your key's ID and secret when prompted, and leave the other prompts empty:
 
     ```bash
-    aws configure set aws_access_key_id YOUR_ACCESS_KEY
-    aws configure set aws_secret_access_key YOUR_SECRET_KEY
-    aws configure set default.region eu-west-1
-    # Path-style is required — Fil One does not support virtual-hosted URLs
-    aws configure set default.s3.addressing_style path
+    aws configure --profile filone
+    aws configure set region eu-west-1 --profile filone
+    aws configure set endpoint_url https://s3.eu-west-1.filonecontent.com --profile filone
+    # Path-style is required: Fil One does not support virtual-hosted URLs
+    aws configure set s3.addressing_style path --profile filone
     ```
 
     Upload a file:
 
     ```bash
-    aws s3 cp my-file.txt s3://my-bucket/my-file.txt \
-      --endpoint-url https://s3.eu-west-1.filonecontent.com
+    echo "hello" > my-file.txt
+    aws s3 cp my-file.txt s3://my-bucket/my-file.txt --profile filone
     ```
 
     Verify it's there:
 
     ```bash
-    aws s3 ls s3://my-bucket/ --endpoint-url https://s3.eu-west-1.filonecontent.com
+    aws s3 ls s3://my-bucket/ --profile filone
     ```
   </TabItem>
 
   <TabItem value="python-boto3" label="Python (boto3)">
+    Create `my-file.txt` first, for example with `echo "hello" > my-file.txt`.
+
     ```python
     import boto3
     from botocore.config import Config
@@ -104,7 +91,7 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
         aws_access_key_id="YOUR_ACCESS_KEY",
         aws_secret_access_key="YOUR_SECRET_KEY",
         region_name="eu-west-1",
-        config=Config(s3={"addressing_style": "path"}),
+        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
     )
 
     # Upload a file
@@ -118,6 +105,8 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
   </TabItem>
 
   <TabItem value="javascript-aws-sdk-v3" label="JavaScript (AWS SDK v3)">
+    Save this as `upload.mjs` (it uses ES modules and top-level `await`), then run `node upload.mjs`:
+
     ```javascript
     import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
     import { readFileSync } from "fs";
@@ -126,6 +115,9 @@ The examples below use `eu-west-1`, the default region. For a bucket in `us-east
       endpoint: "https://s3.eu-west-1.filonecontent.com",
       region: "eu-west-1",
       forcePathStyle: true,
+      // SDK v3.729+ adds checksums Fil One doesn't accept on presigned uploads
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
       credentials: {
         accessKeyId: "YOUR_ACCESS_KEY",
         secretAccessKey: "YOUR_SECRET_KEY",

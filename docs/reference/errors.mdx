@@ -66,3 +66,13 @@ These come from the Fil One console at [app.filone.com](https://app.filone.com),
 **`AccessDenied` (403)** -- Not always a permissions problem. In `eu-west-1` this is also what an unimplemented operation returns, and what you get instead of a 404 for a bucket or key you cannot see. Confirm the operation is supported in your region in the [compatibility matrix](/reference/s3-compatibility) before auditing your access-key scopes.
 
 **`ServiceUnavailable` (503)** -- Transient. Retry with exponential backoff. If persistent, check [status.filone.com](https://status.filone.com).
+
+### First-request problems
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| `InvalidAccessKeyId`, `SignatureDoesNotMatch` or 403 on every request, with a key you just created | The key, the endpoint and the region setting don't all refer to the same region | Use the endpoint and region of the key's region. A key created for `us-east-1` is rejected by `s3.eu-west-1.filonecontent.com`, and the other way round. |
+| DNS lookup failure or a connection error for a host like `my-bucket.s3.eu-west-1.filonecontent.com` | The client is using virtual-hosted-style addressing | Enable path-style addressing in your client. See [SDKs & Tools](/sdk/overview#connection-details). |
+| `AccessDenied` when deleting an object, although uploads work | The key doesn't have the **Delete** permission. It isn't pre-selected when you create a key | Create a key with **Delete**, or rotate this one with it added. See [API Keys](/security/api-keys#key-permissions). |
+| `BadDigest` when a browser uploads to a presigned URL made with the AWS SDK for JavaScript | SDK v3.729 and later sign a checksum computed when the URL is made, which the real upload doesn't match | Set `requestChecksumCalculation: "WHEN_REQUIRED"` on the `S3Client` that creates the URL. See [JavaScript](/sdk/javascript#presigned-urls). |
+| `list-multipart-uploads` or `abort-multipart-upload` fails with 403 in `us-east-1` | Keys created there before 26 August 2026 don't carry these multipart actions, and existing keys can't be updated | Create a new key. See [Cleaning up incomplete uploads](/storage/multipart-uploads#cleaning-up-incomplete-uploads). |

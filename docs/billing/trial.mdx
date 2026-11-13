@@ -5,7 +5,9 @@ description: What is included in your free trial, and how billing works when you
 
 ## Free trial
 
-Every new account starts with a 30-day free trial. No credit card is required. The trial starts once you have verified your email address, and each email address gets one trial. Members invited to someone else's organization do not get a trial of their own.
+Every new account starts with a 30-day free trial. No credit card is required. The trial starts once you have verified your email address.
+
+Each person gets **one trial**, on the first organization they own. Changing your email address does not grant a second one. Members invited to someone else's organization do not get a trial of their own. An organization you create after your first has **no trial**: it needs a payment method before you can use it, and it is billed separately, with its own $5.99 / month minimum.
 
 | Included | Amount |
 |----------|--------|
@@ -31,7 +33,9 @@ Trial egress is a **single cumulative budget** across the whole 30 days, not a m
 |-------|------|-----------------|
 | **Active trial** | 0-30 | Full access. Upload, download, manage data. |
 | **Grace period** | 31-37 | **Read-only.** Download your data and upgrade to a paid plan. No new uploads. |
-| **Expired** | 38+ | Account disabled. No access to data, uploads, or API keys. |
+| **Expired** | 38+ | Account disabled. No access to data, uploads, or API keys. An Owner can still reactivate from **Billing**. |
+
+The trial ends at the end of day 30, but the read-only state is applied by a job that runs twice a day (08:00 and 20:00 UTC). Uploads over the S3 API can keep working for up to about 12 hours after the trial ends, until that job runs.
 
 You will receive email reminders at:
 - **Day 15** -- Halfway through your trial, with an upgrade link.
@@ -41,11 +45,11 @@ You will receive email reminders at:
 - **Day 38** -- Account disabled.
 
 :::note
-You can upgrade to a paid plan at any time during the trial or grace period. Upgrading restores full access immediately.
+You can upgrade to a paid plan at any time during the trial or grace period, and an organization Owner can reactivate from **Billing** after the account is disabled too. Upgrading or reactivating restores full access immediately.
 :::
 
 :::info What "disabled" means
-Disabling blocks all access to the account: your data is no longer reachable through the API or the dashboard, and access keys stop working. Fil One does not run an automatic purge at this point, so contact support if you need access restored or your data removed.
+Disabling blocks all access to the account: your data is no longer reachable through the API or the dashboard, and access keys stop working. Fil One does not run an automatic purge at this point. To restore access, an organization Owner opens **Billing** and clicks **Reactivate**. To have your data removed, email [support@filone.com](mailto:support@filone.com).
 :::
 
 ## Paid plan pricing
@@ -60,11 +64,11 @@ Pricing is usage-based, measured as the average storage consumed across the bill
 
 ## Payment
 
-Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, opened from **Billing** in the organization menu at the top of the left sidebar. See [Billing](/app/billing).
+Payments are processed through Stripe. An organization Owner adds a credit card from Billing in the dashboard, opened from **Billing** under **Organization** in the left sidebar. See [Billing](/app/billing).
 
 - Invoices are generated monthly.
 - Usage details are visible on the Billing page to Owners and Admins.
-- Payment is due on receipt of invoice.
+- Each invoice is charged automatically to the card on file.
 
 ## Payment failures
 
@@ -78,11 +82,11 @@ Don't rely on an email to tell you a payment has failed. If uploads stop working
 
 ## Cancellation
 
-You can cancel your paid plan from the **Stripe billing portal**, which you open from **Billing** in the dashboard. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
+An organization Owner can cancel the paid plan from the **Stripe billing portal**, which opens from **Billing** in the dashboard. Admins can see usage on Billing but can't open the portal. When cancellation takes effect depends on the option you choose there: if you cancel at the end of the current billing period, your plan stays **active and billable until that period ends**. The **30-day grace period** begins only once Stripe actually cancels the subscription — not the moment you click cancel:
 
 | Phase | Duration | What you can do |
 |-------|----------|-----------------|
 | **Grace period** | 30 days | **Read-only.** Download your data or reactivate your plan. No new uploads. |
 | **Expired** | After grace period | Account disabled. No access to data, uploads, or API keys. |
 
-Reactivating your plan during the grace period restores full access immediately. Once the account is disabled, contact support to restore access or to request removal of your data.
+Reactivating restores full access immediately, during the grace period or after the account is disabled: an organization Owner opens **Billing** and clicks **Reactivate**. Reactivating starts a new subscription, so your billing date moves to the day you reactivate. To have your data removed instead, email [support@filone.com](mailto:support@filone.com).

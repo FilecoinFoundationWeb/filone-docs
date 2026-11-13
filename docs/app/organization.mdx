@@ -1,34 +1,29 @@
 ---
 title: Organization
-description: The organization menu, members, roles, invitations, and the audit log for your Fil One organization. Beta.
+description: Members, roles, invitations, billing access, and the audit log for your Fil One organization.
 ---
 
-:::info Beta
-Organizations are in **beta**. Inviting teammates is switched on by Fil One for selected organizations, so what you see on this page depends on whether yours is one of them. Details may change before general availability.
-:::
+Every Fil One account starts as a one-person organization, with you as its **Owner**. You can invite teammates, give each one a role, and see what has changed in the organization.
 
-Every Fil One account starts as a one-person organization, with you as its **Owner**. Everything about the organization itself (its name and logo, who is in it, what it pays, and what has happened in it) is reached from the **organization menu** at the top of the left sidebar.
+## Where to find the organization's pages
 
-## The organization menu
-
-The organization's logo and name sit at the top of the left sidebar. Click them to open the menu, which lists the organization's pages. You only see the entries your role can open:
+The organization's pages are in the **Organization** group of the left sidebar. You only see the entries your role can open:
 
 | Entry | What it opens | Who sees it |
 |-------|---------------|-------------|
-| **Edit organization** | The organization's name and logo, and how to delete it (see [Editing the organization](#editing-the-organization)) | Owner, Admin |
-| **Members** | Everyone in the organization, and pending invitations (see [Members](#members)) | Every role, beta only |
+| **Members** | Everyone in the organization, and pending invitations (see [Members](#members)) | Every role |
 | **Billing** | Your plan, usage, payment method, and invoices (see [Billing](/app/billing)) | Owner, Admin |
-| **Audit log** | A record of membership, key, and organization changes (see [Audit log](#audit-log)) | Owner, Admin, beta only |
+| **Audit log** | A record of membership, key, and organization changes (see [Audit log](#audit-log)) | Owner, Admin |
 
-Each is a page of its own, at `/edit-organization`, `/members`, `/billing`, and `/audit`.
+The organization's logo and name sit at the top of the left sidebar. Click them to open the **organization menu**, which holds:
 
-Below the pages, the menu lists your organizations if you belong to more than one (see [Switching organizations](#switching-organizations)), and, in the beta, **Create organization**.
+- **Edit organization**, for Owners and Admins: the organization's name and logo, and how to delete it (see [Editing the organization](#editing-the-organization))
+- your organizations, if you belong to more than one (see [Switching organizations](#switching-organizations))
+- **Create organization**, for every role (see [Creating another organization](#creating-another-organization))
 
-While an organization has no active plan, every page except Settings, Edit organization, and Support is replaced by **Add a payment method to continue**, so **Members**, **Billing**, and **Audit log** are left out of the menu until a plan is in place. See [Billing](/app/billing).
+Each page has its own address: `/edit-organization`, `/members`, `/billing`, and `/audit`.
 
-## The organizations beta
-
-**Members**, **Audit log**, **Create organization**, and sending invitations are part of the organizations beta, which Fil One switches on for selected organizations. Outside the beta those entries don't appear, and opening `/members` or `/audit` directly takes you to the dashboard. **Edit organization** and **Billing** are available to every organization. To ask about access, email [support@filone.com](mailto:support@filone.com).
+While an organization has no active plan, every page except Settings, Edit organization, and Support is replaced by **Add a payment method to continue**, and the sidebar's page links are hidden until a plan is in place. See [Billing](/app/billing).
 
 ## Editing the organization
 
@@ -41,7 +36,11 @@ Members and Read only members who open the page see "Organization details are ma
 
 ## Creating another organization
 
-In the beta, **Create organization** in the organization menu opens a dialog asking for an **Organization name**, with the same rules as above, and an optional logo. You become the new organization's Owner, and the console switches to it straight away. A new organization has its own members, keys, buckets, and billing, separate from the organization you created it from.
+**Create organization** in the organization menu opens a dialog asking for an **Organization name**, with the same rules as above, and an optional logo. You become the new organization's Owner, and the console switches to it straight away. A new organization has its own members, keys, buckets, and billing, separate from the organization you created it from. You can own up to **10** organizations. Organizations you were invited into don't count toward that.
+
+:::warning A new organization has no free trial
+Each person gets one [free trial](/billing/trial), on the first organization they own. An organization you create after that has no trial: it shows **Add a payment method to continue** until you add one, and it is billed separately, with its own monthly minimum. See [Pricing](/billing/pricing).
+:::
 
 ## Roles and permissions
 
@@ -85,7 +84,7 @@ The S3 API has no users or roles. A request made with an access key is allowed o
 
 ## Members
 
-**Members** in the organization menu opens a page headed **Members**, "People with access to this organization." It has up to two tabs, each with a count beside its label:
+**Members** in the sidebar opens a page headed **Members**, "People with access to this organization." It has up to two tabs, each with a count beside its label:
 
 | Tab | What it holds | Who sees it |
 |-----|---------------|-------------|
@@ -110,14 +109,18 @@ With 5 or more members, a search box and a role filter appear above the table.
 Owners and Admins change a role from the picker in the **Role** column. The picker only offers roles you're allowed to assign: an Admin can move people between Admin, Member, and Read only, but can't change an Owner's role or make anyone an Owner.
 
 - **Making someone an Owner** asks you to confirm first, because they'll be able to manage billing, every member, and the organization itself, including removing you.
-- **Moving someone to a role with fewer permissions** opens a preview of their access keys first. Any key that carries more than the new role allows is listed, and the confirm button becomes **Change role and revoke**. Those keys stop working straight away. To keep a client running, create a replacement key with the narrower permissions first, then change the role. Moving someone to Read only revokes every key they created, since Read only can't hold keys.
+- **Moving someone to a role with fewer permissions** opens a preview of their access keys first. Any key that carries more than the new role allows is listed, and the confirm button becomes **Change role and revoke**. Those keys stop working straight away, and the member is emailed a list of them. To keep a client running, create a replacement key with the narrower permissions first, then change the role. Moving someone to Read only revokes every key they created, since Read only can't hold keys.
 - **Moving someone to a role with more permissions** takes effect immediately.
 
 You can change your own role too. The dialog warns you if the change takes away your ability to manage members or billing.
 
 ### Removing a member
 
-Choose **Remove** from the row's **⋯** menu and confirm with **Remove member**. The person loses access to the organization, and **every access key they created is revoked**, so anything still using one stops working straight away. Invitations they sent that are still pending are withdrawn too.
+:::warning Removing a member breaks their keys
+Every access key the person created stops working the moment you confirm. If an application uses one of their keys, create a replacement key and switch the application to it first.
+:::
+
+Choose **Remove** from the row's **⋯** menu and confirm with **Remove member**. The person loses access to the organization, and **every access key they created is revoked**, so anything still using one stops working straight away. Invitations they sent that are still pending are withdrawn too. The person is emailed a list of the keys that were revoked.
 
 Admins can remove Admins, Members, and Read only members. Only an Owner can remove an Owner. Owners and Admins can remove themselves. Members and Read only members can't remove themselves, so ask an Owner or Admin.
 
@@ -139,7 +142,7 @@ Billing is not affected: the subscription belongs to the organization, not to th
 
 ## Invitations
 
-Invitations are how anyone else joins your organization. Sending them needs an Owner or Admin role, and an organization in the beta. They're managed from the **Invitations** tab of the [Members](#members) page.
+Invitations are how anyone else joins your organization. Sending them needs an Owner or Admin role. They're managed from the **Invitations** tab of the [Members](#members) page.
 
 ### Sending an invitation
 
@@ -189,7 +192,7 @@ The **Organizations** section of [Settings](/app/settings) lists every organizat
 
 ## Audit log
 
-**Audit log** in the organization menu opens a page, for Owners and Admins, that records changes to the organization:
+**Audit log** in the sidebar opens a page, for Owners and Admins, that records changes to the organization:
 
 | Column | What it holds |
 |--------|---------------|
@@ -202,7 +205,7 @@ Expand a row to see its details. Filter by date range (**From**, **To**), by eve
 
 Events recorded:
 
-- Organization created, and organization renamed
+- Organization created, organization renamed, and organization logo updated
 - Member invited, invitation revoked, and invitation accepted
 - Role changed, member removed, and ownership transferred
 - Key created, key deleted, and key rotated
@@ -214,7 +217,7 @@ Events are kept for **90 days**. If you ask for a range that reaches further bac
 
 ## Billing
 
-**Billing** in the organization menu opens the billing page, for Owners and Admins. See [Billing](/app/billing).
+**Billing** in the sidebar opens the billing page, for Owners and Admins. See [Billing](/app/billing).
 
 ## Deleting an organization
 

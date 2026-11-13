@@ -1,13 +1,14 @@
 # Fil One Documentation
 
-> Fil One is S3-compatible object storage built for AI agents and data-intensive
-> workloads. Stored on the Filecoin network, where storage providers must
+> Fil One is an S3-compatible object storage platform for teams that need
+> reliable, cost-effective storage. Stored on the Filecoin network, where storage providers must
 > continuously submit cryptographic proofs that they still hold the data they
 > committed to store. No egress fees on paid plans, no per-request charges,
 > $5.99/TB/month with a $5.99/month minimum.
-> Use any S3-compatible SDK or tool — point it at your region's endpoint,
-> `https://s3.<region>.filonecontent.com`, with standard Access Key ID / Secret Access Key
-> auth. Endpoint, region and key must all refer to the same region.
+> Standard S3 SDKs and tools work once you point them at your region's endpoint,
+> `https://s3.<region>.filonecontent.com`, and enable path-style addressing, with
+> standard Access Key ID / Secret Access Key auth. Some S3 features are missing
+> (see S3 Compatibility). Endpoint, region and key must all refer to the same region.
 
 Critical integration notes for developers:
 - CreateBucket and DeleteBucket via the S3 API are region-dependent: supported
@@ -18,17 +19,28 @@ Critical integration notes for developers:
   (virtual-hosted-style URLs are not supported)
 - Access keys are scoped to ONE region and cannot be used against another
 - Region, versioning, Object Lock and retention are fixed at bucket creation and
-  cannot be changed afterwards (no update-bucket operation)
-- Authentication: AWS Signature Version 4 (SigV4) — all S3-compatible SDKs
-  handle this automatically
+  cannot be changed afterwards (no update-bucket operation). PutBucketVersioning,
+  PutBucketObjectLockConfiguration and Get/PutBucketEncryption CANNOT BE GRANTED
+  to any access key in either region; versioning and default retention are set
+  only in the console's create form (under Advanced settings)
+- Bucket names are unique within the region; names starting with `filone-rag-`
+  are reserved
+- Authentication: AWS Signature Version 4 (SigV4). In boto3 set
+  `Config(signature_version="s3v4")` explicitly so presigned URLs use SigV4
+- AWS SDK for JavaScript v3.729+ adds CRC32 checksums by default; set
+  `requestChecksumCalculation: "WHEN_REQUIRED"` and
+  `responseChecksumValidation: "WHEN_REQUIRED"` on the S3Client, or presigned
+  uploads fail with BadDigest
+- Credentials: the console's Download .env uses the standard AWS_ACCESS_KEY_ID /
+  AWS_SECRET_ACCESS_KEY names, which every SDK reads automatically
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
   regional storage gateway and keys are held by the regional operator, NOT by Fil
   One and NOT customer-managed. Do not name a specific cipher or SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
-  or InvalidRequest in eu-west-1) and SSE-C is unsupported — send no encryption
-  headers at all. In eu-west-1, Get/PutBucketEncryption also return AccessDenied,
-  so no encryption configuration can be read or written there
+  or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
+  confirmed in us-east-1 — send no encryption headers at all. No access key can
+  be granted Get/PutBucketEncryption in either region
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets an S3-API delete WITHOUT a version ID places a delete
@@ -37,23 +49,25 @@ Critical integration notes for developers:
   the specific version on the row chosen, even on a versioned bucket
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
-  restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is UNVERIFIED
-  (the harness cannot configure versioning over the API there); download and
-  re-upload is the fallback. The dashboard has no restore/roll-back button either way
+  restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is NOT YET
+  CONFIRMED; download and re-upload is the fallback. The dashboard has no restore/roll-back button either way
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
 - A failed payment (past_due) makes the DASHBOARD READ-ONLY from the moment the
-  payment fails, not after a later deadline; Stripe retries the charge
+  payment fails, not after a later deadline; Stripe retries the charge. An
+  organization OWNER can reactivate a canceled or disabled subscription from
+  Billing -> Reactivate (no need to contact support)
 - Trial caps are enforcement thresholds, not allowances: storage reaching 1 TB
   WRITE-LOCKS the account (lifted on the next usage run once storage is back
   under 1 TB); egress reaching 2 TB DISABLES it entirely, with NO read-only grace
   period first. Trial egress is a single cumulative budget over the 30 days.
   Enforced by a twice-daily job (~07:00/19:00 UTC), not in real time
 - Storage is DECIMAL: 1 TB = 1,000 GB, 1 GB = 1,000,000,000 bytes
-- Governance Object Lock has NO grantable bypass permission in the product
+- Object Lock has NO grantable bypass permission: retention can be set or
+  EXTENDED but NEVER SHORTENED, in either mode
 - PutObjectRetention (per-object retention) and Legal Hold
-  (Get/PutObjectLegalHold) work in BOTH REGIONS, including Governance-mode bypass
-  and blocking delete while a hold is active. Both need the matching granular key
+  (Get/PutObjectLegalHold) work in BOTH REGIONS, including blocking delete while
+  a hold is active. Both need the matching granular key
   permission, which is never granted automatically, and only an organization
   OWNER can create a key with PutObjectRetention or PutObjectLegalHold.
   Evidence differs by region: us-east-1 from the automated compatibility suite,
@@ -61,8 +75,8 @@ Critical integration notes for developers:
   bucket there)
 - The S3 API has NO IAM users, roles, or bucket policies: each request is allowed
   or refused by the access key's own permissions and bucket scope. The CONSOLE
-  has organizations (BETA) with four member roles (Owner, Admin, Member, Read
-  only); a key can only carry permissions its creator's role holds
+  has organizations with four member roles (Owner, Admin, Member, Read only); a
+  key can only carry permissions its creator's role holds
 - Access keys can be ROTATED in the dashboard (new Access Key ID and secret,
   same name/permissions/buckets/region/expiry; old secret stops working at once)
 - Object/part size limits (5 TB object, 5 GB single-PUT, 10,000 parts, 5 MB min
@@ -72,9 +86,10 @@ Critical integration notes for developers:
   S3 limit of 1,024 bytes applies but is NOT independently confirmed
 - In eu-west-1, UNIMPLEMENTED OPERATIONS RETURN AccessDenied (403), NOT
   NotImplemented (501), and a bucket/key you cannot see returns 403 instead of
-  404. A 403 from PutBucketVersioning, PutBucketPolicy, PutBucketAcl,
-  PutBucketEncryption, PutBucketLifecycleConfiguration or the tagging operations
-  means the FEATURE IS ABSENT, not that the key lacks a permission
+  404. A 403 from PutBucketPolicy, PutBucketAcl, PutBucketLifecycleConfiguration
+  or the tagging operations means the FEATURE IS ABSENT, not that the key lacks
+  a permission; PutBucketVersioning and PutBucketEncryption can't be granted to
+  any key, so they fail the same way
 - ACL requests fail two different ways in eu-west-1: a canned-ACL HEADER on an
   upload (--acl public-read) is SILENTLY IGNORED and the upload SUCCEEDS, while a
   DEDICATED call (Put/GetBucketAcl, Put/GetObjectAcl) is REJECTED with
@@ -93,87 +108,103 @@ Critical integration notes for developers:
 
 - [Introduction](https://docs.filone.com/): What Fil One is, who it is for, and
   where to start
-- [Quickstart](https://docs.filone.com/quickstart): Create an account, generate
-  API keys, and upload your first object — covers App, AWS CLI, Python, and
-  JavaScript paths
-- [Quickstart - AWS CLI](https://docs.filone.com/quickstart/cli): Full CLI walkthrough
-  including named profile setup to avoid repeating --endpoint-url
+- [Quickstart](https://docs.filone.com/quickstart): Create an account (email,
+  Google, or GitHub), create a bucket in the console (leave Advanced settings at
+  their defaults for a first bucket), create an API key, and upload your first
+  object — covers App, AWS CLI (a `filone` profile, not your default one),
+  Python, and JavaScript paths
+- [Quickstart - AWS CLI](https://docs.filone.com/quickstart/cli): AWS CLI v2.13+
+  with a named `filone` profile holding endpoint_url and path-style addressing;
+  `my-bucket` throughout; CreateBucket from the CLI only with a us-east-1
+  profile (`filone-us`)
 - [Quickstart - SDK](https://docs.filone.com/quickstart/sdk): Copy-paste examples
-  for Python (boto3), JavaScript (AWS SDK v3), and Go to create a bucket, upload,
-  and verify
+  for Python (boto3), JavaScript (AWS SDK v3, saved as `upload.mjs`), and Go
+  (`go mod init` first) that upload and verify; create the bucket in the
+  console first. Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
 
 ## Storage
 
-- [Buckets](https://docs.filone.com/storage/buckets): Bucket naming rules, how to
-  create via dashboard, listing via API, deleting (bucket must be EMPTY; dashboard
-  delete works in every region for Owner/Admin roles; S3-API DeleteBucket in
-  us-east-1 only), and Filecoin deal lifecycle on deletion
+- [Buckets](https://docs.filone.com/storage/buckets): Naming rules (no dots;
+  unique within the region; `filone-rag-` prefix reserved), creating in the
+  console (Versioning, Object Lock and Retention under Advanced settings, only at
+  creation; Retention starts at 15 days Governance), listing via API, deleting
+  (bucket must be EMPTY; console delete works in every region for Owner/Admin
+  roles; S3-API DeleteBucket in us-east-1 only), and what happens to deleted data
 - [Objects](https://docs.filone.com/storage/objects): Upload, download, list, delete,
-  and presigned URL generation with code examples for App, AWS CLI, and boto3.
-  Dashboard has multi-select delete and Empty bucket; a dashboard delete on a
+  and presigned URLs with code for App, AWS CLI, and boto3. A console delete on a
   versioned bucket PERMANENTLY removes that version (no delete marker), while an
-  S3-API delete without a version ID writes a delete marker
+  S3-API delete without a version ID writes a delete marker. A presigned URL is
+  a bearer credential until it expires; console Share links last at most 7 days
 - [Multipart Uploads](https://docs.filone.com/storage/multipart-uploads): Required
   above the single-PUT ceiling (standard S3 5 GB, not independently confirmed);
-  recommended for > 100 MB. Dashboard uploads are single-PUT; multipart is via
+  recommended for > 100 MB. Console uploads are single-PUT; multipart is via
   your own SDK/CLI. No lifecycle rule to auto-abort incomplete uploads. Cleanup
   needs List (list uploads) and Write (abort); us-east-1 keys created before
   26 August 2026 lack these multipart actions (403), so replace them
 - [Versioning](https://docs.filone.com/storage/versioning): Opt-in at bucket
-  creation, cannot be suspended. S3-API delete without a version ID writes a
-  delete marker; the DASHBOARD NEVER DOES, it permanently deletes the chosen
-  version. Version operations need granular key permissions (List object
-  versions, Read object versions, Delete object versions), none granted
+  creation, cannot be suspended. Overwrites and S3-API deletes without a version
+  ID keep earlier versions; deleting a specific version, including any console
+  delete, is permanent. Version operations need granular key permissions (List
+  object versions, Read object versions, Delete object versions), none granted
   automatically
 - [Object Lock](https://docs.filone.com/storage/object-lock): WORM retention.
   Opt-in at bucket creation, Governance (default) and Compliance modes, 1 day to
-  100 years, no trial-specific cap. NO third-party compliance attestation, NO
-  grantable Governance bypass permission in the product. Per-object
-  PutObjectRetention and Legal Hold work in both regions.
-  Regulations (SEC 17a-4, FINRA, HIPAA) are illustrative
-  use cases, not a certification claim
+  100 years. NO grantable bypass permission, so retention can be set or extended
+  but NOT SHORTENED in either mode; Compliance retention can't be removed and
+  stays billed until it expires. Per-object PutObjectRetention and Legal Hold
+  work in both regions; Set retention / Set legal hold are Owner-only to grant.
+  NO third-party compliance attestation; regulations such as SEC 17a-4 are
+  illustrative use cases, not a certification claim
 
 ## Security
 
 - [Account Security](https://docs.filone.com/security/account-security): securing
   the account you sign in with (distinct from API request auth). Sign-in via
-  passkeys (primary), Google, GitHub, or email with password; email
-  verification is mandatory before the dashboard opens. Opt-in two-factor with
-  three factor types: authenticator app (OTP), security key (WebAuthn roaming),
-  device biometrics (WebAuthn platform). SMS and email codes are deliberately
-  NOT offered. Up to 20 passkeys per account. Single-use recovery codes.
-  Removing a factor or passkey, removing all factors, and regenerating a
-  recovery code all require a session established with 2FA or a passkey
-  (step-up). Transferring organization ownership also needs a sign-in within the
-  last five minutes (with 2FA or a passkey if 2FA is set up)
+  passkeys, Google, GitHub, or email with password; email verification is
+  mandatory before the console opens. Opt-in two-factor with three factor types:
+  authenticator app (OTP), security key, device biometrics. SMS and email codes
+  are deliberately NOT offered. Up to 20 passkeys per account. Single-use
+  recovery codes; signing in with one makes you set up a new two-factor method
+  in the same sign-in. Removing a factor or passkey, removing all factors, and
+  regenerating a recovery code require a session established with 2FA or a
+  passkey (step-up). Transferring organization ownership also needs a sign-in
+  within the last five minutes
 - [Authentication](https://docs.filone.com/security/authentication): SigV4 auth
-  setup for AWS CLI, Python (boto3), JavaScript (AWS SDK v3), and Go; credential
-  best practices including environment variable usage
+  setup for AWS CLI, Python (boto3 with signature_version s3v4), JavaScript
+  (AWS SDK v3), and Go; credentials from the standard AWS_* environment variables;
+  the Access Key ID identifies the key
 - [API Keys](https://docs.filone.com/security/api-keys): Creating keys with scoped
-  permissions (Read/Write/List/Delete), CreateBucket/DeleteBucket and
-  GetBucketVersioning/GetBucketObjectLockConfiguration groups, single-region
-  scoping, bucket-level scoping, key expiration, ROTATION, revocation, best
-  practices. Read in us-east-1 also includes ListBucket (not in eu-west-1); Write
-  without Delete can still OVERWRITE. A key can only carry permissions its
-  creator's organization role holds; PutObjectRetention/PutObjectLegalHold are
-  Owner-only. Names starting with `filone-console` are reserved
+  permissions (Read/Write/List/Delete; Read, Write, List and the bucket-config
+  reads are pre-selected, so untick Write for read-only keys), single-region
+  scoping, bucket-level scoping ("all buckets" means all in the key's region),
+  expiry (a key works through the end of the chosen UTC day), ROTATION,
+  revocation, handling downloaded .env/.csv files, best practices. Write without
+  Delete can still OVERWRITE; multipart uploads need Write. A key is capped at
+  its creator's role; removing a member or narrowing a role revokes their keys
+  that exceed it, and they are emailed which keys. Names starting with
+  `filone-console` are reserved
 - [Encryption](https://docs.filone.com/security/encryption): server-side
-  encryption always on by default for all objects; TLS in transit; keys held by
-  the regional operator (no customer-managed keys, cipher unconfirmed).
+  encryption always on for all objects; TLS in transit; keys held by the regional
+  operator (no customer-managed keys, cipher unconfirmed). SSE-KMS rejected in
+  both regions; SSE-C rejected in eu-west-1, not yet confirmed in us-east-1.
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
 
 ## Billing
 
 - [Trial & Billing](https://docs.filone.com/billing/trial): 30-day free trial with
-  1 TB storage (1,000 GB) and 2 TB egress (cumulative); the trial starts after
-  EMAIL VERIFICATION, one trial per email address, invited members get none;
-  storage cap write-locks, egress cap disables the account directly (no
-  read-only grace first); trial lifecycle (active → grace → expiry); a failed
-  payment makes the dashboard read-only immediately; Pay as you go
+  1 TB storage (1,000 GB) and 2 TB egress (cumulative); starts after EMAIL
+  VERIFICATION; ONE TRIAL PER PERSON, on the first organization they own —
+  organizations created later have no trial, need a payment method and are
+  billed separately with their own $5.99 minimum. Storage cap write-locks, egress
+  cap disables the account; S3 uploads can continue up to ~12 hours after the
+  trial ends until the twice-daily job applies read-only. A failed payment makes
+  the console read-only immediately. An Owner can REACTIVATE from Billing at any
+  time, even after the account is disabled (support is only for data removal).
+  Invoices are charged automatically to the card on file. Pay as you go
   $5.99/TB/month, $5.99/month minimum, no egress or request fees (earlier
-  subscribers keep their $4.99 or per-unit terms); Business plan
-  (1, 3, or 5-year terms) via sales. Cancellation is via the Stripe portal
+  subscribers keep their $4.99 or per-unit terms); Business plan (1, 3, or 5-year
+  terms) via sales. Cancellation is via the Stripe portal, Owners only
 - [Pricing](https://docs.filone.com/billing/pricing): Pay as you go $5.99/TB/month
   (decimal TB, 1,000 GB) with a $5.99/month minimum; single linear rate plus a
   floor (no first-TB tier); storage measured as daily readings and averaged, with
@@ -181,148 +212,149 @@ Critical integration notes for developers:
   Organizations that subscribed before the move to $5.99 keep $4.99/TB with a
   $4.99 minimum; accounts predating any minimum have none
 - [Usage](https://docs.filone.com/billing/usage): What is measured (average stored
-  bytes, egress), trial caps and how they are enforced; the storage write-lock
-  lifts on the next usage run once storage is back under 1 TB. Billing page
-  visible to Owners and Admins
+  bytes, egress), which egress figure is which (billing period vs the Dashboard's
+  rolling 30 days vs the trial's cumulative total), trial caps and how they are
+  enforced; the billing date is the date you upgraded or last reactivated
 
 ## API Reference
 
 - [API Reference Overview](https://docs.filone.com/reference/overview): Base endpoint,
   SigV4 authentication requirement, path-style addressing, and response format
 - [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): Full table
-  of supported vs. unsupported S3 operations (GetObject, PutObject, DeleteObject,
-  ListObjectsV2, multipart, presigned URLs all supported; bucket policies, lifecycle
-  rules, IAM users/roles/bucket policies on the S3 API not yet supported; access
-  is per access key permissions and bucket scope); how unsupported operations respond in eu-west-1
-  (AccessDenied, not NotImplemented); known error-code deviations and known
-  behavioral issues in eu-west-1; differences from AWS S3
+  of supported vs. unsupported S3 operations per region (GetObject, PutObject,
+  DeleteObject, ListObjectsV2, multipart, presigned URLs supported; bucket
+  configuration calls such as PutBucketVersioning, PutBucketObjectLockConfiguration
+  and Get/PutBucketEncryption not available to access keys; bucket policies,
+  lifecycle rules and IAM users/roles not supported on the S3 API); how
+  unsupported operations respond in eu-west-1 (AccessDenied, not
+  NotImplemented); known error-code deviations and known issues; the JS SDK
+  checksum setting for presigned uploads
 - [Error Reference](https://docs.filone.com/reference/errors): Standard S3 XML error
-  format, full table of 4xx and 5xx error codes, the ways codes deviate from AWS,
-  console errors (account/region still being set up: 503; role does not permit
-  the action: 403), and troubleshooting for the most common errors
-  (SignatureDoesNotMatch, AccessDenied, ServiceUnavailable)
+  format, 4xx and 5xx error codes, the ways codes deviate from AWS, console
+  errors, and troubleshooting for first-request problems (key used in the wrong
+  region, virtual-hosted DNS failures, AccessDenied on delete because Delete is
+  not pre-selected, BadDigest on JS presigned uploads, multipart cleanup on old
+  us-east-1 keys). Service status: https://status.filone.com
+- [Limits & Quotas](https://docs.filone.com/limits): Organization limits (storage,
+  egress, buckets per organization, 10 owned organizations, 25 pending
+  invitations), object size limits (max 5 TB, multipart above 5 GB; not
+  independently confirmed), console limits (5 GB per upload, 50 tags,
+  1,000-character description, share links up to 7 days, retention 1 day to 100
+  years), API rate limits, and naming constraints (reserved `filone-rag-` bucket
+  prefix; object keys 1,024 characters in the console, 1,024 bytes via the API)
 
 ## SDKs & Tools
 
 - [SDKs & Tools Overview](https://docs.filone.com/sdk/overview): Connection parameters
-  for all tools (endpoint, region, credentials); recommended tools list including
-  rclone, Cyberduck, s3cmd, MinIO Client
+  for all tools (endpoint, region, credentials from API Keys in the console; AWS
+  CLI v2.13+); recommended tools list including rclone, Cyberduck, s3cmd, MinIO
+  Client
 - [Python (boto3)](https://docs.filone.com/sdk/python): Full examples for upload,
-  download, list, delete, multipart, presigned URLs, and error handling
+  download, list, delete, multipart, presigned URLs (signature_version s3v4), and
+  error handling; CreateBucket only with a us-east-1 client
 - [JavaScript (AWS SDK v3)](https://docs.filone.com/sdk/javascript): Full examples
-  for Node.js including streaming downloads, pagination, presigned URLs, and
-  error handling; requires `forcePathStyle: true`
+  for Node.js (ES modules) including streaming downloads, pagination, presigned
+  URLs, and error handling; requires `forcePathStyle: true` and, for presigned
+  uploads on v3.729+, `requestChecksumCalculation: "WHEN_REQUIRED"`
 - [Go (aws-sdk-go-v2)](https://docs.filone.com/sdk/go): Full examples for upload,
   download, paginated listing, presigned URLs, and error handling; requires
-  `UsePathStyle: true`
-- [AWS CLI](https://docs.filone.com/sdk/cli): Installation, named-profile
-  configuration, core operations, multipart uploads and cleanup. `aws s3 rb`
-  works in us-east-1 only; in eu-west-1 delete buckets from the dashboard
-  (Owner and Admin roles)
+  `UsePathStyle: true`; CreateBucket only with a us-east-1 client
+- [AWS CLI](https://docs.filone.com/sdk/cli): Installation (v2.13+), named-profile
+  configuration, core operations, multipart uploads and cleanup. `aws s3 mb` and
+  `aws s3 rb` work in us-east-1 only (shown with a `filone-us` profile); in
+  eu-west-1 create and delete buckets in the console (Owner and Admin roles)
 
-## Optional
+## Console
 
 The browser console at app.filone.com, one page per console screen. No code
 required. Each page below is console-specific; the capability pages (Storage,
 Security, Billing) hold the concepts and code samples.
 
-- [App - Dashboard](https://docs.filone.com/app/dashboard): Console home. Quick
-  setup checklist, PLAN/STORAGE/EGRESS cards (PLAN shown to Owner/Admin only),
-  Usage Trends (Storage area chart with latest reading; Egress bar chart with
-  the window total), Recent Activity. Storage is a periodic point-in-time reading
-  (a very recent change may not show yet) and egress is a rolling 30-day total,
-  not a calendar month. "Est. monthly cost" applies your plan's per-TB price to
-  the latest reading with the monthly minimum as the floor (not shown without a
-  per-TB rate), while the invoice uses AVERAGE storage, so they differ. Recent
-  Activity covers bucket and key creation; object-level events are not included
-  yet
-- [App - Buckets](https://docs.filone.com/app/buckets): Bucket list (Name, Region,
-  Created; sorted by name; search, sortable columns and region filter from 5
-  buckets), create form, object browser, upload, object detail, download/share,
-  delete. DELETE BUCKET from the row's actions menu: Owner/Admin only, EMPTY
-  buckets only, works in EVERY region including eu-west-1 (where S3-API
-  DeleteBucket is unavailable). "Empty bucket" removes every object, version and
-  delete marker server-side. Multi-select delete via checkboxes. A console delete
-  on a versioned bucket PERMANENTLY deletes the chosen version (NO delete
-  marker). Property cards: Versioning, Object Lock, Retention (no Encryption
-  card; always on). Name, region, versioning, Object Lock and default retention
-  are PERMANENT at creation (no update-bucket op). Upload is single-PUT (5 GB
-  ceiling); folder uploads skip system files; the browser shows the first ~1,000
-  entries and the tab count is a daily reading that can lag; no version
-  restore/promote (download and re-upload). Download works on trial; SHARING IS
-  A PAID-PLAN FEATURE
-- [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Name, Region,
-  Buckets, Permissions, Created by, Status, Last Used) and create flow. Region is
-  REQUIRED (pre-set to eu-west-1) and a key is scoped to its own region's
-  endpoint. Read/Write/List pre-selected, Delete NOT; finer-grained permissions
-  (retention, legal hold, versions) are granted INDIVIDUALLY, so Write alone
-  cannot set retention. "Create bucket"/"Delete bucket" unavailable in
-  eu-west-1. Role ceiling: Read only cannot create keys, Members manage only
-  their own, Admins/Owners manage all; Set retention/Set legal hold are
-  Owner-only. `filone-console` name prefix reserved. Secret shown ONCE (at
-  creation or rotation) and never stored. ROTATE gives a new Access Key ID and
-  secret keeping name, permissions, buckets, region and expiry; the old secret
-  stops working at once; expired keys can't be rotated. Delete is the
-  revocation. "Last Used" and "Status" are placeholder columns reading
-  "Never"/"Active" for every key, and expiry is not shown after creation
+- [App - Dashboard](https://docs.filone.com/app/dashboard): Console home. A new
+  organization opens on a Get started page (/get-started) with Create bucket and
+  Create API key. A dismissible Free trial banner shows days left and Upgrade.
+  PLAN/STORAGE/EGRESS cards (PLAN shown to Owner/Admin only), Usage Trends,
+  Recent Activity. Storage is a periodic point-in-time reading and egress is a
+  rolling 30-day total, not a calendar month. "Est. monthly cost" applies your
+  plan's per-TB price to the latest reading with the monthly minimum as the
+  floor, while the invoice uses AVERAGE storage, so they differ
+- [App - Buckets](https://docs.filone.com/app/buckets): Bucket list, create form
+  (name unique in the region; Versioning, Object Lock and Retention under a
+  collapsed Advanced settings with "Needs Versioning" / "Needs Object Lock"
+  badges; only a Create bucket button; the new bucket's page then offers Create
+  API key), object browser, upload, object detail, download/share, delete.
+  DELETE BUCKET: Owner/Admin only, EMPTY buckets only, works in EVERY region.
+  EMPTY BUCKET permanently deletes every object, version and delete marker not
+  under retention or legal hold and cannot be undone. A console delete on a
+  versioned bucket PERMANENTLY deletes the chosen version (NO delete marker).
+  Name, region, versioning, Object Lock and default retention are PERMANENT at
+  creation. Upload is single-PUT (5 GB ceiling); the browser shows the first
+  ~1,000 entries; no version restore/promote. Download works on trial; SHARING IS
+  A PAID-PLAN FEATURE (links of 1 hour to 7 days)
+- [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Status Active
+  or Expired; Permissions as Read/Write/List/Delete badges plus +n; search and
+  region/status filters from 5 keys; a row opens a details panel with expiry,
+  region, buckets and full permissions; multi-select bulk delete) and create
+  flow. Region is REQUIRED and a key works only against its own region's
+  endpoint. Read/Write/List and the bucket-config reads pre-selected, Delete NOT;
+  retention, legal hold and version permissions are granted INDIVIDUALLY.
+  "Create bucket"/"Delete bucket" unavailable in eu-west-1. Role ceiling: Read
+  only cannot create keys, Members manage only their own, Admins/Owners manage
+  all; Set retention/Set legal hold are Owner-only. Secret shown ONCE (at
+  creation or rotation); downloaded .env/.csv files hold it in plain text, so
+  delete them and never commit them. ROTATE keeps name, permissions, buckets,
+  region and expiry; the old secret stops working at once. Deleting a key is the
+  revocation and breaks any application using it immediately
 - [App - AI Agent Toolkit](https://docs.filone.com/app/ai-agent-toolkit): NOT
-  RELEASED. A "Coming Soon" page introducing the toolkit plus a waitlist form, so
-  there is nothing to set up on it yet. What DOES work today: ordinary S3 access
-  keys scoped to a bucket, which is how LangChain, LlamaIndex, Vercel AI SDK and
-  CrewAI connect
-- [App - Organization](https://docs.filone.com/app/organization): BETA. Every
-  account starts as a one-person organization with you as Owner. The
-  ORGANIZATION MENU at the top of the sidebar opens separate pages, each shown
-  only to roles that can use it: Edit organization (/edit-organization; name,
-  logo, and an Owner-only Danger zone), Members (/members; Members and
-  Invitations tabs), Billing (/billing), and Audit log (/audit).
-  Members, Audit log, Create organization and
-  sending invitations are beta-only. With no active plan, only Settings, Edit
-  organization and Support are reachable.
-  Four roles: Owner, Admin, Member, Read only. Only Owners manage billing,
-  transfer ownership, or create keys with PutObjectRetention/PutObjectLegalHold;
-  Owners and Admins invite, change roles, remove members, rename the org, and
-  delete buckets. Roles apply in the console; the S3 API has no users or roles,
-  and a key is capped at its creator's role. Narrowing a role or removing a
-  member REVOKES their keys that exceed it. At least one Owner always; transfer
-  makes you Admin and needs a sign-in within five minutes. The beta gates
-  SENDING INVITATIONS: single-use links, expire in 14 days, max 25 pending.
-  Audit log kept 90 days, CSV export up to 20,000 rows. Organization switching
-  is in the organization menu and per browser tab; leave an organization from
-  Settings (not as its last Owner). Deleting an organization is not available
-  in the console yet (support@filone.com)
+  RELEASED. A "Coming Soon" page with a waitlist form. What works today:
+  ordinary S3 access keys scoped to a bucket, which is how LangChain, LlamaIndex,
+  Vercel AI SDK and CrewAI connect
+- [App - Organization](https://docs.filone.com/app/organization): Every account
+  starts as a one-person organization with you as Owner. Members, Billing and
+  Audit log are in the left sidebar's Organization group; the organization menu
+  at the top holds Edit organization, your organizations, and Create
+  organization (any role; up to 10 owned; a new organization has no free trial,
+  needs a payment method and is billed separately). Four roles: Owner, Admin,
+  Member, Read only. Only Owners manage billing, transfer ownership, or grant
+  Set retention / Set legal hold; Owners and Admins invite, change roles, remove
+  members, rename the org, and delete buckets. Roles apply in the console; the S3
+  API has no users or roles, and a key is capped at its creator's role. Narrowing
+  a role or removing a member REVOKES their keys that exceed it, and they are
+  emailed which keys. At least one Owner always; transfer makes you Admin and
+  needs a sign-in within five minutes. Invitations: single-use links, expire in
+  14 days, max 25 pending. Audit log kept 90 days, CSV export up to 20,000 rows.
+  Deleting an organization is not available in the console yet
+  (support@filone.com)
 - [App - Billing](https://docs.filone.com/app/billing): Plan card, usage card,
-  payment method, choosing a plan, invoices, "Need help?" panel. Its own page
-  at /billing, opened from the organization menu at the top of the sidebar. Visible to
-  Owners and Admins; every action is Owner-only. A FAILED PAYMENT shows a
-  "Payment failed" badge and a "Your last payment failed" banner, and makes the
-  DASHBOARD read-only. Usage card shows Storage and Egress (egress "Free" on
-  paid) and an "Estimated total" on per-TB plans. Payment method: "No card on
-  file", card brand and last four, or "Billed by invoice". "Choose your plan":
-  Pay as you go ($5.99/TB/month, $5.99 minimum) or Business plan (custom
-  pricing, 1, 3, or 5-year terms). Invoices list shows the
-  12 most recent issued invoices, INCLUDING UNPAID (drafts not shown). Card
-  details live in the Stripe portal, which is also where cancellation happens
-- [App - Settings](https://docs.filone.com/app/settings): Profile fields (full name
-  <= 200 chars; valid email, disposable rejected; the organization's name is not
-  part of the profile and is edited on the Edit organization page), an
-  Organizations section to switch or leave organizations, notification preferences (Marketing
-  emails only; no upload or storage-limit notification setting), pointer to
-  Account Security. Changing your email RESETS VERIFICATION and re-triggers the
-  verification-screen redirect; Google/GitHub sign-ins manage name and email at
-  the provider. The "Danger zone" card covers "Delete account": not available in
-  the console yet, email support@filone.com
-- [App - Support](https://docs.filone.com/app/support): The "Talk to an expert" form,
-  opened from "Support" in the user menu at the bottom of the sidebar. All fields required, starts empty, four
-  categories, ~1 business day response. Replies arrive by email; the console does
-  not show a ticket list. Sales: "Contact sales team" in the "Choose your plan"
-  dialog, or "Talk to sales" in Billing's "Need help?" panel on trial/no plan
-- [FAQ](https://docs.filone.com/faq): Common questions on S3 compatibility,
-  blockchain/crypto requirements, data residency, deletion behavior, migration
-  from AWS S3, backups, durability, multiple users (organizations, in beta),
-  and Filecoin data integrity mechanics
-- [Limits & Quotas](https://docs.filone.com/limits): Account limits (storage,
-  egress, buckets), object size limits (max 5 TB, use multipart above 5 GB),
-  API rate limits, and bucket/key naming constraints (object keys 1,024
-  characters in the dashboard; 1,024 bytes via the API, standard S3 and not
-  independently confirmed)
+  payment method, choosing a plan, invoices, "Need help?" panel, opened from the
+  sidebar's Organization group. Visible to Owners and Admins; every action is
+  Owner-only. During the trial the status badge reads Active with plan Free
+  trial; manually billed organizations show Billed manually or Custom plan. A
+  FAILED PAYMENT makes the console read-only. An Owner can Reactivate a canceled
+  subscription ("Your data is still here"). "Choose your plan": Pay as you go
+  ($5.99/TB/month, $5.99 minimum) or Business plan (custom pricing, 1, 3, or
+  5-year terms). Invoices list shows the 12 most recent issued invoices,
+  INCLUDING UNPAID. Card details and cancellation (Owners only) live in the
+  Stripe portal
+- [App - Settings](https://docs.filone.com/app/settings): Profile card with Avatar,
+  Name (autosaves when you leave the field) and Email (changed through a Change
+  email dialog; changing it RESETS VERIFICATION); Google/GitHub sign-ins manage
+  these at the provider. Organizations section to switch or leave
+  organizations, notification preferences (Marketing emails only), pointer to
+  Account Security. "Delete account" is not available in the console yet: email
+  support@filone.com
+- [App - Support](https://docs.filone.com/app/support): The Support page, opened
+  from Support at the bottom of the left sidebar. Category (Product issue,
+  Billing issue, General inquiry, Feature request) and Message; your name,
+  organization and email come from your account, and the reply goes to your
+  account email. Send message; ~1 business day response. Common questions and a
+  Report a bug link. Sales: "Contact sales team" in the "Choose your plan" dialog,
+  or "Talk to sales" in Billing's "Need help?" panel on trial/no plan
+
+## Optional
+
+- [FAQ](https://docs.filone.com/faq): Common questions on S3 compatibility (needs
+  the endpoint and path-style addressing), blockchain/crypto requirements, data
+  residency, deletion behavior, migration from AWS S3, backups, durability (no
+  published figure; public 99.9% uptime SLA at https://www.filone.com/sla),
+  multiple users (organizations and roles), and Filecoin data integrity mechanics
