@@ -46,6 +46,8 @@ A recovery code is a single-use code for signing in if you lose access to your a
 
 Generating a new code invalidates the previous one, so store the new value somewhere durable before you close the dialog.
 
+Signing in with a recovery code assumes you've lost your device, so the same sign-in asks you to set up a new two-factor method before you reach the console. Have an authenticator app or a passkey ready.
+
 ## Changes to security settings require re-authentication
 
 Four actions require a session that was signed in with two-factor authentication or a passkey, even inside an already signed-in session:

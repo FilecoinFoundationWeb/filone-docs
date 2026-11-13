@@ -16,18 +16,21 @@ The page has two tabs, **API keys** and **Connection details**. The table shows:
 | **Name** | The key name, with the Access Key ID underneath and a copy button |
 | **Region** | The region the key belongs to, such as `eu-west-1` (hidden on narrow screens) |
 | **Buckets** | **All Buckets**, or one badge per bucket the key is scoped to |
-| **Permissions** | Badges for the object permissions, with the finer-grained ones grouped into **Data protection**, **Bucket management**, and **Bucket info** |
+| **Permissions** | Badges for the object permissions (**Read**, **Write**, **List**, **Delete**), and a **+***n* badge for the rest. Open the key to see them all |
 | **Created by** | The member who created the key, and **Rotated by … on …** once it has been rotated. Shown when your organization has more than one member |
-| **Status** | **Active** |
-| **Last Used** | **Never** |
+| **Status** | **Active**, or **Expired** once the key's expiry date has passed |
 | **⋯** | **Rotate** and **Delete**, for the keys you can act on |
 
-With no keys yet the page reads **No API keys yet** and offers **Create your first key**.
+With 5 or more keys, a **Search keys** box (by name or Access Key ID) and filters for region (**All regions**) and status (**All statuses**) appear above the table.
+
+Click a key's row to open its details: its **Status**, when it **Expires** (or **Never**), when it was **Created** and **Rotated**, its **Region**, which **Buckets** it reaches ("All buckets in this region" for an unscoped key), and its full **Object permissions** and **Bucket management** permissions. The details panel is the place to check a key's expiry date.
+
+With no keys yet the page reads **No API keys yet** and offers **Create your first key**. A Member sees "You can only see the keys you create. Owners and Admins see every key in the organization." instead, because the organization may hold keys they aren't shown.
 
 If your account is disabled, the **API Keys** page shows only a notice asking you to reactivate your subscription, with no keys, tabs, or **Create new key** button.
 
-:::note Keep your own record of each key
-**Last Used** and **Status** are placeholders for now: every key reads **Never** and **Active**, and the expiry date you set is not shown in this list. Note down what each key is for and when it expires, and give keys descriptive names so the **Name** column carries that context for you.
+:::note Name keys for what uses them
+The console doesn't show when a key was last used. Give each key a descriptive name, such as `backup-job-prod`, so you can tell from the list which application would break if you deleted it.
 :::
 
 ## Who can manage keys
@@ -38,7 +41,7 @@ What you can do here depends on your [role](/app/organization#roles-and-permissi
 - **Members** see, rotate, and delete only the keys they created themselves.
 - **Admins** and **Owners** see and manage every key in the organization.
 
-A key can only carry permissions your role holds, and the form hides the ones it doesn't. **Set retention** and **Set legal hold** are Owner-only, so they appear only for Owners. If a member's role is narrowed, any key they created that the new role couldn't create is revoked, and removing a member revokes the keys they created.
+A key can only carry permissions your role holds, and the form hides the ones it doesn't. **Set retention** and **Set legal hold** are Owner-only, so they appear only for Owners. If a member's role is narrowed, any key they created that the new role couldn't create is revoked, and removing a member revokes the keys they created. The member is emailed a list of the revoked keys. See [Organization](/app/organization#removing-a-member).
 
 ## Creating a key
 
@@ -57,7 +60,7 @@ Click **Create new key**, which opens a dedicated page.
 | **List** | Browse and list objects |
 | **Delete** | Permanently remove objects |
 
-**Read**, **Write**, and **List** are pre-selected. **Delete** is not.
+**Read**, **Write**, and **List** are pre-selected. **Delete** is not. For a read-only key, untick **Write**: a key with **Write** can overwrite any object it reaches.
 
 Checking one of those reveals finer-grained permissions nested underneath it. These are granted individually, so tick the ones you need:
 
@@ -76,13 +79,15 @@ A key with **Write** therefore needs **Set retention** ticked as well before it 
 
 **Which buckets can this key access?** Defaults to **All buckets**, meaning every bucket in the key's region. Choose **Specific buckets** to pick from a list, filtered to the region you selected.
 
-**When should it expire?** **Never expires** (the default), **30 days**, or **Custom** with a date picker.
+**When should it expire?** **Never expires** (the default), **30 days**, or **Custom** with a date picker. A key with an expiry date works through the whole of that day (UTC) and stops at the start of the next one.
 
 Click **Create API key** to create it.
 
 ## Saving the secret
 
 On success a **Save your credentials** dialog shows the **Access Key ID** and the **Secret Access Key**, with the secret masked until you reveal it. You can copy either, or download the pair as a `.csv` or `.env` file.
+
+A downloaded file holds the secret in plain text. Move the values into your password manager, secrets store, or your tool's credential file, then delete the download. Never commit it: if you keep a `.env` in a project, add it to `.gitignore` first.
 
 :::warning The secret is shown once
 Fil One never stores your secret, which is why it appears only when a key is created or rotated. Copy or download it before closing the dialog. If you lose it, [rotate the key](#rotating-a-key) to get a new secret.
@@ -103,11 +108,15 @@ After a rotation, the **Created by** column shows who rotated the key and when.
 
 ## Revoking a key
 
-Open the **⋯** menu on the key's row and choose **Delete**. The dialog warns that the key will be permanently revoked and that any application using it loses access immediately.
+:::warning Deleting a key breaks anything that uses it
+A deleted key stops working immediately and can't be restored. To move an application onto a key with different permissions or buckets, create the new key first, switch the application over, then delete the old one.
+:::
 
-Deleting a key is how you revoke it. To move an application onto a key with different permissions or buckets, create the new key first, switch the application over, then delete the old one.
+Open the **⋯** menu on the key's row and choose **Delete**. The dialog warns that the key will be permanently revoked and that any application using it loses access immediately. Deleting a key is how you revoke it.
 
-Revocation is confirmed with the storage operator before the key leaves your list, so a key that is still listed is a key that is still live. That ordering means the list stays a truthful picture of what has access.
+To delete several keys at once, tick their checkboxes (or the header checkbox). A bar shows *n* **selected** with **Clear** and **Delete**. Only keys you're allowed to delete can be selected.
+
+A key stays in your list until its revocation is confirmed, so a key that is still listed is a key that still works.
 
 :::note Keys for a bucket
 A bucket's **API Keys** tab shows the keys that can reach that bucket, which is a quicker way to audit access for one bucket than reading down the full list.

@@ -3,11 +3,11 @@ title: Quickstart - AWS CLI
 description: Upload your first object using the AWS CLI.
 ---
 
-If you have the AWS CLI installed, you can start using Fil One in under 2 minutes.
+Use the AWS CLI to upload, list and download objects in a Fil One bucket. You need a Fil One account and an API key. To create a key, open **API Keys** in the [console](https://app.filone.com), click **Create new key**, and pick the same region as your bucket. The secret is shown once.
 
 ## 1. Install the AWS CLI
 
-Use **AWS CLI v2** — v1 does not read `endpoint_url` from config files:
+Use **AWS CLI v2**, version 2.13 or later, so the CLI reads `endpoint_url` from your profile:
 
 ```bash
 brew install awscli
@@ -17,7 +17,7 @@ brew install awscli
 
 ## 2. Configure credentials
 
-Set up a named profile so you don't have to pass `--endpoint-url` on every command:
+Set up a named profile, so you don't overwrite your default AWS credentials and don't have to pass `--endpoint-url` on every command:
 
 ```ini
 # ~/.aws/config
@@ -45,7 +45,7 @@ aws_secret_access_key = YOUR_SECRET_KEY
 
 ## 3. Create a bucket
 
-Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region — there, create buckets from the [Fil One dashboard](https://app.filone.com) by going to **Buckets → Create bucket**, entering a name, and clicking **Create bucket**.
+Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket**, enter `my-bucket` (or your own name), and click **Create bucket**.
 
 In `us-east-1` you can create a bucket from the CLI, using a key that has the `CreateBucket` permission. This requires a `us-east-1` profile — define one the same way as the `filone` profile above but with the `us-east-1` endpoint and region (shown here as `filone-us`):
 
@@ -53,24 +53,25 @@ In `us-east-1` you can create a bucket from the CLI, using a key that has the `C
 aws s3 mb s3://my-bucket --profile filone-us
 ```
 
-Creating from the dashboard is worth doing regardless, since that is where you set versioning and Object Lock — both are fixed at creation. See [Buckets](/storage/buckets).
+Versioning and Object Lock can only be turned on when you create the bucket in the console. See [Buckets](/storage/buckets).
 
-Once the bucket exists, use the AWS CLI for all object operations.
+The steps below use the `filone` profile (`eu-west-1`). If your bucket is in `us-east-1`, use `--profile filone-us` instead: the profile, the key and the bucket must all be in the same region.
 
 ## 4. Upload a file
 
 ```bash
-aws s3 cp my-file.txt s3://my-first-bucket/ --profile filone
+echo "hello" > my-file.txt
+aws s3 cp my-file.txt s3://my-bucket/ --profile filone
 ```
 
 ## 5. List objects
 
 ```bash
-aws s3 ls s3://my-first-bucket/ --profile filone
+aws s3 ls s3://my-bucket/ --profile filone
 ```
 
 ## 6. Download the file
 
 ```bash
-aws s3 cp s3://my-first-bucket/my-file.txt ./downloaded.txt --profile filone
+aws s3 cp s3://my-bucket/my-file.txt ./downloaded.txt --profile filone
 ```

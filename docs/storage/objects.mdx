@@ -38,13 +38,14 @@ Objects are the files you store in Fil One. Each object consists of the file dat
     # Upload a file
     s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
 
-    # Upload with metadata
-    s3.put_object(
-        Bucket="my-bucket",
-        Key="report.pdf",
-        Body=open("report.pdf", "rb"),
-        ContentType="application/pdf",
-    )
+    # Upload with metadata (report.pdf must exist)
+    with open("report.pdf", "rb") as f:
+        s3.put_object(
+            Bucket="my-bucket",
+            Key="report.pdf",
+            Body=f,
+            ContentType="application/pdf",
+        )
     ```
   </TabItem>
 </Tabs>
@@ -114,7 +115,7 @@ When you delete an object, it is immediately removed from your Fil One account a
 
 ## Presigned URLs
 
-Generate a temporary URL that grants time-limited access to a specific object without requiring API credentials.
+Generate a temporary URL that grants time-limited access to a specific object without requiring API credentials. The `s3` client is the one from [Python (boto3)](/sdk/python#client-configuration), with `signature_version="s3v4"` set.
 
 ```python
 # Generate a download URL valid for 1 hour
@@ -126,4 +127,8 @@ url = s3.generate_presigned_url(
 print(url)
 ```
 
-Presigned URLs work for both `GetObject` (downloads) and `PutObject` (uploads).
+Presigned URLs work for both `GetObject` (downloads) and `PutObject` (uploads). For uploads from the AWS SDK for JavaScript, see the [checksum setting](/sdk/javascript#client-configuration) they need.
+
+:::warning A presigned URL is a credential
+Anyone who has the URL can use it until it expires, without signing in. Share it only with the people who should have access, and keep expiry times short. A **Share** link from the console lasts at most 7 days.
+:::

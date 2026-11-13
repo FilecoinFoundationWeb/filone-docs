@@ -11,11 +11,13 @@ Examples here use `eu-west-1`, the default region. For a bucket in `us-east-1`, 
 
 ## Installation
 
+In a new directory, create a module and add the SDK:
+
 ```bash
+go mod init example.com/filone
 go get github.com/aws/aws-sdk-go-v2/aws
 go get github.com/aws/aws-sdk-go-v2/credentials
 go get github.com/aws/aws-sdk-go-v2/service/s3
-go get github.com/aws/aws-sdk-go-v2/service/s3/types
 ```
 
 ## Client configuration
@@ -36,8 +38,8 @@ func newClient() *s3.Client {
         BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com"),
         Region:       "eu-west-1",
         Credentials: credentials.NewStaticCredentialsProvider(
-            os.Getenv("FIL_ACCESS_KEY"),
-            os.Getenv("FIL_SECRET_KEY"),
+            os.Getenv("AWS_ACCESS_KEY_ID"),
+            os.Getenv("AWS_SECRET_ACCESS_KEY"),
             "",
         ),
         UsePathStyle: true,
@@ -45,23 +47,27 @@ func newClient() *s3.Client {
 }
 ```
 
-Set `FIL_ACCESS_KEY` and `FIL_SECRET_KEY` as environment variables. Never hardcode credentials in source code.
+Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` as environment variables, the names the console's **Download .env** writes. Never hardcode credentials in source code.
 
-The operation snippets below are fragments: each assumes the `client` returned by `newClient()` above and a `ctx` (e.g. `ctx := context.TODO()`) in scope, and shows only the imports specific to that snippet.
+The operation snippets below are fragments: each assumes the `client` returned by `newClient()` above, a `ctx` (e.g. `ctx := context.TODO()`), and `"log"` imported, and shows only the other imports specific to that snippet.
 
 ## Core operations
 
 ### Create a bucket
 
-`CreateBucket` is region-dependent. It is not available in `eu-west-1` — use the [Fil One dashboard](https://app.filone.com) there, via **Buckets → Create bucket**. In `us-east-1`, with a key that has the `CreateBucket` permission:
+`CreateBucket` is region-dependent. It is not available in `eu-west-1`: create the bucket in the [Fil One console](https://app.filone.com) there, with **New bucket**. In `us-east-1`, use a client built with the `us-east-1` endpoint and region, and a `us-east-1` key that has the `CreateBucket` permission:
 
 ```go
-_, err := client.CreateBucket(ctx, &s3.CreateBucketInput{
+// usClient: like newClient(), with BaseEndpoint https://s3.us-east-1.filonecontent.com and Region "us-east-1"
+_, err := usClient.CreateBucket(ctx, &s3.CreateBucketInput{
     Bucket: aws.String("my-bucket"),
 })
+if err != nil {
+    log.Fatal(err)
+}
 ```
 
-Note that versioning and Object Lock can only be set when the bucket is created, and only from the dashboard. See [Buckets](/storage/buckets).
+Versioning and Object Lock can only be set when the bucket is created, and only in the console. See [Buckets](/storage/buckets).
 
 ### Upload an object
 
@@ -78,9 +84,15 @@ _, err := client.PutObject(ctx, &s3.PutObjectInput{
     Body:        bytes.NewReader([]byte(`{"key":"value"}`)),
     ContentType: aws.String("application/json"),
 })
+if err != nil {
+    log.Fatal(err)
+}
 
-// Upload a file
-f, _ := os.Open("report.pdf")
+// Upload a local file (report.pdf must exist)
+f, err := os.Open("report.pdf")
+if err != nil {
+    log.Fatal(err)
+}
 defer f.Close()
 
 _, err = client.PutObject(ctx, &s3.PutObjectInput{
@@ -89,6 +101,9 @@ _, err = client.PutObject(ctx, &s3.PutObjectInput{
     Body:        f,
     ContentType: aws.String("application/pdf"),
 })
+if err != nil {
+    log.Fatal(err)
+}
 ```
 
 ### Download an object
@@ -104,13 +119,18 @@ result, err := client.GetObject(ctx, &s3.GetObjectInput{
     Key:    aws.String("reports/report.pdf"),
 })
 if err != nil {
-    // handle error
+    log.Fatal(err)
 }
 defer result.Body.Close()
 
-out, _ := os.Create("local-report.pdf")
+out, err := os.Create("local-report.pdf")
+if err != nil {
+    log.Fatal(err)
+}
 defer out.Close()
-io.Copy(out, result.Body)
+if _, err := io.Copy(out, result.Body); err != nil {
+    log.Fatal(err)
+}
 ```
 
 ### List objects
@@ -125,7 +145,7 @@ paginator := s3.NewListObjectsV2Paginator(client, &s3.ListObjectsV2Input{
 for paginator.HasMorePages() {
     page, err := paginator.NextPage(ctx)
     if err != nil {
-        // handle error
+        log.Fatal(err)
     }
     for _, obj := range page.Contents {
         // obj.Size is a *int64; dereference it with aws.ToInt64 to print the number
@@ -141,12 +161,16 @@ _, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
     Bucket: aws.String("my-bucket"),
     Key:    aws.String("reports/report.pdf"),
 })
+if err != nil {
+    log.Fatal(err)
+}
 ```
 
 ## Presigned URLs
 
 ```go
 import (
+    "fmt"
     "time"
 
     "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -159,12 +183,20 @@ downloadReq, err := presigner.PresignGetObject(ctx, &s3.GetObjectInput{
     Bucket: aws.String("my-bucket"),
     Key:    aws.String("reports/report.pdf"),
 }, s3.WithPresignExpires(time.Hour))
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println(downloadReq.URL)
 
 // Upload URL valid for 15 minutes
 uploadReq, err := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
     Bucket: aws.String("my-bucket"),
     Key:    aws.String("uploads/new-file.txt"),
 }, s3.WithPresignExpires(15*time.Minute))
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println(uploadReq.URL)
 ```
 
 ## Error handling
@@ -172,6 +204,8 @@ uploadReq, err := presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 ```go
 import (
     "errors"
+    "fmt"
+
     "github.com/aws/smithy-go"
 )
 

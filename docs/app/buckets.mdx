@@ -19,24 +19,28 @@ Each row has an actions menu with **Browse objects**, **Copy bucket name**, **Co
 
 ### Deleting a bucket
 
-Choose **Delete bucket** from the row's actions menu and confirm. Only empty buckets can be deleted: if the bucket still holds objects or object versions, the console says it is not empty and links to how to empty it. Use [Empty bucket](#emptying-a-bucket) first, then delete. Deletion is permanent.
+:::warning Deleting a bucket can't be undone
+A deleted bucket can't be restored, and applications that use it start failing straight away.
+:::
+
+Choose **Delete bucket** from the row's actions menu and confirm. Only empty buckets can be deleted: if the bucket still holds objects or object versions, the console says it is not empty and links to how to empty it. Use [Empty bucket](#emptying-a-bucket) first, then delete.
 
 **Delete bucket** is only shown to Owners and Admins. It works in every region, including `eu-west-1`, where `DeleteBucket` is not available over the S3 API. See [Buckets](/storage/buckets#deleting-a-bucket).
 
 ## Creating a bucket
 
-Click **Create bucket** and fill in:
+Click **Create bucket** (or **New bucket** on the Dashboard) and fill in:
 
-1. **Bucket name.** 3 to 63 characters, lowercase letters, numbers, and hyphens only, starting and ending with a letter or number. No dots, unlike AWS S3. Must be globally unique.
+1. **Bucket name.** 3 to 63 characters, lowercase letters, numbers, and hyphens only, starting and ending with a letter or number. No dots, unlike AWS S3. The form says it "must be unique in this region".
 2. **Region.** Europe (France) `eu-west-1`, the default, or US East (Michigan) `us-east-1`. This sets the endpoint you connect to.
-3. **Object settings**, three switches that nest inside one another, all off by default:
+3. **Advanced settings**, collapsed by default because most buckets don't need them. Expand it to set three switches that build on one another, all off by default:
    - **Versioning** keeps multiple versions of an object.
-   - **Object Lock** requires Versioning to be on, and stays greyed out until it is.
-   - **Retention** requires Object Lock, and stays greyed out until it is. Turning it on reveals a **Default Retention Policy** with **Governance** or **Compliance** mode (Governance by default) and a **Lock period** in **Days** or **Years**, defaulting to 15 days. The maximum is 100 years.
+   - **Object Lock** can't be turned on until Versioning is, and shows a **Needs Versioning** badge until then.
+   - **Retention** can't be turned on until Object Lock is, and shows a **Needs Object Lock** badge until then. Turning it on reveals a **Default Retention Policy** with **Governance** or **Compliance** mode (Governance by default) and a **Lock period** in **Days** or **Years**, defaulting to 15 days. The maximum is 100 years.
 
-Turning a parent switch back off resets the ones nested inside it.
+   Turning a switch back off resets the ones that depend on it. While the section is collapsed, the line beside it lists what is on.
 
-You can also expand **Create new key** to generate an access key alongside the bucket. It is pre-scoped to the bucket you are creating and to that bucket's region, and the submit button changes to **Create bucket and API key**. The secret is shown once, in a dialog. The console then opens the new bucket's page.
+Click **Create bucket**. The console opens the new bucket, and its empty state offers **Create API key** (or **View API keys**, if you already have keys that reach it) so you can connect an application.
 
 A panel headed **Included by default** confirms two things you do not configure: all data is encrypted at rest, and every bucket is private, so access requires an API key.
 
@@ -46,7 +50,7 @@ Name, region, versioning, Object Lock, and the default retention policy are all 
 
 ## Inside a bucket
 
-Opening a bucket shows its region, storage used, and creation time, then three property cards: **Versioning** and **Object Lock** (each **Enabled** or **Disabled**), and **Retention**, which shows the default retention policy, such as **Compliance · 15 days**, or **None**. Encryption is on for every bucket, so it has no card of its own.
+Opening a bucket shows its region and storage used, then three property cards: **Versioning** and **Object Lock** (each **Enabled** or **Disabled**), and **Retention**, which shows the default retention policy, such as **Compliance · 15 days**, or **None**. Encryption is on for every bucket, so it has no card of its own.
 
 Once the bucket holds objects, **Empty bucket** and **Upload object** buttons appear in the header. While it is empty, the upload button sits in the empty state instead.
 
@@ -61,7 +65,7 @@ The object table shows **Name**, **Size**, and **Last Modified**, plus **Version
 
 On a versioned bucket, a key with more than one version gets an expander and an *n* **versions** pill. Expanding shows the older versions, badged **Latest** for the current one and **Delete marker** where a delete marker sits on top.
 
-Per-row icon buttons download or delete a single object. A checkbox on each row, and on the header, lets you select several at once. See [Deleting objects](#deleting-objects).
+Per-row icon buttons download, share, or delete a single object. A checkbox on each row, and on the header, lets you select several at once. See [Deleting objects](#deleting-objects).
 
 :::note Large buckets
 The browser shows the first page of results, around 1,000 entries. When there are more, an amber **Showing the first** *n* notice appears, and selecting and deleting apply only to the objects listed. The count on the **Objects (N)** tab then comes from your bucket analytics, a daily reading that can lag recent changes, so expect it to be higher than the number of rows in view. Use the AWS CLI or an SDK to page through a full listing, or [Empty bucket](#emptying-a-bucket) to remove everything. See [Objects](/storage/objects).
@@ -117,6 +121,10 @@ The console always deletes the specific version on the row you chose. It does no
 An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](/storage/object-lock).
 
 ### Emptying a bucket
+
+:::danger Empty bucket permanently deletes everything in the bucket
+It removes every object, every earlier version, and every delete marker that isn't protected by retention or a legal hold. It can't be undone, and versioning doesn't protect you: nothing is kept to restore from.
+:::
 
 **Empty bucket** on the bucket page removes every object in the bucket, including every earlier version and delete marker. Type the bucket name to confirm, then click **Delete everything**.
 
