@@ -189,6 +189,17 @@ Critical integration notes for developers:
   both regions; SSE-C rejected in eu-west-1, not yet confirmed in us-east-1.
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
+- [Certifications & Trust](https://docs.filone.com/security/certifications-and-trust):
+  summary of the Trust center (https://www.filone.com/trust), which is
+  authoritative. CURRENT: the data centers storing Fil One data are ISO/IEC
+  27001 certified, SOC 2 Type II attested and PCI DSS certified. IN PROGRESS:
+  ISO/IEC 27001 and SOC 2 Type II for Fil One itself; Fil One is NOT yet SOC 2 or
+  ISO 27001 certified as a company. Frameworks: HIPAA/HITECH supported (BAA on
+  request, sign before storing PHI), CJIS supported (Security Addendum via
+  sales), GDPR supported (DPA on request; customer is controller); SOC 2 Type
+  II, ISO/IEC 27001 and NIST SP 800-53 in progress. Bucket region (eu-west-1 or
+  us-east-1) is fixed at creation. DPA/BAA request forms on the Trust center;
+  security@filone.com, legal@filone.com
 
 ## Billing
 

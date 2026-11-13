@@ -1572,6 +1572,73 @@ Client-side encryption is optional and is in addition to the server-side encrypt
 
 ---
 
+# Certifications & Trust
+
+Source: https://docs.filone.com/security/certifications-and-trust
+
+This page summarizes the [Fil One Trust center](https://www.filone.com/trust). The Trust center is the authoritative source: if the two ever differ, go by the Trust center.
+
+## What is certified today
+
+Certification covers two scopes: the data centers that store your objects, and the network and software Fil One runs on top of them.
+
+| Scope | Status | Certifications |
+|-------|--------|----------------|
+| Data centers | **Current** | All Fil One storage runs in data centers that are ISO/IEC 27001 certified, SOC 2 Type II attested, and PCI DSS certified. |
+| Fil One (the network and software) | **In progress** | ISO/IEC 27001 certification and a SOC 2 Type II attestation are being pursued. |
+
+Fil One itself is not yet SOC 2 or ISO/IEC 27001 certified as a company. The certifications above that are current apply to the data center facilities.
+
+## Frameworks
+
+| Framework | Status | What's available |
+|-----------|--------|------------------|
+| HIPAA / HITECH | Supported | A Business Associate Agreement (BAA) on request. Sign a BAA with Fil One before storing any protected health information (PHI). |
+| CJIS Security Policy | Supported | A CJIS Security Addendum. [Talk to sales](https://www.filone.com/contact-sales). |
+| GDPR | Supported | A Data Processing Addendum (DPA) on request. You are the controller for personal data you store, and Fil One processes it on your instructions. |
+| SOC 2 Type II | In progress | The report will be available under NDA after the audit. |
+| ISO/IEC 27001 | In progress | The certificate will be available once Fil One is certified. |
+| NIST SP 800-53 | In progress | A control mapping will be available once it's complete. |
+
+## Where your data is stored
+
+You choose each bucket's region when you create it: `eu-west-1` (Europe) or `us-east-1` (US). The region can't be changed later, so data written to a bucket stays where you put it. To keep data in the EU, create the bucket in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets).
+
+## Built-in controls
+
+- **Encryption at rest:** AES-256 on every object, always on. You can also encrypt client-side before upload. See [Encryption](https://docs.filone.com/security/encryption).
+- **TLS on every request:** all traffic to the S3 endpoints runs over TLS.
+- **Object Lock and versioning:** turned on per bucket, when you create it, for compliance retention. See [Object Lock](https://docs.filone.com/storage/object-lock) and [Versioning](https://docs.filone.com/storage/versioning).
+- **Scoped access keys:** each key carries its own permissions and can be limited to specific buckets. See [API Keys](https://docs.filone.com/security/api-keys).
+- **Storage proofs:** Fil One runs on Filecoin, where storage providers continuously prove, with cryptographic proofs recorded on a public blockchain, that they still hold the data.
+
+## Who holds the encryption keys
+
+Server-side encryption keys are held by the regional storage operator that serves your bucket's region. If your policy requires you to hold the keys, encrypt client-side before upload. Fil One then stores only ciphertext. See [Client-side encryption](https://docs.filone.com/security/encryption#client-side-encryption).
+
+## Documents and policies
+
+Public policies:
+
+- [Privacy Policy](https://www.filone.com/privacy)
+- [Terms of Use](https://www.filone.com/terms)
+- [Service Level Agreement](https://www.filone.com/sla)
+- [Acceptable Use Policy](https://www.filone.com/aup)
+
+Available on request:
+
+- [Data Processing Addendum (DPA)](https://www.filone.com/trust/request?doc=dpa)
+- [Business Associate Agreement (BAA)](https://www.filone.com/trust/request?doc=baa)
+
+## Contact
+
+- Security questions: [security@filone.com](mailto:security@filone.com)
+- Legal terms: [legal@filone.com](mailto:legal@filone.com)
+- Anything else about compliance: [talk to sales](https://www.filone.com/contact-sales)
+
+
+---
+
 # Trial & Billing
 
 Source: https://docs.filone.com/billing/trial
