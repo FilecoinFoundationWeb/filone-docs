@@ -14,7 +14,7 @@ Hugging Face `datasets` reads files in Fil One through `fsspec` and `s3fs`, pass
 
 | Setting | Value |
 | --- | --- |
-| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`client_kwargs={"endpoint_url": ...}`) |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`client_kwargs={"endpoint_url": ...}`) |
 | Region | `eu-west-1` or `us-east-1` (`client_kwargs={"region_name": ...}`) |
 | Addressing | Path style (`config_kwargs={"s3": {"addressing_style": "path"}}`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region (`key` and `secret`) |

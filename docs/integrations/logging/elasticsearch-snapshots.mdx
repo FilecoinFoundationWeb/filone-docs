@@ -14,7 +14,7 @@ Elasticsearch stores snapshots in Fil One through an `s3` repository whose named
 
 | Setting | Value |
 | --- | --- |
-| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`s3.client.CLIENT.endpoint`) |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`s3.client.CLIENT.endpoint`) |
 | Region | `eu-west-1` or `us-east-1` (`s3.client.CLIENT.region`) |
 | Addressing | Path style (`s3.client.CLIENT.path_style_access: true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, stored in the keystore as `s3.client.CLIENT.access_key` and `s3.client.CLIENT.secret_key` |

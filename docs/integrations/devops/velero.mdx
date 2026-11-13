@@ -14,7 +14,7 @@ Velero writes backups to Fil One through its AWS object-store plugin, with a bac
 
 | Setting | Value |
 | --- | --- |
-| Endpoint | `https://eu-west-1.s3.fil.one` or `https://us-east-1.s3.fil.one`, matching the bucket's region (`s3Url`) |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`s3Url`) |
 | Region | `eu-west-1` or `us-east-1` (`region`) |
 | Addressing | Path style (`s3ForcePathStyle: "true"`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through a Kubernetes Secret |

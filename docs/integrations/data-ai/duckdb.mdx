@@ -14,7 +14,7 @@ DuckDB reads and writes Fil One through the `httpfs` extension with an S3 secret
 
 | Setting | Value |
 | --- | --- |
-| Endpoint | `eu-west-1.s3.fil.one` or `us-east-1.s3.fil.one`, matching the bucket's region (`ENDPOINT`, hostname without `https://`, with `USE_SSL true`) |
+| Endpoint | `s3.eu-west-1.filonecontent.com` or `s3.us-east-1.filonecontent.com`, matching the bucket's region (`ENDPOINT`, hostname without `https://`, with `USE_SSL true`) |
 | Region | `eu-west-1` or `us-east-1` (`REGION`) |
 | Addressing | Path style (`URL_STYLE 'path'`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region (`KEY_ID` and `SECRET`) |
@@ -31,7 +31,7 @@ CREATE SECRET filone (
   KEY_ID 'ACCESS_KEY',
   SECRET 'SECRET_KEY',
   REGION 'eu-west-1',
-  ENDPOINT 'eu-west-1.s3.fil.one',
+  ENDPOINT 's3.eu-west-1.filonecontent.com',
   USE_SSL true,
   URL_STYLE 'path'
 );
