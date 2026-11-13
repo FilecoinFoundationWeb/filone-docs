@@ -18,7 +18,7 @@ The page has two tabs, **API keys** and **Connection details**. The table shows:
 | **Buckets** | **All Buckets**, or one badge per bucket the key is scoped to |
 | **Permissions** | Badges for the object permissions (**Read**, **Write**, **List**, **Delete**), and a **+***n* badge for the rest. Open the key to see them all |
 | **Created by** | The member who created the key, and **Rotated by … on …** once it has been rotated. Shown when your organization has more than one member |
-| **Status** | **Active**, or **Expired** once the key's expiry date has passed |
+| **Status** | **Active**, or **Expired** from the day after the key's expiry date (UTC) |
 | **⋯** | **Rotate** and **Delete**, for the keys you can act on |
 
 With 5 or more keys, a **Search keys** box (by name or Access Key ID) and filters for region (**All regions**) and status (**All statuses**) appear above the table.
@@ -101,7 +101,7 @@ The old secret stops working as soon as the new one is issued, so update anythin
 
 A few limits apply:
 
-- An expired key can't be rotated. Create a new key instead.
+- An expired key can't be rotated, so **Rotate** isn't offered on it. Delete it and create a new key instead.
 - **Rotate** only appears on keys your current role could still create. See [Who can manage keys](#who-can-manage-keys).
 
 After a rotation, the **Created by** column shows who rotated the key and when.
