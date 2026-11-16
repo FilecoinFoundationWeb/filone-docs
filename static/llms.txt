@@ -182,7 +182,7 @@ Critical integration notes for developers:
   Delete can still OVERWRITE; multipart uploads need Write. A key is capped at
   its creator's role; removing a member or narrowing a role revokes their keys
   that exceed it, and they are emailed which keys. Names starting with
-  `filone-console` are reserved
+  `filone-console` are reserved. Give each AI agent its own narrowly scoped key
 - [Encryption](https://docs.filone.com/security/encryption): server-side
   encryption always on for all objects; TLS in transit; keys held by the regional
   operator (no customer-managed keys, cipher unconfirmed). SSE-KMS rejected in
@@ -263,6 +263,19 @@ Critical integration notes for developers:
   configuration, core operations, multipart uploads and cleanup. `aws s3 mb` and
   `aws s3 rb` work in us-east-1 only (shown with a `filone-us` profile); in
   eu-west-1 create and delete buckets in the console (Owner and Admin roles)
+- [Use with an AI Agent](https://docs.filone.com/sdk/ai-agents): Giving a coding
+  agent (Claude Code, Cursor, Codex) access without its keys in a prompt or file.
+  One key per agent, scoped to the buckets it needs, read-only (Read + List) if
+  it only reads; key stored in a named AWS CLI profile (`filone`), never pasted
+  into chat, AGENTS.md/CLAUDE.md, or a project .env. Endpoint is region-specific
+  (https://s3.<bucket_region>.filonecontent.com; copy it from the console's
+  Buckets page or the bucket's API Keys tab). A copyable instructions block for
+  AGENTS.md/CLAUDE.md that names the profile and region, never a key. Rules agents
+  get wrong: path-style addressing, NO encryption headers, no CreateBucket/
+  DeleteBucket in eu-west-1, key/endpoint/region must match, versioning and
+  Object Lock fixed at bucket creation. The console has a shorter version (API
+  Keys > Connection details > "Use with an AI agent"), filled in for a chosen
+  region; its profile doesn't store the endpoint, so its instructions give it
 
 ## Console
 
@@ -305,10 +318,6 @@ Security, Billing) hold the concepts and code samples.
   delete them and never commit them. ROTATE keeps name, permissions, buckets,
   region and expiry; the old secret stops working at once. Deleting a key is the
   revocation and breaks any application using it immediately
-- [App - AI Agent Toolkit](https://docs.filone.com/app/ai-agent-toolkit): NOT
-  RELEASED. A "Coming Soon" page with a waitlist form. What works today:
-  ordinary S3 access keys scoped to a bucket, which is how LangChain, LlamaIndex,
-  Vercel AI SDK and CrewAI connect
 - [App - Organization](https://docs.filone.com/app/organization): Every account
   starts as a one-person organization with you as Owner. Members, Billing and
   Audit log are in the left sidebar's Organization group; the organization menu
