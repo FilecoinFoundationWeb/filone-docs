@@ -47,8 +47,9 @@ Critical integration notes for developers:
   marker and prior versions are retained and still billed. A DELETE FROM A ROW
   in the dashboard (single or bulk) WRITES NO DELETE MARKER: it permanently
   removes the specific version on the row chosen, even on a versioned bucket.
-  Delete on the object detail page places a delete marker when viewing the
-  latest version, and removes only the viewed version on an older one
+  Delete in the object panel or on the object detail page places a delete
+  marker when viewing the latest version, and removes only the viewed version
+  on an older one
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is NOT YET
@@ -299,12 +300,15 @@ Security, Billing) hold the concepts and code samples.
   collapsed Advanced settings with "Needs Versioning" / "Needs Object Lock"
   badges; only a Create bucket button; the new bucket's page then offers Create
   API key), object browser, upload, object detail, download/share, delete.
+  Clicking an object opens a PANEL over the list (preview, details, Delete,
+  Copy console link, Share, Download; previous/next or j/k and arrow keys step
+  through the folder; Open full page goes to the object detail page).
   DELETE BUCKET: Owner/Admin only, EMPTY buckets only, works in EVERY region.
   EMPTY BUCKET permanently deletes every object, version and delete marker not
   under retention or legal hold and cannot be undone. Deleting a row on a
   versioned bucket PERMANENTLY deletes that row's version (NO delete marker);
-  Delete on the object detail page places a delete marker on the latest
-  version. The object detail page previews images, video, audio and text, and
+  Delete in the object panel or on the object detail page places a delete
+  marker on the latest version. The object detail page previews images, video, audio and text, and
   loads version history for the object itself, so it shows on a direct link.
   Name, region, versioning, Object Lock and default retention are PERMANENT at
   creation. Upload is single-PUT (5 GB ceiling); the browser shows the first
