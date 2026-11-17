@@ -1,0 +1,72 @@
+name: Build
+
+# Runs on every PR and on pushes to main. Holds no secrets: a PR's MDX runs
+# during the build. See CONTRIBUTING.md for what each check catches.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      # MDX errors, broken internal links (onBrokenLinks: throw), bad frontmatter.
+      - run: npm run build
+
+      # Every page has an entry in both llms mirrors, and the mirrors link no dead pages.
+      - run: node scripts/check-mirrors.mjs
+
+      # Python/JS/Go/Bash/JSON snippets parse; no untagged blocks; no real-looking keys.
+      # Python, Go and Bash come preinstalled on ubuntu-latest.
+      - run: node scripts/check-snippets.mjs
+
+  # A PR that changes docs/** but neither mirror must say why, so mirror drift
+  # is a decision someone made, not an oversight. Only reads the PR body.
+  mirror-impact:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Require a mirror update or a reason
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Template placeholders (<!-- ... -->) don't count as a reason.
+          body=$(printf '%s' "$PR_BODY" | perl -0pe 's/<!--.*?-->//gs')
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD)
+          if ! grep -q '^docs/' <<<"$changed"; then echo "No docs/** changes."; exit 0; fi
+          if grep -q '^static/llms' <<<"$changed"; then echo "Mirrors updated."; exit 0; fi
+          if grep -qiE '^\s*-\s*\[x\]\s*No mirror change needed:\s*\S' <<<"$body"; then
+            echo "Author says no mirror change is needed."; exit 0
+          fi
+          echo "::error::This PR changes docs/** but not static/llms.txt or static/llms-full.txt."
+          echo "Update both mirrors (AGENTS.md), or tick 'No mirror change needed:' in the PR description and say why (e.g. a typo fix)."
+          exit 1
