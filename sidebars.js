@@ -69,7 +69,6 @@ const sidebars = {
         { type: "doc", id: "app/dashboard", label: "Dashboard" },
         { type: "doc", id: "app/buckets", label: "Buckets" },
         { type: "doc", id: "app/api-keys", label: "API Keys" },
-        "app/ai-agent-toolkit",
         { type: "doc", id: "app/organization", label: "Organization" },
         { type: "doc", id: "app/billing", label: "Billing" },
         { type: "doc", id: "app/settings", label: "Settings" },
@@ -96,6 +95,7 @@ const sidebars = {
         "sdk/javascript",
         "sdk/go",
         "sdk/cli",
+        "sdk/ai-agents",
       ],
     },
     {
