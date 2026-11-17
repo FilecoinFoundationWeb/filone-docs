@@ -44,9 +44,11 @@ Critical integration notes for developers:
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets an S3-API delete WITHOUT a version ID places a delete
-  marker and prior versions are retained and still billed. The DASHBOARD NEVER
-  WRITES A DELETE MARKER: a console delete (single or bulk) permanently removes
-  the specific version on the row chosen, even on a versioned bucket
+  marker and prior versions are retained and still billed. A DELETE FROM A ROW
+  in the dashboard (single or bulk) WRITES NO DELETE MARKER: it permanently
+  removes the specific version on the row chosen, even on a versioned bucket.
+  Delete on the object detail page places a delete marker when viewing the
+  latest version, and removes only the viewed version on an older one
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is NOT YET
@@ -131,9 +133,10 @@ Critical integration notes for developers:
   (bucket must be EMPTY; console delete works in every region for Owner/Admin
   roles; S3-API DeleteBucket in us-east-1 only), and what happens to deleted data
 - [Objects](https://docs.filone.com/storage/objects): Upload, download, list, delete,
-  and presigned URLs with code for App, AWS CLI, and boto3. A console delete on a
-  versioned bucket PERMANENTLY removes that version (no delete marker), while an
-  S3-API delete without a version ID writes a delete marker. A presigned URL is
+  and presigned URLs with code for App, AWS CLI, and boto3. A delete from a row in
+  the console on a versioned bucket PERMANENTLY removes that version (no delete
+  marker), while an S3-API delete without a version ID, or Delete on the object
+  detail page for the latest version, writes a delete marker. A presigned URL is
   a bearer credential until it expires; console Share links last at most 7 days
 - [Multipart Uploads](https://docs.filone.com/storage/multipart-uploads): Required
   above the single-PUT ceiling (standard S3 5 GB, not independently confirmed);
@@ -298,8 +301,11 @@ Security, Billing) hold the concepts and code samples.
   API key), object browser, upload, object detail, download/share, delete.
   DELETE BUCKET: Owner/Admin only, EMPTY buckets only, works in EVERY region.
   EMPTY BUCKET permanently deletes every object, version and delete marker not
-  under retention or legal hold and cannot be undone. A console delete on a
-  versioned bucket PERMANENTLY deletes the chosen version (NO delete marker).
+  under retention or legal hold and cannot be undone. Deleting a row on a
+  versioned bucket PERMANENTLY deletes that row's version (NO delete marker);
+  Delete on the object detail page places a delete marker on the latest
+  version. The object detail page previews images, video, audio and text, and
+  loads version history for the object itself, so it shows on a direct link.
   Name, region, versioning, Object Lock and default retention are PERMANENT at
   creation. Upload is single-PUT (5 GB ceiling); the browser shows the first
   ~1,000 entries; no version restore/promote. Download works on trial; SHARING IS
