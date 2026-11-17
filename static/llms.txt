@@ -287,8 +287,9 @@ Security, Billing) hold the concepts and code samples.
   organization opens on a Get started page (/get-started) with Create bucket and
   Create API key. A dismissible Free trial banner shows days left and Upgrade.
   PLAN/STORAGE/EGRESS cards (PLAN shown to Owner/Admin only), Usage Trends,
-  Recent Activity. Storage is a periodic point-in-time reading and egress is a
-  rolling 30-day total, not a calendar month. "Est. monthly cost" applies your
+  Recent Activity (Owner/Admin only, from the audit log). Storage is a
+  periodic point-in-time reading and egress is a rolling 30-day total, not a
+  calendar month. "Est. monthly cost" applies your
   plan's per-TB price to the latest reading with the monthly minimum as the
   floor, while the invoice uses AVERAGE storage, so they differ
 - [App - Buckets](https://docs.filone.com/app/buckets): Bucket list, create form
