@@ -35,7 +35,7 @@ You choose each bucket's region when you create it: `eu-west-1` (Europe) or `us-
 
 - **Encryption at rest:** AES-256 on every object, always on. You can also encrypt client-side before upload. See [Encryption](/security/encryption).
 - **TLS on every request:** all traffic to the S3 endpoints runs over TLS.
-- **Object Lock and versioning:** turned on per bucket, when you create it, for compliance retention. See [Object Lock](/storage/object-lock) and [Versioning](/storage/versioning).
+- **Object Lock and versioning:** off by default. Turn them on per bucket when you create it, for compliance retention; neither can be added to an existing bucket. See [Object Lock](/storage/object-lock) and [Versioning](/storage/versioning).
 - **Scoped access keys:** each key carries its own permissions and can be limited to specific buckets. See [API Keys](/security/api-keys).
 - **Storage proofs:** Fil One runs on Filecoin, where storage providers continuously prove, with cryptographic proofs recorded on a public blockchain, that they still hold the data.
 
