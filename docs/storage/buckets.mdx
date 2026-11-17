@@ -1,6 +1,6 @@
 ---
 title: Buckets
-description: Creating, configuring, and managing storage buckets.
+description: Bucket naming rules, creating and listing buckets, and deleting them from the console or the S3 API.
 ---
 
 import Tabs from '@theme/Tabs';
@@ -28,7 +28,7 @@ Whether you can create a bucket through the S3 API depends on the region. `Creat
 To use `CreateBucket` or `DeleteBucket` with an access key, grant the key that permission when you create it. See [API Keys](/security/api-keys).
 :::
 
-1. From the dashboard, click **New bucket** to open the create form.
+1. From the **Dashboard**, click **New bucket** to open the create form.
 2. Enter a bucket name.
 3. Choose a **region**: `eu-west-1` Europe (France, the default) or `us-east-1` US East (Michigan).
 4. Optionally expand **Advanced settings** to turn on **Versioning**, then **Object Lock**, then **Retention**. Each needs the one before it: until it's on, the next switch shows a **Needs Versioning** or **Needs Object Lock** badge. Retention takes a mode (**Governance**, the default, or **Compliance**) and a duration from 1 day up to 100 years; it starts at 15 days. Leave Versioning off and the bucket keeps only the current copy of each object.
@@ -64,9 +64,9 @@ A bucket must be empty before it can be deleted, with no objects or object versi
 
 <Tabs>
   <TabItem value="app" label="App">
-    Open **Buckets**, choose **Delete bucket** from the bucket's actions menu, and confirm. If the bucket still holds objects, the dashboard tells you it is not empty. Open the bucket and use **Empty bucket** to remove everything first. See [Buckets in the console](/app/buckets#deleting-a-bucket).
+    Open **Buckets**, choose **Delete bucket** from the bucket's actions menu, and confirm. If the bucket still holds objects, the console tells you it is not empty. Open the bucket and use **Empty bucket** to remove everything first. See [Buckets in the console](/app/buckets#deleting-a-bucket).
 
-    Dashboard deletion works in every region, including `eu-west-1`. Only the Owner and Admin roles can delete buckets.
+    Deleting from the console works in every region, including `eu-west-1`. Only the Owner and Admin roles can delete buckets.
   </TabItem>
 
   <TabItem value="aws-cli" label="AWS CLI">
@@ -74,7 +74,7 @@ A bucket must be empty before it can be deleted, with no objects or object versi
     aws s3 rb s3://my-bucket --endpoint-url https://s3.us-east-1.filonecontent.com --region us-east-1
     ```
 
-    `DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the dashboard there.
+    `DeleteBucket` over the S3 API works in `us-east-1`, using a key that has the `DeleteBucket` permission. It is not available in `eu-west-1`, so use the console there.
   </TabItem>
 </Tabs>
 
@@ -82,3 +82,7 @@ A bucket must be empty before it can be deleted, with no objects or object versi
 Deleted data is no longer accessible. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](/storage/objects#what-happens-to-deleted-data).
 :::
 
+## Next steps
+
+- [Objects](/storage/objects): upload, download and delete objects in your bucket
+- [API Keys](/security/api-keys#bucket-scope): limit a key to one bucket

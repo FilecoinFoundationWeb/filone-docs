@@ -1,6 +1,6 @@
 ---
 title: FAQ
-description: Frequently asked questions about Fil One.
+description: Answers to common questions about Fil One storage, regions, pricing, deletion, durability and compatibility.
 ---
 
 <div className="faq">
@@ -40,9 +40,9 @@ Within a region, storage is fulfilled by a distributed network of storage provid
 
 On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
 
-On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](/storage/versioning).
+On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the console is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](/storage/versioning).
 
-Once deleted, an object or bucket is no longer accessible through the API or the dashboard. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](/storage/objects#what-happens-to-deleted-data).
+Once deleted, an object or bucket is no longer accessible through the API or the console. Encrypted residual data can remain in Filecoin storage for a bounded period: see [What happens to deleted data](/storage/objects#what-happens-to-deleted-data).
 
 </div>
 </details>
@@ -89,7 +89,7 @@ Most S3 backup tools work. Before you commit to one, check that it can:
 We haven't tested specific backup products. Three documented gaps are ones some backup tools depend on:
 
 - **Server-side copy of a specific version is unverified in `eu-west-1`.** `CopyObject` is confirmed in `us-east-1`, and plain server-side copy works in `eu-west-1`, but copying a specific `VersionId` has not been verified there. Some tools use `CopyObject` for renames, moves, and deduplication.
-- **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the dashboard first.
+- **No `CreateBucket` over the API in `eu-west-1`.** A tool that provisions its own repository bucket needs the bucket created in the console first.
 - **No lifecycle rules.** Retention-based pruning has to be handled by the tool itself.
 
 See the [S3 Compatibility Reference](/reference/s3-compatibility) for the full list.
@@ -127,7 +127,7 @@ To check an individual object, compare the `ETag` returned by `HeadObject` with 
 
 Underneath, Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs, called Proof of Replication (PoRep) and Proof of Spacetime (PoSt), to show they still hold the data they committed to store. Providers that fail to produce valid proofs are penalised. This runs at the network level, not per request.
 
-Fil One doesn't expose per-object proof data: content identifiers, deal IDs and sealing state aren't shown in the API or the dashboard.
+Fil One doesn't expose per-object proof data: content identifiers, deal IDs and sealing state aren't shown in the API or the console.
 
 </div>
 </details>

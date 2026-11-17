@@ -1,0 +1,41 @@
+---
+title: Choosing a region
+description: Compare Fil One's eu-west-1 and us-east-1 regions, and what a region choice fixes for a bucket and its keys.
+---
+
+Fil One has two regions. You pick one for each bucket when you create it, and the choice can't be changed later, so it's worth a minute before your first bucket.
+
+| | Europe (France) | US East (Michigan) |
+|---|---|---|
+| Region ID | `eu-west-1` (default) | `us-east-1` |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` | `https://s3.us-east-1.filonecontent.com` |
+| Create and delete buckets | In the console only | In the console, or over the S3 API with a key that has `CreateBucket` / `DeleteBucket` |
+| Buckets per organization on a paid plan | 100 | 300 |
+
+## What the region fixes
+
+- **Where the data lives.** Objects stay in their bucket's region. If data residency matters to you, choose the region on that basis.
+- **The bucket's region, permanently.** A bucket can't be moved to another region. To change regions, create a new bucket there and copy the data across, for example with the [migration guide](/guides/migration).
+- **Which keys work.** Every API key belongs to one region and only works against that region's endpoint. If you use both regions, you need a key for each. See [Region scope](/security/api-keys#region-scope).
+- **The endpoint your code uses.** The endpoint, the region setting in your client and the key must all match the bucket's region.
+
+## How the regions differ over the S3 API
+
+Most of the S3 API works the same way in both regions: object reads and writes, multipart upload, versioned reads and deletes, Object Lock retention and Legal Hold, and presigned URLs. The differences:
+
+| | `eu-west-1` | `us-east-1` |
+|---|---|---|
+| `CreateBucket`, `DeleteBucket` | Not available. Use the console. | Supported |
+| Bucket management permissions on a key | Can't be granted | Can be granted (not pre-selected) |
+| `CopyObject` of a specific `VersionId` | Not yet confirmed. Plain copy works. | Supported |
+| SSE-C headers | Rejected | Not yet confirmed. Don't send them. |
+
+A few error codes in `eu-west-1` also differ from AWS, for example `AccessDenied` instead of `NotImplemented` for an unsupported operation. See [Known error-code deviations](/reference/s3-compatibility#known-error-code-deviations-in-eu-west-1). `eu-west-1` also has a few [known behavioral issues](/reference/s3-compatibility#known-behavioral-issues-in-eu-west-1), in pagination with `ListObjects`, URL-encoded listings and additional checksums, each with a workaround. [S3 compatibility](/reference/s3-compatibility) has the full per-region table.
+
+## Which one to pick
+
+- If you need the data in Europe, choose `eu-west-1`. If you need it in the US, choose `us-east-1`.
+- If you want to create and delete buckets from code, for example one bucket per customer or per test run, choose `us-east-1`. In `eu-west-1` buckets are created in the console.
+- If you expect more than 100 buckets in one organization, `us-east-1` allows 300 on a paid plan. See [Limits](/limits).
+
+You can use both regions in the same organization, with separate buckets and keys in each.
