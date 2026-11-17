@@ -1,156 +1,51 @@
 ---
 title: Quickstart - SDK
-description: Upload your first object using Python, JavaScript, or Go.
+description: The client settings, credentials and region rules for using Fil One from Python, JavaScript or Go.
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+The complete upload programs for [Python](/quickstart?tool=python), [JavaScript](/quickstart?tool=javascript) and [Go](/quickstart?tool=go) are in step 5 of the Quickstart. This page explains the settings they use, so you can apply them to your own code.
 
+## Client settings
 
-Choose your language and follow along. Each example uploads a file and verifies it. **Create the bucket first in the dashboard** — `CreateBucket` over the S3 API is not available in `eu-west-1`, the default region these examples use.
+Every S3 client that talks to Fil One needs these settings. The SDK defaults are written for AWS, and some of them fail against Fil One.
 
-:::note The endpoint depends on your bucket's region
-These examples use `eu-west-1`, the default region. For a bucket in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and region `us-east-1`. The endpoint, the region, and your access key must all refer to the same region.
-:::
+| Setting | Why | Python (boto3) | JavaScript (SDK v3) | Go (aws-sdk-go-v2) |
+|---------|-----|----------------|---------------------|--------------------|
+| Endpoint | Send requests to Fil One, not AWS | `endpoint_url="https://s3.eu-west-1.filonecontent.com"` | `endpoint: "https://s3.eu-west-1.filonecontent.com"` | `BaseEndpoint: aws.String("https://s3.eu-west-1.filonecontent.com")` |
+| Region | Must match the endpoint and the key | `region_name="eu-west-1"` | `region: "eu-west-1"` | `Region: "eu-west-1"` |
+| Path-style addressing | Fil One doesn't support virtual-hosted-style URLs | `Config(s3={"addressing_style": "path"})` | `forcePathStyle: true` | `UsePathStyle: true` |
+| Signature version | Presigned URLs must use SigV4 | `Config(signature_version="s3v4")` | Default | Default |
+| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not needed: presigned URLs carry no checksum | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not needed: presigned URLs carry no checksum |
 
-Each example reads your key from the standard AWS environment variables, the same names the console's **Download .env** writes. Set them in your shell before you run an example, and keep the secret out of your code:
+## Credentials
+
+Keep the secret out of your code. The Quickstart programs read the key from the standard AWS environment variables, which every AWS SDK picks up:
 
 ```bash
 export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
 ```
 
-The Python and JavaScript examples upload `my-file.txt`, so create it first: `echo "hello" > my-file.txt`.
+When you create a key, **Download .env** in the console saves a `credentials.env` file with these two lines, so `source credentials.env` sets them. The secret is shown only at creation: if you lose it, rotate the key. See [API Keys](/app/api-keys#rotating-a-key).
 
-<Tabs>
-  <TabItem value="python" label="Python">
-    ```bash
-    pip install boto3
-    ```
+## Regions
 
-    ```python
-    import boto3
-    from botocore.config import Config
+Fil One has two regions, each with its own endpoint:
 
-    s3 = boto3.client(
-        "s3",
-        endpoint_url="https://s3.eu-west-1.filonecontent.com",
-        region_name="eu-west-1",
-        # Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
-    )
+| Region | Endpoint |
+|--------|----------|
+| `eu-west-1` (default) | `https://s3.eu-west-1.filonecontent.com` |
+| `us-east-1` | `https://s3.us-east-1.filonecontent.com` |
 
-    # Upload a file (create the bucket first in the dashboard)
-    s3.upload_file("my-file.txt", "my-bucket", "my-file.txt")
+The endpoint, the region setting and the access key must all refer to the bucket's region. A key belongs to one region and is rejected by the other, so code that works with buckets in both regions needs two clients and two keys.
 
-    # Verify
-    response = s3.list_objects_v2(Bucket="my-bucket")
-    for obj in response.get("Contents", []):
-        print(f"{obj['Key']}  ({obj['Size']} bytes)")
-    ```
-  </TabItem>
+## Creating buckets
 
-  <TabItem value="javascript" label="JavaScript">
-    ```bash
-    npm install @aws-sdk/client-s3
-    ```
+Create buckets in the [console](https://app.filone.com) unless you work only in `us-east-1`. `CreateBucket` over the S3 API is not available in `eu-west-1`. In `us-east-1` it works with a key that has the `CreateBucket` permission, which isn't selected by default. Versioning and Object Lock can only be turned on in the console, when the bucket is created. See [Buckets](/storage/buckets).
 
-    Save this as `upload.mjs` (it uses ES modules and top-level `await`), then run `node upload.mjs`:
+## Next steps
 
-    ```javascript
-    import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
-    import { readFileSync } from "fs";
-
-    const client = new S3Client({
-      endpoint: "https://s3.eu-west-1.filonecontent.com",
-      region: "eu-west-1",
-      forcePathStyle: true,
-      // SDK v3.729+ adds checksums Fil One doesn't accept on presigned uploads
-      requestChecksumCalculation: "WHEN_REQUIRED",
-      responseChecksumValidation: "WHEN_REQUIRED",
-      // Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-    });
-
-    // Upload a file (create the bucket first in the dashboard)
-    await client.send(new PutObjectCommand({
-      Bucket: "my-bucket",
-      Key: "my-file.txt",
-      Body: readFileSync("my-file.txt"),
-    }));
-
-    // Verify
-    const { Contents } = await client.send(
-      new ListObjectsV2Command({ Bucket: "my-bucket" })
-    );
-    Contents?.forEach((obj) => console.log(obj.Key, obj.Size));
-    ```
-  </TabItem>
-
-  <TabItem value="go" label="Go">
-    ```bash
-    mkdir filone-quickstart && cd filone-quickstart
-    go mod init example.com/filone-quickstart
-    go get github.com/aws/aws-sdk-go-v2/service/s3
-    go get github.com/aws/aws-sdk-go-v2/credentials
-    ```
-
-    Save this as `main.go` and run `go run .`:
-
-    ```go
-    package main
-
-    import (
-        "context"
-        "fmt"
-        "log"
-        "os"
-        "strings"
-
-        "github.com/aws/aws-sdk-go-v2/aws"
-        "github.com/aws/aws-sdk-go-v2/credentials"
-        "github.com/aws/aws-sdk-go-v2/service/s3"
-    )
-
-    func main() {
-        client := s3.New(s3.Options{
-            BaseEndpoint:  aws.String("https://s3.eu-west-1.filonecontent.com"),
-            Region:        "eu-west-1",
-            UsePathStyle:  true,
-            Credentials: credentials.NewStaticCredentialsProvider(
-                os.Getenv("AWS_ACCESS_KEY_ID"),
-                os.Getenv("AWS_SECRET_ACCESS_KEY"),
-                "",
-            ),
-        })
-
-        ctx := context.Background()
-
-        // Upload (create the bucket first in the dashboard)
-        _, err := client.PutObject(ctx, &s3.PutObjectInput{
-            Bucket: aws.String("my-bucket"),
-            Key:    aws.String("hello.txt"),
-            Body:   strings.NewReader("Hello from Go!"),
-        })
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        // List
-        out, err := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
-            Bucket: aws.String("my-bucket"),
-        })
-        if err != nil {
-            log.Fatal(err)
-        }
-        for _, obj := range out.Contents {
-            fmt.Printf("%s (%d bytes)\n", *obj.Key, *obj.Size)
-        }
-    }
-    ```
-  </TabItem>
-</Tabs>
-
-For more detailed examples including multipart uploads and presigned URLs, see the dedicated SDK pages:
+For downloads, multipart uploads and presigned URLs, see the SDK pages:
 
 <div class="card-grid">
   <a href="/sdk/python"><strong>Python</strong><span>boto3: uploads, downloads, multipart, presigned URLs.</span></a>

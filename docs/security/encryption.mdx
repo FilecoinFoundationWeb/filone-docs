@@ -9,7 +9,7 @@ Fil One encrypts all data by default. There is nothing to configure — encrypti
 
 All objects stored in Fil One are encrypted at rest. Encryption is applied automatically when data is written and decrypted automatically when data is read. You do not need to set any headers or configure any options, and it cannot be disabled.
 
-Encryption is performed by the S3 storage gateway for the region your bucket lives in, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
+Encryption is performed by the storage infrastructure in your bucket's region, not by the Fil One console. This applies to all objects in all buckets, with no exceptions.
 
 **Do not send encryption headers.** Fil One applies its own server-side encryption, and you cannot request a specific mode. Uploads specifying `ServerSideEncryption: aws:kms` (SSE-KMS) are **rejected in both regions**: with `InvalidRequest` in `us-east-1`, and with `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation (`PutObject`, `CopyObject`, and `CreateMultipartUpload` are all affected). SSE-C headers are rejected in `eu-west-1`; this is not yet confirmed in `us-east-1`, so don't send them there either. Omit encryption headers entirely: encryption is applied either way.
 
@@ -23,9 +23,9 @@ This applies to all API operations, including uploads, downloads, presigned URLs
 
 ## Key management
 
-Encryption keys are held by the **regional storage operator** that fulfils storage for your bucket's region, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
+Encryption keys are held by **Fil One's storage provider for your bucket's region**, not by Fil One and not by you. You do not supply or manage encryption keys, and there is no customer-managed-key option.
 
-If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, [contact support](/app/support) — those details are set by the regional operator rather than by Fil One.
+If your compliance requirements depend on the specific cipher in use, or on who holds key material for a given region, [contact support](/app/support). Those details are set by the region's storage provider rather than by Fil One.
 
 ## Client-side encryption
 

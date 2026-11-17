@@ -3,7 +3,9 @@ title: S3 Compatibility
 description: Supported S3 operations, authentication, and endpoint configuration.
 ---
 
-Fil One provides an S3-compatible API. It works with standard S3 SDKs and tools once you set the endpoint and enable path-style addressing; see the gaps below. Authenticate with your [API keys](/security/api-keys).
+Fil One provides an S3-compatible API. Standard S3 SDKs and tools work once you set the regional endpoint and enable path-style addressing. Object reads and writes, multipart upload, versioned reads and deletes, Object Lock retention and Legal Hold, and presigned URLs all work in both regions. Authenticate with your [API keys](/security/api-keys).
+
+What doesn't work over the API is listed in [Not supported](#not-supported), each with a workaround where one exists: bucket configuration, ACLs and bucket policies, tagging, lifecycle rules, and event notifications.
 
 ## Endpoint
 
@@ -31,72 +33,62 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 ## Supported operations
 
 :::note About the numeric limits below
-Specific size and count limits quoted in this table (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](/limits).
+Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](/limits).
 :::
 
 :::warning How unsupported operations respond in `eu-west-1`
-In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed by a compatibility test run against the region.
+In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed in that region.
 
 A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`, or the tagging operations means *the feature is absent*, not that your key lacks a permission. Bucket-configuration calls such as `PutBucketVersioning` and `PutBucketEncryption` can't be granted to any key, so they fail the same way. Don't spend time auditing your access-key scopes for these. Code that branches on `NotImplemented` to degrade gracefully needs to treat 403 on these operations the same way.
 :::
 
 ### Bucket operations
 
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `CreateBucket` | ⚠️ Region-dependent | Supported in `us-east-1`. Not available in `eu-west-1` — create buckets there via the dashboard. |
-| `DeleteBucket` | ⚠️ Region-dependent | Supported in `us-east-1` (the bucket must be empty). Not available in `eu-west-1`. |
-| `ListBuckets` | ✅ Supported | |
-| `HeadBucket` | ✅ Supported | |
-| `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets, `Suspended` is never returned. |
-| `PutBucketVersioning` | ❌ Not available to access keys | No access key can be granted this action, in either region. Versioning is set when you create the bucket in the console and cannot be changed afterwards. |
-| `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
-| `PutBucketObjectLockConfiguration` | ❌ Not available to access keys | No access key can be granted this action, in either region. Object Lock and the default retention are set when you create the bucket in the console. |
-| `GetBucketEncryption` | ❌ Not available to access keys | No access key can be granted this action, in either region. Encryption is always on. |
-| `PutBucketEncryption` | ❌ Not available to access keys | No access key can be granted this action, in either region. Encryption cannot be modified or disabled. |
-| `DeleteBucketEncryption` | ❌ Not supported | Rejected with `AccessDenied` in `eu-west-1`. Encryption cannot be disabled. |
-| `GetBucketAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`. See [ACLs](#acls). |
-| `PutBucketAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. |
-| `PutBucketPolicy` | ❌ Not supported | Bucket policies are not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. |
-| `PutBucketLifecycleConfiguration` | ❌ Not supported | Planned for a future release. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetBucketNotificationConfiguration` | ❌ Not supported | Event notifications are not supported. |
-| `PutBucketNotificationConfiguration` | ❌ Not supported | Event notifications are not supported. |
-| `GetBucketTagging` | ❌ Not supported | Bucket and object tagging are not implemented. |
-| `PutBucketTagging` | ❌ Not supported | Bucket and object tagging are not implemented. |
-| `GetBucketLogging` | ❌ Not supported | Server access logging is not implemented. |
-| `PutBucketLogging` | ❌ Not supported | Rejected in `eu-west-1` (`MalformedXML`, even for a well-formed configuration). |
-| `GetPublicAccessBlock` | ❌ Not supported | Public access is never permitted, so there is no block configuration to read. |
-| `PutPublicAccessBlock` | ❌ Not supported | Rejected in `eu-west-1` (`MalformedXML`, even for a well-formed configuration). All buckets are private unconditionally. |
+| Operation | `eu-west-1` | `us-east-1` | Notes |
+|-----------|-------------|-------------|-------|
+| `CreateBucket` | ❌ Not available | ✅ Supported | In `eu-west-1`, create buckets in the dashboard. |
+| `DeleteBucket` | ❌ Not available | ✅ Supported | The bucket must be empty. |
+| `ListBuckets` | ✅ Supported | ✅ Supported | |
+| `HeadBucket` | ✅ Supported | ✅ Supported | |
+| `GetBucketVersioning` | ✅ Supported | ✅ Supported | Returns `Enabled` for versioned buckets. `Suspended` is never returned. |
+| `PutBucketVersioning` | ❌ No key can be granted it | ❌ No key can be granted it | Versioning is set when you create the bucket in the console and cannot be changed afterwards. |
+| `GetBucketObjectLockConfiguration` | ✅ Supported | ✅ Supported | Returns the bucket-level default retention policy, if set. |
+| `PutBucketObjectLockConfiguration` | ❌ No key can be granted it | ❌ No key can be granted it | Object Lock and the default retention (Governance or Compliance, 1 day – 100 years) are set when you create the bucket in the console. |
+| `GetBucketEncryption`, `PutBucketEncryption` | ❌ No key can be granted them | ❌ No key can be granted them | Encryption is always on, and cannot be modified or disabled. |
+| `DeleteBucketEncryption` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | Encryption cannot be disabled. |
+| `GetBucketAcl`, `PutBucketAcl` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | The ACL model is not implemented. See [ACLs](#acls). |
+| `GetBucketPolicy`, `PutBucketPolicy` | ❌ Not supported (`PutBucketPolicy`: `AccessDenied`) | ❌ Not supported | Bucket policies are not implemented. |
+| `GetBucketLifecycleConfiguration`, `PutBucketLifecycleConfiguration` | ❌ Not supported (`PutBucketLifecycleConfiguration`: `AccessDenied`) | ❌ Not supported | Planned for a future release. |
+| `GetBucketNotificationConfiguration`, `PutBucketNotificationConfiguration` | ❌ Not supported | ❌ Not supported | Event notifications are not supported. |
+| `GetBucketTagging`, `PutBucketTagging` | ❌ Not supported | ❌ Not supported | Bucket and object tagging are not implemented. |
+| `GetBucketLogging`, `PutBucketLogging` | ❌ Not supported (`PutBucketLogging`: `MalformedXML`, even for a well-formed configuration) | ❌ Not supported | Server access logging is not implemented. |
+| `GetPublicAccessBlock`, `PutPublicAccessBlock` | ❌ Not supported (`PutPublicAccessBlock`: `MalformedXML`, even for a well-formed configuration) | ❌ Not supported | Public access is never permitted, so there is no block configuration to read. All buckets are private unconditionally. |
 
 ### Object operations
 
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `PutObject` | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
-| `GetObject` | ✅ Supported | Supports range requests (`Range` header). Supports `VersionId` to retrieve a specific version. |
-| `DeleteObject` | ✅ Supported | Creates a delete marker on versioned buckets. Pass `VersionId` to permanently delete a specific version. |
-| `DeleteObjects` | ✅ Supported | Bulk delete up to 1,000 objects per request. |
-| `HeadObject` | ✅ Supported | |
-| `ListObjectsV2` | ✅ Supported | |
-| `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
-| `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. In `eu-west-1`, most copy operations pass a compatibility run, so plain server-side copy works there, but **copying a specific `VersionId` is not yet confirmed** in that region. Verify a version-promote copy against your own bucket before relying on it. |
-| `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
-| `PutObjectRetention` | ✅ Supported | Set or extend a version's retention. Retention can't be shortened, because no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
-| `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
-| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
-| `GetObjectAttributes` | ❌ Not supported | Returns `AccessDenied` in `eu-west-1`. Use `HeadObject` for size, ETag, and metadata instead. |
-| `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`, including on objects uploaded with a canned-ACL header. |
-| `PutObjectAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `GetObjectTagging` | ❌ Not supported | Object tagging is not implemented. Returns `AccessDenied` in `eu-west-1`. |
-| `PutObjectTagging` | ❌ Not supported | Object tagging is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
-| `RestoreObject` | ❌ Not applicable | Fil One has a single storage class. There are no archival tiers to restore from. |
-| `SelectObjectContent` | ❌ Not planned | S3 Select is not planned. |
+| Operation | `eu-west-1` | `us-east-1` | Notes |
+|-----------|-------------|-------------|-------|
+| `PutObject` | ✅ Supported | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
+| `GetObject` | ✅ Supported | ✅ Supported | Supports range requests (`Range` header). Supports `VersionId` to retrieve a specific version. |
+| `DeleteObject` | ✅ Supported | ✅ Supported | Creates a delete marker on versioned buckets. Pass `VersionId` to permanently delete a specific version, bypassing delete markers. |
+| `DeleteObjects` | ✅ Supported | ✅ Supported | Bulk delete up to 1,000 objects per request. |
+| `HeadObject` | ✅ Supported | ✅ Supported | |
+| `ListObjectsV2` | ✅ Supported | ✅ Supported | |
+| `ListObjectVersions` | ✅ Supported | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
+| `CopyObject` | ✅ Plain server-side copy. Copying a specific `VersionId` (`x-amz-copy-source-version-id`) is **not yet confirmed**. | ✅ Supported, including copying a specific `VersionId` onto the current key | Copying an older version onto the current key promotes it. In `eu-west-1`, verify a version-promote copy against your own bucket before relying on it. |
+| `GetObjectRetention` | ✅ Supported | ✅ Supported | Returns the Object Lock retention for a specific version. |
+| `PutObjectRetention` | ✅ Supported | ✅ Supported | Set or extend a version's retention. Retention can't be shortened, because no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
+| `GetObjectLegalHold` | ✅ Supported | ✅ Supported | Requires the matching access-key permission. |
+| `PutObjectLegalHold` | ✅ Supported | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
+| `GetObjectAttributes` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | Use `HeadObject` for size, ETag, and metadata instead. |
+| `GetObjectAcl`, `PutObjectAcl` | ❌ Not supported (`AccessDenied`, including on objects uploaded with a canned-ACL header) | ❌ Not supported | The ACL model is not implemented. See [ACLs](#acls). |
+| `GetObjectTagging`, `PutObjectTagging` | ❌ Not supported (`AccessDenied`) | ❌ Not supported | Object tagging is not implemented. |
+| `RestoreObject` | Not applicable | Not applicable | Fil One has a single storage class. There are no archival tiers to restore from. |
+| `SelectObjectContent` | ❌ Not planned | ❌ Not planned | S3 Select is not planned. |
 
 ### Multipart upload
 
-Multipart upload is supported through the S3 API in **all regions**. Note that uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling — use the S3 API or CLI for larger objects.
+Multipart upload is supported through the S3 API in **both regions**. Uploads from the Fil One **dashboard** always use a single `PutObject` request, so browser uploads are bounded by the single-PUT ceiling: use the S3 API or CLI for larger objects.
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
@@ -111,16 +103,9 @@ Multipart upload is supported through the S3 API in **all regions**. Note that u
 
 Versioning is **opt-in** and configured at bucket creation time. Once enabled on a bucket, it cannot be suspended or disabled. Every upload to an existing key on a versioned bucket creates a new version rather than overwriting.
 
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets. |
-| `ListObjectVersions` | ✅ Supported | Lists all versions and delete markers in a bucket. |
-| `GetObject` with `VersionId` | ✅ Supported | Retrieves a specific historical version by ID. |
-| `DeleteObject` with `VersionId` | ✅ Supported | Permanently deletes a specific version, bypassing delete markers. |
-| `PutBucketVersioning` | ❌ Not available to access keys | Versioning is set at bucket creation and cannot be suspended or changed. |
-| `CopyObject` with `x-amz-copy-source-version-id` | ⚠️ Region-dependent | Confirmed working in `us-east-1` — copy a specific version onto the current key to promote it. Not yet confirmed in `eu-west-1`: plain copy works there, but the version-id form has not been tested. |
+The versioning operations are in the tables above: `GetBucketVersioning` and `PutBucketVersioning` under [Bucket operations](#bucket-operations), and `ListObjectVersions`, `GetObject` and `DeleteObject` with `VersionId`, and `CopyObject` with a source version under [Object operations](#object-operations).
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject` (see above). In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
+The Fil One **dashboard** has no restore, roll-back, or "make current" action — you can list, download, and delete any prior version there, but not promote one to current. In `us-east-1`, you can promote an older version via the API with `CopyObject`. In `eu-west-1`, plain server-side copy works but the version-id form is unverified, so test it against your own bucket first and fall back to downloading the version and uploading it again if it fails.
 
 See [Versioning](/storage/versioning) for detailed usage and examples.
 
@@ -128,18 +113,7 @@ See [Versioning](/storage/versioning) for detailed usage and examples.
 
 Object Lock enforces WORM (Write-Once-Read-Many) protection. Both Governance and Compliance mode are supported. Object Lock requires versioning, and both are set at bucket creation time.
 
-:::note Where the evidence comes from
-Object Lock, retention, and Legal Hold are verified in **both** regions: by an automated compatibility suite in `us-east-1`, and by engineering testing in `eu-west-1`.
-:::
-
-| Operation | Status | Notes |
-|-----------|--------|-------|
-| `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy. |
-| `PutBucketObjectLockConfiguration` | ❌ Not available to access keys | The default retention (Governance or Compliance, 1 day – 100 years) is set when you create the bucket in the console. |
-| `GetObjectRetention` | ✅ Supported | Returns the retention setting for a specific object version. |
-| `PutObjectRetention` | ✅ Supported | Set or extend a retention period. It can't be shortened: no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
-| `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
-| `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
+Object Lock, retention, and Legal Hold are confirmed in **both** regions. The operations are in the tables above: `GetBucketObjectLockConfiguration` and `PutBucketObjectLockConfiguration` under [Bucket operations](#bucket-operations), and `GetObjectRetention`, `PutObjectRetention`, `GetObjectLegalHold` and `PutObjectLegalHold` under [Object operations](#object-operations).
 
 **Object Lock modes:**
 
@@ -159,16 +133,15 @@ See [Object Lock](/storage/object-lock) for compliance use cases, retention conf
 
 ### Server-side encryption
 
-Encryption is **always enabled** on every Fil One bucket. There is nothing to configure.
+Encryption is **always enabled** on every Fil One bucket. There is nothing to configure. `GetBucketEncryption` and `PutBucketEncryption` can't be granted to any key, in either region (see [Bucket operations](#bucket-operations)).
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
-| `GetBucketEncryption` / `PutBucketEncryption` | ❌ Not available to access keys | No access key can be granted these actions, in either region. Encryption is on either way and cannot be modified or disabled. |
 | SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
-| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by the regional storage operator. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`; not yet confirmed in `us-east-1`. Don't send them. |
+| SSE-C (customer-provided keys) | ❌ Not supported | Keys are held by Fil One's storage provider for that region. There is no customer-managed-key option. Requests carrying SSE-C headers are rejected in `eu-west-1`; not yet confirmed in `us-east-1`. Don't send them. |
 | Client-side encryption | ✅ Optional | Encrypt data in your own application before upload. AWS's S3 Encryption Client exists only for some SDKs (Java, .NET, Go, Ruby) — not boto3, the CLI, or JS v3 — so with those you supply your own crypto. Server-side encryption is still applied on top. |
 
 See [Encryption](/security/encryption) for details.
@@ -188,19 +161,19 @@ So a tool that uploads with `--acl public-read` will appear to work, while a too
 
 To limit what a key can reach, scope it to specific buckets when you create it. See [Bucket scope](/security/api-keys#bucket-scope).
 
-## Not yet supported
+## Not supported
 
-| Feature | Timeline | Notes |
-|---------|----------|-------|
-| Lifecycle rules (expiration, transitions) | Planned | Affects archival and cleanup workflows. |
-| Event notifications (SNS/SQS/Lambda triggers) | Planned | |
-| Object and bucket tagging | Planned | |
+| Feature | Status | Workaround |
+|---------|--------|------------|
+| Lifecycle rules (expiration, transitions) | Planned | Run a scheduled script that lists objects with `ListObjectsV2` and deletes old ones with `DeleteObjects`. Objects under Object Lock retention can't be deleted until their retention expires. |
+| Event notifications (SNS/SQS/Lambda triggers) | Planned | Poll `ListObjectsV2` on a schedule and compare it with the previous listing. |
+| Object and bucket tagging | Planned | Store key-value pairs as user metadata (`x-amz-meta-*` headers) when you upload, and read them back with `HeadObject`. |
 | Additional regions | Planned | `eu-west-1` and `us-east-1` are available today. |
-| IAM users, roles, and bucket policies on the S3 API | Not yet supported | The S3 API has no IAM users, roles, or bucket policies. Access is controlled by each access key's permissions and bucket scope. Team members and roles exist in the console: see [Organization](/app/organization#roles-and-permissions). |
-| S3 Select | Not planned | |
-| S3 Inventory | Not planned | |
-| S3 Batch Operations | Not planned | |
-| Multiple storage classes | Not planned | Single storage class. |
+| IAM users, roles, and bucket policies on the S3 API | Not supported | Access is controlled by each access key's permissions and [bucket scope](/security/api-keys#bucket-scope): create one key per application with only what it needs. Team members and roles exist in the console: see [Organization](/app/organization#roles-and-permissions). |
+| S3 Select | Not planned | Download the object, or a byte range with a `Range` header on `GetObject`, and filter it in your application. |
+| S3 Inventory | Not planned | List objects with `ListObjectsV2`, or versions with `ListObjectVersions`. |
+| S3 Batch Operations | Not planned | Script the operation over a listing. `DeleteObjects` deletes up to 1,000 objects per request. |
+| Multiple storage classes | Not planned | None needed: there is a single storage class. |
 
 ## Error responses
 
@@ -222,7 +195,7 @@ See the [Error Reference](/reference/errors) for a full list of error codes.
 
 ### Known error-code deviations in `eu-west-1`
 
-Confirmed by a compatibility test run against the region.
+These are confirmed in `eu-west-1`.
 
 | Condition | AWS S3 returns | Fil One `eu-west-1` returns |
 |-----------|----------------|------------------------------|
@@ -254,8 +227,8 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 |----------|--------|---------|
 | Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the dashboard; achievable via the API in `us-east-1` using `CopyObject`. |
 | Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
-| Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
-| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
+| Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by Fil One's storage provider for that region; no customer-managed keys. |
+| Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles: see [Organization](/app/organization#roles-and-permissions). |
 | Public access | Configurable via ACLs and bucket policies. | No public access. All requests require authentication. Canned-ACL headers on uploads are ignored rather than rejected, and never make an object public. |
 | Error codes for missing features | `NotImplemented` (501). | `AccessDenied` (403) in `eu-west-1`. A 403 on a bucket-configuration call means the feature is absent, not that your key lacks permission. |
@@ -263,4 +236,4 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 | Object Lock modes | Compliance and Governance. | Compliance and Governance, in both regions, with Legal Hold. |
 | Storage classes | Multiple (Standard, IA, Glacier, etc.). | Single storage class. |
 | Regions | 30+ globally. | Two: `eu-west-1` and `us-east-1`. Additional regions planned. |
-| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One, but the underlying Filecoin storage may persist for a bounded period until the sealed sector naturally expires. That residual data stays encrypted. |
+| Data retention after deletion | Object is immediately and permanently deleted. | Object is immediately inaccessible in Fil One. The underlying storage may persist for a bounded period: see [What happens to deleted data](/storage/objects#what-happens-to-deleted-data). |
