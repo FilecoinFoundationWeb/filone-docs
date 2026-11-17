@@ -90,33 +90,60 @@ The console uploads each file in a single request, which the S3 single-PUT ceili
 
 ## The object detail page
 
-Clicking an object shows its **Name**, **Size**, **Bucket**, **S3 Path**, **ETag**, and, where they apply, **Version ID**, **Retention**, **Description**, and **Tags**. **Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+Clicking an object opens its page. The file name is the title, with the folders it sits in shown in the breadcrumb above. **Download** and **Share** sit beside the title, and the **⋯** menu holds **Copy S3 URI**, **Copy console link**, and **Delete**.
 
-A **Version history** card appears when the object has more than one version, listing each **Version ID** with its **Status**, **Size**, and **Last Modified**, and marking the one you are viewing. Clicking another row opens that version.
+### Preview
 
-:::note Working with versions
-Version history is drawn from the object list you arrived through, so open the bucket first if you have followed a direct link to an object and the card is not showing.
+The page shows the object itself when your browser can display it:
 
+- **Images** up to 20 MB and **text files** up to 1 MB load when the page opens. A text file shows its first 20,000 characters, and an HTML file shows its source.
+- **Video** and **audio** load only their metadata until you press play.
+
+Any other file shows a placeholder that says why there is no preview, with a **Download** button. The preview follows the object's content type. For an object stored as `application/octet-stream`, or with no content type, it goes by the file extension.
+
+### Details
+
+The **Details** card shows **Size**, **Type**, **Last modified**, and, where they apply, **Version ID**, **ETag**, **Retention**, **Description**, and **Tags**. Hover over **Size**, **Type**, or **Last modified** for the exact value. **Retention** appears on buckets with [Object Lock](/storage/object-lock). **Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. Any other user metadata is listed under **Custom metadata**, by key.
+
+When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+
+### Versions
+
+On a versioned bucket, the object's own link opens its latest version. A **Version history** card appears when the object has more than one version, listing each version with its **Version ID**, **Size**, and **Last modified**, badged **Latest** for the current one and **Delete marker** where one was placed. The version you are on is marked **Viewing**, and clicking another row opens that version. The history loads for the object itself, so it shows on a shared link or after a reload.
+
+An older version carries an **Older version** badge under the title, with a **View latest version** link. When the newest entry is a delete marker, the line gives the date the object was deleted instead.
+
+:::note Restoring an earlier version
 To bring an earlier version back as the current one, download it and upload it again. See [Versioning](/storage/versioning).
 :::
 
+### API access
+
+Beside the cards, or below them on a narrow screen, **API access** gives an AWS CLI command that downloads the object, and the endpoint for the object's region.
+
 ## Downloading and sharing
 
-**Download** is available on each row in the object list and in the object detail header. It works on any plan, including the trial.
+**Download** is available on each row in the object list and beside the title on the object detail page. It works on any plan, including the trial.
 
-**Share object** generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
+**Share**, on a row or on the object detail page, generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
 
-Sharing is a paid-plan feature. During the trial the button is disabled, with a tooltip pointing to an upgrade.
+Sharing is a paid-plan feature. During the trial the Share button is disabled, with a tooltip pointing to an upgrade.
 
 ## Deleting objects
 
-Click the trash icon on a row, or **Delete object** on the detail page, and confirm.
+Click the trash icon on a row, or **Delete** in the **⋯** menu on the object detail page, and confirm.
 
 To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. Ticking a folder row selects everything under it, and the header checkbox selects everything at the current level.
 
-:::warning Console deletes are permanent, including on versioned buckets
-The console always deletes the specific version on the row you chose. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are. To hide an object behind a delete marker instead, delete it over the S3 API without a version ID. See [Versioning](/storage/versioning#delete-markers).
+:::warning Deleting from a row is permanent, including on versioned buckets
+A row's delete removes the specific version on that row. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are.
 :::
+
+On the object detail page, **Delete** acts on the version you are viewing:
+
+- On an older version it reads **Delete version**, and permanently removes that version alone.
+- On the latest version of an object in a versioned bucket, it places a delete marker. The object is hidden, and its earlier versions stay in its history. See [Versioning](/storage/versioning#delete-markers).
+- In a bucket without versioning, it permanently deletes the object.
 
 An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](/storage/object-lock).
 
