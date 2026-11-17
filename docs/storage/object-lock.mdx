@@ -98,7 +98,7 @@ In standard S3, retention can be extended but never shortened: you can move `Ret
 
 ## Checking retention status
 
-The object detail page in the dashboard shows an object's retention status, and displays a lock banner for Compliance-locked objects — so you don't need the CLI just to check. `GetObjectRetention` is also available over the S3 API:
+The object panel and the object detail page in the dashboard show an object's retention status, so you don't need the CLI just to check. While a Compliance lock is in force, the object detail page also shows a lock banner with its date. `GetObjectRetention` is also available over the S3 API:
 
 ```bash
 aws s3api get-object-retention \
