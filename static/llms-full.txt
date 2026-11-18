@@ -2293,21 +2293,27 @@ This page covers the console specifically. For the trial lifecycle, the pricing 
 
 ## Your plan
 
-The **Plan** card names your plan and carries a status badge:
+The plan card is headed by your plan's name, with its action beside it. Below the name are your per-TB rate and the date the plan renews or ends. A status badge appears beside the name only when the plan needs attention:
 
 | Status | Badge | Plan name and detail line |
 |--------|-------|---------------------------|
-| Trial | **Active** (blue) | **Free trial**. The trial's storage and egress limits are on the [usage card](#usage) |
-| Paid | **Active** (green) | **Pay as you go**, with your per-TB rate and the renewal date |
-| Billed manually | **Active** (green) | The name on your agreement, or **Custom plan**, with **Billed manually** |
+| Trial | None | **Free trial**, with how many days are left. The trial's storage and egress limits are on the [usage card](#usage) |
+| Paid | None | **Pay as you go**, with your per-TB rate and the renewal date |
+| Billed manually | None | The name on your agreement, or **Custom plan**, with **Billed manually** |
 | Payment failed | **Payment failed** (amber) | Your plan name, rate, and renewal date, as for a paid plan |
-| Grace period | **Grace period** | Your plan name and rate, and how many days until access ends |
-| Canceled | **Canceled** | Your plan name and rate, and the date it was canceled |
+| Grace period | **Grace period** (amber) | Your plan name and rate, and how many days until access ends |
+| Canceled | **Canceled** (red) | Your plan name and rate, and the date it was canceled |
 | No plan | None | **No plan**, with **Choose a plan to start storing data** |
 
 If your plan was set up with the sales team, the card shows the name on your agreement, and **Custom pricing** where there is no single per-TB rate to show. An organization billed manually by the sales team has no payment method to manage in the console.
 
 The button in this card is **Upgrade** on the trial, **Manage plan** on a paid plan (including one whose payment failed), **Reactivate** once the subscription is canceled, and **Choose a plan** during the grace period or with no plan.
+
+### Discounts
+
+A discount from a promo code shows beside your rate, as what it takes off and until when, such as **20% off until Nov 11**. The year appears only when the discount ends in a later year. A percentage discount that applies every month also lowers the rate shown, so the card shows the per-TB rate you pay while it lasts. A discount on your next invoice only, or a fixed amount off, leaves the rate as listed.
+
+Discounts show only while the subscription is active or a failed payment is being retried. A canceled subscription, or one in its grace period, shows no discount, on the plan card or in the estimate.
 
 A canceled subscription can be restarted at any time: an Owner clicks **Reactivate**, and the banner confirms "Your data is still here." Access returns as soon as the new subscription starts, without contacting support.
 
@@ -2330,7 +2336,7 @@ The usage card is headed **Usage during your trial** on the trial and **Usage th
 
 **Egress** also always appears. On the trial it is shown against the 2 TB cap with a progress bar. On a paid plan it is labelled **Free**, since there are no egress fees.
 
-**Estimated total** appears on a paid plan with a per-TB rate. Where your monthly minimum is higher than your usage, the estimate shows the minimum, captioned **Your monthly minimum**. Plans with custom pricing show no estimate, and the card says the total for the period is in Stripe.
+**Estimated total** appears on a paid plan with a per-TB rate. Where your monthly minimum is higher than your usage, the estimate shows the minimum. A discount is taken off the estimate, noted beside it, such as **Including 20% discount**. Plans with custom pricing show no estimate, and the card says the total for the period is in Stripe.
 
 Info: How the estimate is calculated
 The estimate applies your plan's per-TB rate to your most recent storage reading, with your monthly minimum as the floor. Your invoice is calculated from your average storage across the billing period, so treat the estimate as a guide to where you are heading rather than the final figure. Egress is not included, since it is free on paid plans.
@@ -2344,8 +2350,8 @@ The **Payment method** card shows one of three things:
 | What you see | Button |
 |--------------|--------|
 | **No card on file**, "Needed before your trial ends" | **Add card** |
-| The card brand and last four digits, with the expiry date | **Update** |
-| **Billed by invoice**, for a paid plan with no card on file | **Manage** |
+| The card network's logo for Visa, Mastercard, American Express, and Discover (a generic card for other brands), the brand and last four digits, and the expiry date | **Update** |
+| **Payments via invoice**, for a paid plan with no card on file | **Manage** |
 
 **Update**, **Manage**, and **Manage plan** open the Stripe customer portal, where the card details are entered and stored. Fil One does not hold your card number.
 
