@@ -341,8 +341,8 @@ Security, Billing) hold the concepts and code samples.
   Owner-only. The plan card shows a status badge only when the plan needs
   attention (payment failed, grace period, canceled); manually billed
   organizations show Billed manually or Custom plan. A promo discount shows
-  beside the rate ("20% off until Nov 11"), and a monthly percentage discount
-  lowers the rate shown; none shows once canceled or in grace. A
+  beside the rate, and a monthly percentage discount lowers the rate shown;
+  none shows once canceled or in grace. A
   FAILED PAYMENT makes the console read-only. An Owner can Reactivate a canceled
   subscription ("Your data is still here"). "Choose your plan": Pay as you go
   ($5.99/TB/month, $5.99 minimum) or Business plan (custom pricing, 1, 3, or
