@@ -1572,6 +1572,46 @@ Client-side encryption is optional and is in addition to the server-side encrypt
 
 ---
 
+# Access Controls by Region
+
+Source: https://docs.filone.com/security/access-by-region
+
+Fil One's access controls are not the same in every region. Some are checked by the region's storage gateway on every S3 request. Others are checked by the Fil One console, and some are not available at all. Check this page before you choose a region for data whose access you need to control.
+
+## What the labels mean
+
+- **Gateway**: the region's storage gateway checks every request, whatever tool sends it: an SDK, the AWS CLI, or the console.
+- **Console**: the [console](https://app.filone.com) checks it when you act in the console, including when you create an access key. The S3 API has no users or roles, so once a key exists, the gateway judges each request only by what that key carries.
+- **Not available**: the region does not offer it, through the console or the S3 API.
+
+## The matrix
+
+| Access control | `eu-west-1` Europe (France) | `us-east-1` US East (Michigan) |
+|---|---|---|
+| Object permissions on a key (Read, Write, List, Delete, and the [granular permissions](https://docs.filone.com/security/api-keys#granular-permissions)) | Gateway | Gateway |
+| [Bucket scope](https://docs.filone.com/security/api-keys#bucket-scope) on a key | Gateway | Gateway |
+| [Key expiry](https://docs.filone.com/security/api-keys#key-expiration) | Gateway | Gateway |
+| Reading bucket settings with a key (versioning, Object Lock configuration) | Gateway | Gateway |
+| Creating and deleting buckets with a key (`CreateBucket`, `DeleteBucket`) | Not available | Gateway |
+| A key carries only permissions its creator's [role](https://docs.filone.com/app/organization#roles-and-permissions) holds | Console | Console |
+| Keys that go beyond a member's new role are revoked when the role narrows, and all of a member's keys when they are removed | Console | Console |
+| Deleting a bucket in the console (Owner and Admin only) | Console | Console |
+| Bucket policies | Not available | Not available |
+| Users or roles on the S3 API | Not available | Not available |
+| Changing bucket configuration with a key (versioning, Object Lock, encryption) | Not available | Not available |
+
+## Notes
+
+- **Read differs by region.** In `us-east-1` the Read permission also allows listing object names. In `eu-west-1` it does not. See [Object permissions](https://docs.filone.com/security/api-keys#object-permissions).
+- **Listing bucket names is always allowed.** Every key can list the names of the organization's buckets in its region, whatever its bucket scope. Bucket scope limits what a key can do with a bucket's contents.
+- **A role cap applies when the key is created.** A key keeps the permissions it was created with. Changing the creator's role to a narrower one revokes keys that exceed it, which then stop working at the gateway. See [Changing a role](https://docs.filone.com/app/organization#changing-a-role).
+- **Revocation takes effect at the gateway.** Deleting or revoking a key is passed to the region's storage operator, and the key stops working once that change propagates.
+
+See [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility) for every S3 operation by region, and [Limits & Quotas](https://docs.filone.com/limits#regions) for the region list.
+
+
+---
+
 # Trial & Billing
 
 Source: https://docs.filone.com/billing/trial
@@ -3852,6 +3892,8 @@ These apply in the [console](https://docs.filone.com/app/buckets) at app.filone.
 The region is selected at bucket creation time and cannot be changed afterward. Access keys are also scoped to a single region — see [API Keys](https://docs.filone.com/security/api-keys).
 
 Bucket creation and deletion through the S3 API are available in `us-east-1` but not in `eu-west-1`. See [Buckets](https://docs.filone.com/storage/buckets).
+
+For which access controls each region supports, and whether the storage gateway or the console enforces them, see [Access Controls by Region](https://docs.filone.com/security/access-by-region).
 
 ## API rate limits
 

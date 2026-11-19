@@ -189,6 +189,14 @@ Critical integration notes for developers:
   both regions; SSE-C rejected in eu-west-1, not yet confirmed in us-east-1.
   Client-side encryption is up to you — AWS's S3 Encryption Client exists only
   for Java/.NET/Go/Ruby, NOT boto3/CLI/JS v3
+- [Access Controls by Region](https://docs.filone.com/security/access-by-region):
+  per-region matrix of who enforces each access control. In BOTH eu-west-1 and
+  us-east-1 the storage gateway enforces key object permissions, bucket scope,
+  expiry and bucket-settings reads; CreateBucket/DeleteBucket keys are gateway-
+  enforced in us-east-1 and NOT AVAILABLE in eu-west-1. The CONSOLE enforces the
+  role cap at key creation, key revocation on role narrowing or removal, and
+  console bucket deletion. Bucket policies, S3-API users/roles and bucket
+  configuration changes by key are not available in either region
 
 ## Billing
 

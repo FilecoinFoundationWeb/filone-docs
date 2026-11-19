@@ -61,6 +61,8 @@ The region is selected at bucket creation time and cannot be changed afterward. 
 
 Bucket creation and deletion through the S3 API are available in `us-east-1` but not in `eu-west-1`. See [Buckets](/storage/buckets).
 
+For which access controls each region supports, and whether the storage gateway or the console enforces them, see [Access Controls by Region](/security/access-by-region).
+
 ## API rate limits
 
 Rate limits are enforced by the underlying storage gateway. Fil One does not impose additional rate limits on top of these. If you encounter `SlowDown` or `ServiceUnavailable` responses, back off with exponential retry. If you consistently hit limits at scale, email [support@filone.com](mailto:support@filone.com).
