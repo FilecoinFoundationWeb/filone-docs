@@ -65,11 +65,11 @@ The object table shows **Name**, **Size**, and **Last Modified**, plus **Version
 
 On a versioned bucket, a key with more than one version gets an expander and an *n* **versions** pill. Expanding shows the older versions, badged **Latest** for the current one and **Delete marker** where a delete marker sits on top.
 
-Per-row icon buttons download, share, or delete a single object. A checkbox on each row, and on the header, lets you select several at once. See [Deleting objects](#deleting-objects).
+Per-row icon buttons download, share, or delete a single object. A checkbox on each object row, and on the header, lets you select several at once. See [Deleting objects](#deleting-objects).
 
-:::note Large buckets
-The browser shows the first page of results, around 1,000 entries. When there are more, an amber **Showing the first** *n* notice appears, and selecting and deleting apply only to the objects listed. The count on the **Objects (N)** tab then comes from your bucket analytics, a daily reading that can lag recent changes, so expect it to be higher than the number of rows in view. Use the AWS CLI or an SDK to page through a full listing, or [Empty bucket](#emptying-a-bucket) to remove everything. See [Objects](/storage/objects).
-:::
+A folder lists 100 entries at a time, sub-folders included. When it holds more, **Previous** and **Next** appear under the table with the range in view, such as **Showing 101–200**. Listings do not report a total, so there is no page count. On a versioned bucket every version counts toward the 100, so a page of objects with long histories shows fewer rows.
+
+The count on the **Objects (N)** tab comes from your bucket analytics, a daily reading that can lag recent changes. When the whole bucket fits on one page with no folders, the tab counts the listed objects instead.
 
 ## Uploading
 
@@ -112,7 +112,7 @@ Sharing is a paid-plan feature. During the trial the button is disabled, with a 
 
 Click the trash icon on a row, or **Delete object** on the detail page, and confirm.
 
-To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. Ticking a folder row selects everything under it, and the header checkbox selects everything at the current level.
+To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. The header checkbox selects every object on the page. A selection covers one page, so moving to another page clears it. Folder rows have no checkbox: to delete a folder's contents, use the AWS CLI or an SDK, or [Empty bucket](#emptying-a-bucket) to remove everything.
 
 :::warning Console deletes are permanent, including on versioned buckets
 The console always deletes the specific version on the row you chose. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are. To hide an object behind a delete marker instead, delete it over the S3 API without a version ID. See [Versioning](/storage/versioning#delete-markers).
