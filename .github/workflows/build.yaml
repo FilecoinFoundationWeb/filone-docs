@@ -1,0 +1,45 @@
+name: Build
+
+# Runs on every PR and on pushes to main. Holds no secrets: a PR's MDX runs
+# during the build. See CONTRIBUTING.md for what each check catches.
+# The mirror gate lives in mirror-impact.yaml, so editing a PR description
+# doesn't rebuild the site.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      # MDX errors, broken internal links (onBrokenLinks: throw), bad frontmatter.
+      - run: npm run build
+
+      # Every page has an entry in both llms mirrors, and the mirrors link no dead pages.
+      - run: node scripts/check-mirrors.mjs
+
+      # Python/JS/Go/Bash/JSON snippets parse; no untagged blocks; no real-looking keys.
+      # Python, Go and Bash come preinstalled on ubuntu-latest.
+      - run: node scripts/check-snippets.mjs
