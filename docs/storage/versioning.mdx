@@ -94,7 +94,7 @@ Every version is a full copy of the object and is billed as stored storage. If y
 
 ## Going back to a previous version
 
-The Fil One **dashboard** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current.
+The Fil One **dashboard** has no restore, roll-back, or "make current" button — you can list, download, and delete prior versions there, but not promote one to current. It can undo a delete, though: **Remove delete marker** on a deleted object's row makes the version before the marker current again.
 
 :::info Region-dependent
 Promoting a version to current with `CopyObject` is confirmed working in `us-east-1`. This has not yet been confirmed in `eu-west-1` — use the download-and-reupload method there instead.
@@ -171,11 +171,11 @@ To go back to an earlier version without `CopyObject`, download it and upload it
   </TabItem>
 </Tabs>
 
-If the current version is a delete marker, you can instead make the object visible again by deleting that delete marker by its version ID — see below.
+If the current version is a delete marker, you can instead make the object visible again by deleting that delete marker by its version ID, or with **Remove delete marker** in the dashboard — see below.
 
 ## Delete markers
 
-When you delete an object without specifying a version ID, Fil One places a **delete marker** at the top of the version stack. The object appears deleted in standard listings and `GetObject` returns `NoSuchKey`. The previous versions remain intact and can be retrieved by version ID.
+When you delete an object without specifying a version ID, Fil One places a **delete marker** at the top of the version stack. The object appears deleted in standard listings and `GetObject` returns `NoSuchKey`. The previous versions remain intact and can be retrieved by version ID. The dashboard's object list still shows the object, with a **Deleted** badge and a **Remove delete marker** button that brings it back.
 
 To permanently delete a specific version (including a delete marker), specify the version ID in the delete request:
 
