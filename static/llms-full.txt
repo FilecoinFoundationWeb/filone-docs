@@ -44,9 +44,11 @@ Critical integration notes for developers:
 - Regions: eu-west-1 Europe (France, default) and us-east-1 US East (Michigan)
 - Deletion is permanent and immediate on non-versioned buckets (no recycle bin).
   On versioned buckets an S3-API delete WITHOUT a version ID places a delete
-  marker and prior versions are retained and still billed. The DASHBOARD NEVER
-  WRITES A DELETE MARKER: a console delete (single or bulk) permanently removes
-  the specific version on the row chosen, even on a versioned bucket
+  marker and prior versions are retained and still billed. A DELETE FROM A ROW
+  in the dashboard (single or bulk) WRITES NO DELETE MARKER: it permanently
+  removes the specific version on the row chosen, even on a versioned bucket.
+  Delete on the object detail page places a delete marker when viewing the
+  latest version, and removes only the viewed version on an older one
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is NOT YET
@@ -786,18 +788,18 @@ Source: https://docs.filone.com/storage/versioning
 
 Versioning is **opt-in** and configured at bucket creation time. Once enabled on a bucket, it cannot be suspended or disabled. Every time you upload an object with the same key on a versioned bucket, Fil One creates a new version rather than overwriting the previous one.
 
-Overwrites, and S3 API deletes without a version ID, keep every earlier version, so you can retrieve any previous state of an object by its version ID. Deleting a specific version, including any delete in the console, removes that version permanently.
+Overwrites, and S3 API deletes without a version ID, keep every earlier version, so you can retrieve any previous state of an object by its version ID. Deleting a specific version, including a delete from a row in the console, removes that version permanently.
 
 To enable versioning, expand **Advanced settings** when you create a bucket in the console and turn on **Versioning**. Versioning is required for [Object Lock](https://docs.filone.com/storage/object-lock).
 
 ## How versions work
 
-When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object over the S3 API without a version ID, Fil One places a **delete marker** at the current version — the object appears deleted, but all previous versions are still retrievable.
+When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object without a version ID, over the S3 API or with **Delete** on its latest version in the console's object detail page, Fil One places a **delete marker** at the current version: the object appears deleted, but all previous versions are still retrievable.
 
 This behavior applies to all objects in versioned buckets.
 
-Warning: Deleting in the dashboard removes a version permanently
-The dashboard never writes a delete marker. Deleting an object there, one at a time or in bulk, permanently deletes the specific version on the row you chose. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](https://docs.filone.com/app/buckets#deleting-objects).
+Warning: Deleting from a row in the dashboard removes a version permanently
+A row's delete, one at a time or in bulk, permanently deletes the specific version on that row and writes no delete marker. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Delete** on the object detail page places a delete marker when you are viewing the latest version, and removes only that version when you are viewing an older one. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](https://docs.filone.com/app/buckets#deleting-objects).
 
 ## Access key permissions for versions
 
@@ -1891,31 +1893,60 @@ The console uploads each file in a single request, which the S3 single-PUT ceili
 
 ## The object detail page
 
-Clicking an object shows its **Name**, **Size**, **Bucket**, **S3 Path**, **ETag**, and, where they apply, **Version ID**, **Retention**, **Description**, and **Tags**. **Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+Clicking an object opens its page. The file name is the title, with the folders it sits in shown in the breadcrumb above. **Download** and **Share** sit beside the title, and the **⋯** menu holds **Copy S3 URI**, **Copy console link**, and **Delete**.
 
-A **Version history** card appears when the object has more than one version, listing each **Version ID** with its **Status**, **Size**, and **Last Modified**, and marking the one you are viewing. Clicking another row opens that version.
+### Preview
 
-Note: Working with versions
-Version history is drawn from the object list you arrived through, so open the bucket first if you have followed a direct link to an object and the card is not showing.
+The page shows the object itself when your browser can display it:
 
+- **Images** up to 20 MB and **text files** up to 1 MB load when the page opens. A text file shows its first 20,000 characters, and an HTML file shows its source.
+- **Video** and **audio** load only their metadata until you press play.
+
+Any other file shows a placeholder that says why there is no preview, with a **Download** button. The preview follows the object's content type. For an object stored as `application/octet-stream`, or with no content type, it goes by the file extension.
+
+### Details
+
+The **Details** card shows **Size**, **Type**, **Last modified**, and, where they apply, **Version ID**, **ETag**, **Retention**, **Description**, and **Tags**. Hover over **Size**, **Type**, or **Last modified** for the exact value. **Retention** appears on buckets with [Object Lock](https://docs.filone.com/storage/object-lock). **Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. Any other user metadata is listed under **Custom metadata**, by key.
+
+When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+
+### Versions
+
+On a versioned bucket, the object's own link opens its latest version. A **Version history** card appears when the object has more than one version, listing each version with its **Version ID**, **Size**, and **Last modified**, badged **Latest** for the current one and **Delete marker** where one was placed. The version you are on is marked **Viewing**, and clicking another row opens that version. The history loads for the object itself, so it shows on a shared link or after a reload.
+
+An older version carries an **Older version** badge under the title, with a **View latest version** link. When the newest entry is a delete marker, the line gives the date the object was deleted instead.
+
+Note: Restoring an earlier version
 To bring an earlier version back as the current one, download it and upload it again. See [Versioning](https://docs.filone.com/storage/versioning).
+
+### API access
+
+Beside the cards, or below them on a narrow screen, **API access** gives an AWS CLI command that downloads the object, and the endpoint for the object's region.
 
 ## Downloading and sharing
 
-**Download** is available on each row in the object list and in the object detail header. It works on any plan, including the trial.
+**Download** is available on each row in the object list and beside the title on the object detail page. It works on any plan, including the trial.
 
-**Share object** generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
+**Share**, on a row or on the object detail page, generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
 
-Sharing is a paid-plan feature. During the trial the button is disabled, with a tooltip pointing to an upgrade.
+Sharing is a paid-plan feature. During the trial the Share button is disabled, with a tooltip pointing to an upgrade.
 
 ## Deleting objects
 
-Click the trash icon on a row, or **Delete object** on the detail page, and confirm.
+Click the trash icon on a row, or **Delete** in the **⋯** menu on the object detail page, and confirm.
 
 To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. Ticking a folder row selects everything under it, and the header checkbox selects everything at the current level.
 
-Warning: Console deletes are permanent, including on versioned buckets
-The console always deletes the specific version on the row you chose. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are. To hide an object behind a delete marker instead, delete it over the S3 API without a version ID. See [Versioning](https://docs.filone.com/storage/versioning#delete-markers).
+Warning: Deleting from a row is permanent, including on versioned buckets
+A row's delete removes the specific version on that row. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are.
+
+On the object detail page, **Delete** acts on the version you are viewing:
+
+- On an older version it reads **Delete version**, and permanently removes that version alone.
+- On the latest version of an object in a versioned bucket, it places a delete marker. The object shows as **Deleted** in the object list, and its earlier versions stay in its history. See [Versioning](https://docs.filone.com/storage/versioning#delete-markers).
+- In a bucket without versioning, it permanently deletes the object.
+
+To bring the object back, click **Remove delete marker**, the trash button on its row in the object list. No data is deleted, and the version before the marker becomes current again.
 
 An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](https://docs.filone.com/storage/object-lock).
 
@@ -3747,7 +3778,7 @@ Within a region, storage is fulfilled by a distributed network of storage provid
 
 On a bucket **without versioning**, the object disappears from your account immediately and there is no recycle bin or undo.
 
-On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from the dashboard is different: it always removes the specific version you chose, permanently, and never writes a delete marker. See [Versioning](https://docs.filone.com/storage/versioning).
+On a bucket **with versioning enabled**, a delete over the S3 API without a version ID places a delete marker instead. The object stops appearing in listings, but every prior version is kept and can still be downloaded by version ID, and you can make the object visible again by deleting the delete marker. Those retained versions continue to count as stored storage. Deleting from a row in the dashboard is different: it removes that row's version permanently and writes no delete marker. **Delete** on the object detail page, on the latest version, places a delete marker like the S3 API does. See [Versioning](https://docs.filone.com/storage/versioning).
 
 Once deleted, an object is no longer accessible through the API or the dashboard. Because Filecoin stores data in sealed sectors, the underlying storage may persist for a bounded period until the sector naturally expires — an infrastructure detail set by the storage layer, not a user-facing state. That residual data stays encrypted, with key custody held by the regional storage operator rather than by you or Fil One (see [Encryption](https://docs.filone.com/security/encryption)). The same applies when you delete a bucket.
 
