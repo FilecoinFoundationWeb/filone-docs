@@ -33,7 +33,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 ## Supported operations
 
 :::note About the numeric limits below
-Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](/limits).
+Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. See [Standard S3 limits](/limits#standard-s3-limits).
 :::
 
 :::warning How unsupported operations respond in `eu-west-1`
@@ -137,7 +137,7 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
+| Server-side encryption at rest | ✅ Always on | Applied automatically in your bucket's region. No headers are required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
 | SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |

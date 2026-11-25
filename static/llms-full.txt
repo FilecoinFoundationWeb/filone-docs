@@ -35,8 +35,9 @@ Critical integration notes for developers:
   AWS_SECRET_ACCESS_KEY names, which every SDK reads automatically
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
-  regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  storage infrastructure in the bucket's region, and keys are held by Fil One's
+  storage provider for that region, NOT by Fil One and NOT customer-managed. Do
+  not name a specific cipher or SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
   or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
   confirmed in us-east-1 — send no encryption headers at all. No access key can
@@ -127,7 +128,7 @@ Fil One is an S3-compatible object storage platform designed for teams that need
 
 **No egress fees on paid plans.** On a paid plan there are no data-transfer charges — download as much as you need. (The free trial has a 2 TB egress cap; see [Trial & Billing](https://docs.filone.com/billing/trial).)
 
-**Simple, flat pricing.** Pay as you go at $5.99 / TB / month, with a $5.99 / month minimum. No per-request charges, no hidden fees, no tiered pricing. For volume pricing on 1, 3, or 5-year terms, talk to sales about the Business plan.
+**Simple, flat pricing.** Pay as you go at $5.99 / TB / month, with a $5.99 / month minimum. No per-request charges and no tiered pricing. For volume pricing on 1, 3, or 5-year terms, talk to sales about the Business plan.
 
 **30-day free trial.** 1 TB of storage and 2 TB of bandwidth, no credit card required.
 
@@ -516,7 +517,7 @@ Every S3 client that talks to Fil One needs these settings. The SDK defaults are
 | Region | Must match the endpoint and the key | `region_name="eu-west-1"` | `region: "eu-west-1"` | `Region: "eu-west-1"` |
 | Path-style addressing | Fil One doesn't support virtual-hosted-style URLs | `Config(s3={"addressing_style": "path"})` | `forcePathStyle: true` | `UsePathStyle: true` |
 | Signature version | Presigned URLs must use SigV4 | `Config(signature_version="s3v4")` | Default | Default |
-| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not needed: presigned URLs carry no checksum | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not needed: presigned URLs carry no checksum |
+| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not confirmed. If a presigned upload fails with `BadDigest`, add `request_checksum_calculation="when_required"` to the `Config` | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not confirmed. If a presigned upload fails with `BadDigest`, set `RequestChecksumCalculation: aws.RequestChecksumCalculationWhenRequired` |
 
 ## Credentials
 
@@ -2596,7 +2597,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 ## Supported operations
 
 Note: About the numeric limits below
-Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](https://docs.filone.com/limits).
+Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. See [Standard S3 limits](https://docs.filone.com/limits#standard-s3-limits).
 
 Warning: How unsupported operations respond in `eu-west-1`
 In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed in that region.
@@ -2698,7 +2699,7 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
+| Server-side encryption at rest | ✅ Always on | Applied automatically in your bucket's region. No headers are required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
 | SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
