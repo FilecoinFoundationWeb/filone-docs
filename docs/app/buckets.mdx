@@ -112,10 +112,16 @@ Sharing is a paid-plan feature. During the trial the button is disabled, with a 
 
 Click the trash icon on a row, or **Delete object** on the detail page, and confirm.
 
-To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. Ticking a folder row selects everything under it, and the header checkbox selects everything at the current level.
+To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. The header checkbox selects every row on the current page, folders included.
+
+A selection that includes a folder opens a dialog that names the folders. Objects selected along with them are deleted in the same step, each losing only the version on its row. The dialog shows progress, and the deletion keeps running if you close it.
+
+:::danger Deleting a folder permanently deletes everything in it
+It removes every object in the folder, with every earlier version and delete marker, except what retention or a legal hold protects. It can't be undone, and versioning doesn't protect you.
+:::
 
 :::warning Console deletes are permanent, including on versioned buckets
-The console always deletes the specific version on the row you chose. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are. To hide an object behind a delete marker instead, delete it over the S3 API without a version ID. See [Versioning](/storage/versioning#delete-markers).
+For an object row, the console deletes the specific version on that row. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are. To hide an object behind a delete marker instead, delete it over the S3 API without a version ID. See [Versioning](/storage/versioning#delete-markers).
 :::
 
 An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](/storage/object-lock).

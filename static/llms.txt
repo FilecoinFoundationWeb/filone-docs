@@ -46,7 +46,10 @@ Critical integration notes for developers:
   On versioned buckets an S3-API delete WITHOUT a version ID places a delete
   marker and prior versions are retained and still billed. The DASHBOARD NEVER
   WRITES A DELETE MARKER: a console delete (single or bulk) permanently removes
-  the specific version on the row chosen, even on a versioned bucket
+  the specific version on the row chosen, even on a versioned bucket. Deleting
+  a FOLDER in the console PERMANENTLY removes everything in it, every earlier
+  version and delete marker included, except what retention or a legal hold
+  protects
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is NOT YET
