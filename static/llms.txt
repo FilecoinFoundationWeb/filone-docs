@@ -50,7 +50,9 @@ Critical integration notes for developers:
 - CopyObject / server-side copy is confirmed working in us-east-1, including
   copying a specific version onto the current key to promote it (a version
   restore). In eu-west-1 PLAIN COPY WORKS but the version-id form is NOT YET
-  CONFIRMED; download and re-upload is the fallback. The dashboard has no restore/roll-back button either way
+  CONFIRMED; download and re-upload is the fallback. The dashboard has no
+  restore/roll-back button either way, but its Remove delete marker button
+  undoes a delete
 - Per-object CIDs, deal IDs, and sealing state are NOT exposed — customers
   cannot independently audit an individual object
 - A failed payment (past_due) makes the DASHBOARD READ-ONLY from the moment the
@@ -302,8 +304,9 @@ Security, Billing) hold the concepts and code samples.
   versioned bucket PERMANENTLY deletes the chosen version (NO delete marker).
   Name, region, versioning, Object Lock and default retention are PERMANENT at
   creation. Upload is single-PUT (5 GB ceiling); the browser shows the first
-  ~1,000 entries; no version restore/promote. Download works on trial; SHARING IS
-  A PAID-PLAN FEATURE (links of 1 hour to 7 days)
+  ~1,000 entries; no version restore/promote, but a deleted object stays listed
+  as Deleted and Remove delete marker brings it back. Download works on trial;
+  SHARING IS A PAID-PLAN FEATURE (links of 1 hour to 7 days)
 - [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Status Active,
   or Expired from the day after the expiry date in UTC; Permissions as Read/Write/List/Delete badges plus +n; search and
   region/status filters from 5 keys; a row opens a details panel with expiry,
