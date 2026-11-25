@@ -1898,7 +1898,7 @@ Clicking an object in the list opens it in a panel over the list, so you can loo
 
 A bar along the bottom holds **Delete** and **Copy console link** on the left, and **Share** and **Download** on the right.
 
-- **Previous object** and **Next object** move to the neighbouring object in the list's order, skipping folders, with a count such as **4 / 12**. The **↑** and **↓** keys, or **k** and **j**, do the same, except while a text preview, a player, or a field has focus.
+- **Previous object** and **Next object** move to the neighbouring object in the list's order, skipping folders, with a count such as **4 / 12**.
 - **Open full page** opens the object detail page for the object, or for the version you opened.
 - **Close**, **Esc**, or a click outside the panel closes it. So does the browser's back button. The open object is part of the page address, so a reload keeps the panel open.
 

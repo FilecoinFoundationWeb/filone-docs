@@ -301,8 +301,8 @@ Security, Billing) hold the concepts and code samples.
   badges; only a Create bucket button; the new bucket's page then offers Create
   API key), object browser, upload, object detail, download/share, delete.
   Clicking an object opens a PANEL over the list (preview, details, Delete,
-  Copy console link, Share, Download; previous/next or j/k and arrow keys step
-  through the folder; Open full page goes to the object detail page).
+  Copy console link, Share, Download; Previous/Next step through the folder;
+  Open full page goes to the object detail page).
   DELETE BUCKET: Owner/Admin only, EMPTY buckets only, works in EVERY region.
   EMPTY BUCKET permanently deletes every object, version and delete marker not
   under retention or legal hold and cannot be undone. Deleting a row on a
