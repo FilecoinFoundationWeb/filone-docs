@@ -304,8 +304,10 @@ Security, Billing) hold the concepts and code samples.
   under retention or legal hold and cannot be undone. Deleting a row on a
   versioned bucket PERMANENTLY deletes that row's version (NO delete marker);
   Delete on the object detail page places a delete marker on the latest
-  version. The object detail page previews images, video, audio and text, and
-  loads version history for the object itself, so it shows on a direct link.
+  version; the object's console link then still opens its history, so an
+  earlier version can be downloaded and re-uploaded. The object detail page
+  previews images, video, audio and text, and loads version history for the
+  object itself, so it shows on a direct link.
   Name, region, versioning, Object Lock and default retention are PERMANENT at
   creation. Upload is single-PUT (5 GB ceiling); the browser shows the first
   ~1,000 entries; no version restore/promote. Download works on trial; SHARING IS
