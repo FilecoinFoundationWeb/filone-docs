@@ -21,7 +21,11 @@ Terraform's `s3` backend stores state in Fil One with `endpoints { s3 = ... }` s
 
 ## Configure
 
-Use the `s3` backend with an existing bucket, a dedicated state key, the regional endpoint, matching region, and path-style addressing. Keep credentials outside the Terraform configuration. Evaluate the backend's non-AWS options `skip_credentials_validation`, `skip_requesting_account_id`, `skip_metadata_api_check`, and `skip_s3_checksum` for your Terraform release, and enable only the ones that release needs.
+Use the `s3` backend with an existing bucket, a dedicated state key, the regional endpoint, matching region, and path-style addressing. Keep credentials outside the Terraform configuration.
+
+Set both `skip_credentials_validation` and `skip_requesting_account_id`. Without them, `terraform init` fails with a 403, because Terraform tries to check the key and look up an account ID with AWS STS, which doesn't recognize Fil One keys. Setting only one of the two still fails.
+
+For state locking, set `use_lockfile = true` (Terraform 1.10 and later). Terraform then writes a lock object next to the state file, and a second `apply` against the same state stops with `Error acquiring the state lock` until the first one finishes.
 
 ```hcl
 terraform {
@@ -31,6 +35,10 @@ terraform {
     region         = "REGION"
     endpoints      = { s3 = "ENDPOINT_URL" }
     use_path_style = true
+    use_lockfile   = true
+
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
   }
 }
 ```
@@ -39,12 +47,12 @@ terraform {
 
 1. Initialize against a disposable configuration, apply it, and confirm a subsequent `terraform plan` is empty.
 2. Copy state to an offline recovery location, remove the local working directory, reinitialize, and confirm state can be read.
-3. Simulate two concurrent writers before relying on locking. Test any S3 lock-file option with the exact Terraform version and region before enabling it.
+3. Start a long `terraform apply`, then run a second one against the same state. The second should stop with `Error acquiring the state lock`.
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
+| `terraform init` fails with a 403 from STS (`GetCallerIdentity`) or can't find an account ID | Set both `skip_credentials_validation = true` and `skip_requesting_account_id = true`. |
 | Initialization contacts an AWS hostname | Check the custom endpoint and path-style options supported by your Terraform release. |
-| Account or credential lookups fail | Evaluate the `skip_*` options listed above. |
 | Backend migration | Preserve an offline state backup before migrating. |

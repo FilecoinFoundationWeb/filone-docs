@@ -18,20 +18,35 @@ Delta Lake on Spark reads and writes Fil One through the `s3a` connector, with `
 | Region | `eu-west-1` or `us-east-1` (`fs.s3a.endpoint.region`) |
 | Addressing | Path style (`fs.s3a.path.style.access=true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through the platform's secret mechanism |
+| Listing page size | `fs.s3a.paging.maximum=1000`, required in `us-east-1` |
 
 ## Configure
 
 Configure Spark's S3 connector with the existing bucket, regional endpoint and region, path-style access, and credentials supplied through the platform's secret mechanism. Keep a dedicated table prefix. Ensure the driver and every executor receive the same settings.
 
+Set `fs.s3a.paging.maximum=1000`. The `s3a` connector asks for 5,000 keys per listing by default, and `us-east-1` rejects anything above 1,000 with `400 Invalid max-keys`, so the first write to a table fails. `eu-west-1` accepts the setting too, so you can use the same configuration in both regions.
+
+```ini
+spark.hadoop.fs.s3a.endpoint=https://s3.us-east-1.filonecontent.com
+spark.hadoop.fs.s3a.endpoint.region=us-east-1
+spark.hadoop.fs.s3a.path.style.access=true
+spark.hadoop.fs.s3a.paging.maximum=1000
+```
+
+:::warning One writer per table
+With Delta's default S3 log store, two writers committing to the same table at the same time can silently lose commits. In testing, both writers reported every commit as successful, but about half of them were missing from the table afterwards. Write to each table from one Spark application at a time, or configure a log store that supports multiple writers for your Delta release.
+:::
+
 ## Examples
 
 1. Create a disposable Delta table, append and update rows, produce a checkpoint, and read the table from a fresh session.
-2. Run concurrent writers and verify conflicts do not cause silent data loss.
-3. Restore a prior table version after confirming the required log and data objects exist, then compare row counts and deterministic hashes.
+2. Restore a prior table version after confirming the required log and data objects exist, then compare row counts and deterministic hashes.
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
+| First write fails with `400 Invalid max-keys` (`AWSBadRequestException`) | Set `fs.s3a.paging.maximum=1000`. `us-east-1` rejects larger listing pages. |
+| Commits reported as successful are missing from the table | More than one writer committed at the same time. See the warning above. |
 | Parquet reads work but Delta commits fail | Connector retry, rename, conditional-write, and consistency assumptions vary by release; check the Delta, Spark, and connector version set. |
 | Executors reach an AWS hostname | Apply the endpoint and path-style settings to executors as well as the driver. |
