@@ -2782,7 +2782,7 @@ These are confirmed deviations that can affect a correctly written S3 client. Th
 |------|-------|------------|
 | Pagination | `ListObjects` may return a `NextMarker` with an internal suffix appended to the key (for example `asdf[...]` instead of `asdf`). Feeding that value back as the next `Marker` will not resume where you left off. | Prefer `ListObjectsV2` with `ContinuationToken`, which is unaffected. If you must use `ListObjects`, do not trust `NextMarker`; page using the last returned key instead. |
 | URL encoding | With `EncodingType=url`, a space in a key or prefix is encoded as `+` rather than `%20`. Most SDKs decode `%20` only, so keys with spaces can come back wrong. | Avoid spaces in key names, or decode `+` as a space yourself when you request URL encoding. |
-| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Verify integrity with ETags, or compare a hash you compute yourself after download. |
+| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Compare a checksum you compute yourself before upload with one you compute after download. |
 
 ## Differences from AWS S3
 
@@ -3826,7 +3826,7 @@ Access through the S3 API is still per access key. There are no IAM users or buc
 
 ## How does Filecoin protect the integrity of stored data?
 
-To check an individual object, compare the `ETag` returned by `HeadObject` with a checksum you keep. To stop an object changing for a fixed period, use [Object Lock](https://docs.filone.com/storage/object-lock).
+To check an individual object, store a checksum when you upload and compare it with one you compute after download. To stop an object changing for a fixed period, use [Object Lock](https://docs.filone.com/storage/object-lock).
 
 Underneath, Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs, called Proof of Replication (PoRep) and Proof of Spacetime (PoSt), to show they still hold the data they committed to store. Providers that fail to produce valid proofs are penalised. This runs at the network level, not per request.
 
