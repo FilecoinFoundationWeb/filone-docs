@@ -34,7 +34,7 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 
 ### Standard S3 limits
 
-The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
+The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One hasn't checked each exact value, so test against your own workload before you hard-code one.
 
 For objects larger than 5 GB, use [multipart upload](/storage/multipart-uploads).
 

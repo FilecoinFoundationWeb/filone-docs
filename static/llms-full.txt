@@ -70,10 +70,7 @@ Critical integration notes for developers:
   (Get/PutObjectLegalHold) work in BOTH REGIONS, including blocking delete while
   a hold is active. Both need the matching granular key
   permission, which is never granted automatically, and only an organization
-  OWNER can create a key with PutObjectRetention or PutObjectLegalHold.
-  Evidence differs by region: us-east-1 from the automated compatibility suite,
-  eu-west-1 from engineering testing (the suite could not create a lock-enabled
-  bucket there)
+  OWNER can create a key with PutObjectRetention or PutObjectLegalHold
 - The S3 API has NO IAM users, roles, or bucket policies: each request is allowed
   or refused by the access key's own permissions and bucket scope. The CONSOLE
   has organizations with four member roles (Owner, Admin, Member, Read only); a
@@ -1200,7 +1197,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
+- Retention enforcement is confirmed in both regions. If a specific obligation depends on it, validate the exact behaviour you need.
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
@@ -3867,7 +3864,7 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 
 ### Standard S3 limits
 
-The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
+The **dashboard** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One hasn't checked each exact value, so test against your own workload before you hard-code one.
 
 For objects larger than 5 GB, use [multipart upload](https://docs.filone.com/storage/multipart-uploads).
 

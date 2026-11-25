@@ -68,10 +68,7 @@ Critical integration notes for developers:
   (Get/PutObjectLegalHold) work in BOTH REGIONS, including blocking delete while
   a hold is active. Both need the matching granular key
   permission, which is never granted automatically, and only an organization
-  OWNER can create a key with PutObjectRetention or PutObjectLegalHold.
-  Evidence differs by region: us-east-1 from the automated compatibility suite,
-  eu-west-1 from engineering testing (the suite could not create a lock-enabled
-  bucket there)
+  OWNER can create a key with PutObjectRetention or PutObjectLegalHold
 - The S3 API has NO IAM users, roles, or bucket policies: each request is allowed
   or refused by the access key's own permissions and bucket scope. The CONSOLE
   has organizations with four member roles (Owner, Admin, Member, Read only); a

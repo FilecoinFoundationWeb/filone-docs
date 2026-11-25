@@ -169,7 +169,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
+- Retention enforcement is confirmed in both regions. If a specific obligation depends on it, validate the exact behaviour you need.
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
