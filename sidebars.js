@@ -96,6 +96,7 @@ const sidebars = {
           label: "Kubernetes and DevOps",
           items: [
             "integrations/devops/velero",
+            "integrations/devops/harbor",
             "integrations/devops/terraform",
           ],
         },

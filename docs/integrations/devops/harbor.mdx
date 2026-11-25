@@ -1,0 +1,55 @@
+---
+title: Harbor
+description: Configure Harbor registry storage on a Fil One S3-compatible bucket.
+integration_status: Verified
+tested_versions: [Harbor 2.15.5]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
+---
+
+# Harbor
+
+Harbor stores image layers in Fil One through the registry's `s3` storage driver, with `regionendpoint` set to the regional endpoint, `forcepathstyle: true`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`regionendpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`region`) |
+| Addressing | Path style (`forcepathstyle: true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region (`v4auth: true`) |
+| TLS | `secure: true` |
+
+Validation status: Verified. Tested with Harbor 2.15.5 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page: push, pull, and garbage collection runs. Removal of layers by garbage collection wasn't part of the test.
+
+## Configure
+
+Add a `storage_service` section to `harbor.yml` before running `./install.sh` (or `./prepare` for an existing installation). Use a dedicated bucket or `rootdirectory` so garbage collection can't affect other objects, and keep `harbor.yml` out of source control because it holds the key. Back up Harbor's database separately; the bucket holds only image layers.
+
+```yaml
+storage_service:
+  s3:
+    region: REGION
+    bucket: BUCKET_NAME
+    accesskey: ACCESS_KEY
+    secretkey: SECRET_KEY
+    regionendpoint: ENDPOINT_URL
+    secure: true
+    forcepathstyle: true
+    v4auth: true
+    rootdirectory: /harbor
+```
+
+## Examples
+
+1. Push a disposable image with several layers, remove the local image, and pull it again. Compare the image digest and start a container.
+2. Inspect Harbor and registry logs.
+3. Delete the test artifact and run garbage collection in dry-run mode, then for real. Harbor only removes layers older than its time window (2 hours by default), so layers from a fresh test stay until a later run.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Redirects or bucket-subdomain requests | Set `forcepathstyle: true`. |
+| `403` | Key region does not match the endpoint, or the key is not scoped to the bucket. |
+| Garbage collection succeeds but layers remain | Layers newer than the time window (2 hours by default) are kept. Run garbage collection again later. |

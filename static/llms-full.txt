@@ -3844,6 +3844,14 @@ Validation status: Verified with Velero 1.19.0 with velero-plugin-for-aws 1.15.0
 
 Velero writes backups to Fil One through its AWS object-store plugin, with a backup storage location that sets s3Url to the regional endpoint, s3ForcePathStyle: "true", and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
+# Harbor
+
+Source: https://docs.filone.com/integrations/devops/harbor
+
+Validation status: Verified with Harbor 2.15.5 in eu-west-1 and us-east-1 on 2026-11-25 (push, pull, and garbage collection runs; layer removal by garbage collection wasn't part of the test).
+
+Harbor stores image layers in Fil One through the registry's s3 storage driver, configured in the storage_service section of harbor.yml with regionendpoint set to the regional endpoint, forcepathstyle: true, and a key scoped to the bucket's region. Garbage collection only removes layers older than its time window (2 hours by default). Configuration, examples, and troubleshooting are on the page.
+
 # Terraform S3 backend
 
 Source: https://docs.filone.com/integrations/devops/terraform
