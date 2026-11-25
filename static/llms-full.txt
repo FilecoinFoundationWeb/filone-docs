@@ -3824,7 +3824,7 @@ Optional steps to copy a small fixture (including a file large enough for multip
 
 Source: https://docs.filone.com/integrations/data-movement/rclone
 
-rclone connects to Fil One as an S3 remote with provider = Other, SigV4 signing, path-style addressing, and a key scoped to the bucket's region. Set upload_cutoff = 0 in both regions: without it, uploads to eu-west-1 fail with "corrupted on transfer: md5 hashes differ" because ETags there aren't the MD5 of the content. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+rclone connects to Fil One as an S3 remote with provider = Other, SigV4 signing, path-style addressing, and a key scoped to the bucket's region. Set upload_cutoff = 0 in both regions so rclone verifies uploads with its own MD5 checksum; it's required in eu-west-1, where ETags aren't MD5 checksums. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Cyberduck and Mountain Duck
 
@@ -3896,7 +3896,7 @@ Harbor stores image layers in Fil One through the registry's s3 storage driver, 
 
 Source: https://docs.filone.com/integrations/devops/terraform
 
-Terraform's s3 backend stores state in Fil One with endpoints { s3 = ... } set to the regional endpoint and use_path_style = true (Terraform 1.6 and later backend syntax), signed with SigV4 by a key scoped to the bucket's region. The backend needs both skip_credentials_validation = true and skip_requesting_account_id = true, or terraform init fails with a 403 from AWS STS. use_lockfile = true (Terraform 1.10 and later) gives working state locking. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+Terraform's s3 backend stores state in Fil One with endpoints { s3 = ... } set to the regional endpoint and use_path_style = true (Terraform 1.6 and later backend syntax), signed with SigV4 by a key scoped to the bucket's region. Set skip_credentials_validation = true and skip_requesting_account_id = true, since AWS STS validation doesn't apply to Fil One keys. use_lockfile = true (Terraform 1.10 and later) enables state locking. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Elasticsearch searchable snapshots
 
@@ -3926,7 +3926,7 @@ Availability of custom S3-compatible endpoints varies by Databricks compute mode
 
 Source: https://docs.filone.com/integrations/data-ai/delta-lake
 
-Delta Lake on Spark reads and writes Fil One through the s3a connector, with fs.s3a.endpoint set to the regional endpoint, fs.s3a.path.style.access=true, and a key scoped to the bucket's region. Set fs.s3a.paging.maximum=1000: us-east-1 rejects listings above 1,000 keys with 400 Invalid max-keys. With Delta's default S3 log store, write to each table from one writer at a time, because concurrent writers can silently lose commits. Configuration, tool-specific validation steps, and troubleshooting are on the page.
+Delta Lake on Spark reads and writes Fil One through the s3a connector, with fs.s3a.endpoint set to the regional endpoint, fs.s3a.path.style.access=true, and a key scoped to the bucket's region. Set fs.s3a.paging.maximum=1000 to match the S3 maximum listing page size; us-east-1 doesn't accept the s3a default of 5,000. Delta's default S3 log store supports one writer per table. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # DuckDB
 

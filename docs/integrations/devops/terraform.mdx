@@ -23,9 +23,9 @@ Terraform's `s3` backend stores state in Fil One with `endpoints { s3 = ... }` s
 
 Use the `s3` backend with an existing bucket, a dedicated state key, the regional endpoint, matching region, and path-style addressing. Keep credentials outside the Terraform configuration.
 
-Set both `skip_credentials_validation` and `skip_requesting_account_id`. Without them, `terraform init` fails with a 403, because Terraform tries to check the key and look up an account ID with AWS STS, which doesn't recognize Fil One keys. Setting only one of the two still fails.
+Set both `skip_credentials_validation` and `skip_requesting_account_id`. Otherwise, Terraform tries to validate the key with AWS STS, which doesn't apply to Fil One keys.
 
-For state locking, set `use_lockfile = true` (Terraform 1.10 and later). Terraform then writes a lock object next to the state file, and a second `apply` against the same state stops with `Error acquiring the state lock` until the first one finishes.
+For state locking, set `use_lockfile = true` (Terraform 1.10 and later). Terraform stores the lock next to the state file, so two runs can't change the same state at once.
 
 ```hcl
 terraform {

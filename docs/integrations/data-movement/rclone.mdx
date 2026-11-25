@@ -19,7 +19,7 @@ rclone connects to Fil One as an S3 remote with `provider = Other`, SigV4 signin
 | Addressing | Path style (`force_path_style = true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 | Provider | `Other` |
-| Upload cutoff | `0` (`upload_cutoff = 0`), so rclone checks every upload against its own MD5 |
+| Upload cutoff | `0` (`upload_cutoff = 0`) |
 
 ## Configure
 
@@ -37,7 +37,7 @@ force_path_style = true
 upload_cutoff = 0
 ```
 
-`upload_cutoff = 0` makes rclone send every file as a multipart upload and verify it against an MD5 it stores with the object. Without it, uploads to `eu-west-1` fail with `corrupted on transfer: md5 hashes differ` and rclone deletes the file it just uploaded, because ETags in `eu-west-1` aren't the MD5 of the content. The setting works the same way in `us-east-1`. Don't use `--ignore-checksum` instead: it gets uploads through but turns off verification.
+With `upload_cutoff = 0`, rclone verifies every upload against an MD5 checksum it stores with the object, rather than comparing it with the object's ETag. Use it in both regions. It's required in `eu-west-1`, where ETags aren't MD5 checksums.
 
 Test discovery without changing remote data:
 
@@ -55,7 +55,7 @@ rclone lsd filone:
 
 | Symptom | Check |
 | --- | --- |
-| `corrupted on transfer: md5 hashes differ` | Set `upload_cutoff = 0`. Without it, uploads to `eu-west-1` fail this check. |
+| `corrupted on transfer: md5 hashes differ` | Set `upload_cutoff = 0`. |
 | Signature mismatch | Endpoint, region, and key must refer to the same region; confirm `force_path_style = true`. |
 | Bucket not found | Confirm the bucket already exists and the key is scoped to it. |
 | TLS error | Keep certificate validation enabled; inspect local proxy or trust-store configuration. |
