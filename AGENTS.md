@@ -16,7 +16,19 @@ Check both files, not just one — they have drifted out of sync with each other
 
 ## Only document what's actually verified
 
-Don't add or strengthen a capability claim (a supported S3 operation, a supported region, a security or compliance property) unless it's backed by an actual test, a code-level check, or explicit confirmation from engineering. If a capability's status is uncertain, say so explicitly (e.g. "not yet confirmed in `<region>`") rather than asserting it either way. Aspirational or "should work" framing is not the same as confirmed.
+Don't add or strengthen a capability claim (a supported S3 operation, a supported region, a security or compliance property) unless it's backed by an actual test, a code-level check, or explicit confirmation from engineering. If a capability's status is uncertain, say so explicitly (e.g. "not yet confirmed in `<region>`") rather than asserting it either way. Aspirational or "should work" framing is not the same as confirmed. Say it plainly and once, following the next section.
+
+## Say what readers need, in a way that doesn't make Fil One look bad
+
+Being accurate doesn't mean telling readers everything we know. Include only what changes what a reader does, and word it so the product doesn't sound unfinished.
+
+- **Lead with what works.** Put a limitation where the reader would run into it, with what to do instead.
+- **Say a real caveat once.** If something is unconfirmed and a reader could be affected, state it on the page that owns the fact (for example, Limits → Standard S3 limits) and link there from other pages. Don't repeat it everywhere.
+- **Don't describe how we know something.** No "compatibility test run", "verified in code", "engineering testing", "not independently confirmed", or "expected to follow".
+- **Don't name internal parts.** No "storage gateway" or "regional operator". Describe what the customer sees, such as "in your bucket's region" or "Fil One's storage provider for the region".
+- **Skip vague reassurance.** Phrases like "no hidden fees" can't be checked, so state the concrete fact instead ("no per-request charges").
+
+For example, don't write "Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see Limits." Write "These are the standard AWS S3 values. See [Standard S3 limits](/limits#standard-s3-limits)."
 
 ## Region-specific accuracy
 
