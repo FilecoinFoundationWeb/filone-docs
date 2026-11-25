@@ -10,7 +10,7 @@ Data can't move directly from another provider to Fil One with a server-side cop
 ## Before you start
 
 1. **Create the destination buckets.** In `eu-west-1`, the default region, buckets can only be created in the [console](https://app.filone.com). In `us-east-1` you can also create them over the S3 API with a key that has the `CreateBucket` permission. See [Buckets](/storage/buckets).
-2. **Decide on versioning and Object Lock now.** Both are set when you create the bucket and can't be changed afterwards. If Object Lock is on, every object you copy in gets the bucket's default retention, and you can't delete it until that period ends. See [Object Lock](/storage/object-lock).
+2. **Decide on versioning and Object Lock now.** Both are set when you create the bucket and can't be changed afterwards. If the bucket has a default retention period, every object you copy in gets it, and you can't delete it until that period ends. See [Object Lock](/storage/object-lock).
 3. **Check bucket names.** Fil One doesn't allow dots (`.`) in bucket names, which AWS S3 does. A source bucket such as `logs.example.com` needs a new name, such as `logs-example-com`.
 4. **Create an API key** in the same region as the destination bucket, with **Read**, **Write** and **List**. These three are pre-selected on a new key. See [API keys](/security/api-keys).
 5. **Check the size against your plan.** During the free trial, reaching the storage cap write-locks the account. See [Free trial](/billing/trial) and [Limits](/limits).
@@ -82,6 +82,7 @@ region = eu-west-1
 endpoint = https://s3.eu-west-1.filonecontent.com
 force_path_style = true
 no_check_bucket = true
+upload_cutoff = 0
 ```
 
 For the Fil One remote:
@@ -89,6 +90,7 @@ For the Fil One remote:
 - `provider = Other` with your region's `endpoint`. For `us-east-1`, use `region = us-east-1` and `endpoint = https://s3.us-east-1.filonecontent.com`.
 - `force_path_style = true` is required, because Fil One only supports path-style URLs.
 - `no_check_bucket = true` stops rclone from trying to create the destination bucket, which you create in advance.
+- `upload_cutoff = 0` is required in `eu-west-1`, and works in both regions. It makes rclone upload every file in parts and verify it against a checksum rclone stores itself. Without it, uploads to `eu-west-1` fail rclone's checksum check.
 
 The config file holds your keys, so keep it private.
 
@@ -100,7 +102,7 @@ rclone copy source:my-source-bucket filone:my-bucket --progress
 rclone check source:my-source-bucket filone:my-bucket
 ```
 
-`rclone copy` skips files that already match, so you can run it again after an interruption. It never deletes anything at the destination. `rclone check` can't compare hashes for objects that were uploaded in parts, so it may report that some hashes couldn't be checked; it still compares sizes.
+`rclone copy` skips files that already match, so you can run it again after an interruption. It never deletes anything at the destination.
 
 rclone keeps each object's content type. Add `--metadata` (`-M`) to also copy user-defined metadata.
 

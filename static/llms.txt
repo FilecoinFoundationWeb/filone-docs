@@ -126,7 +126,8 @@ Critical integration notes for developers:
 - [Migrate to Fil One](https://docs.filone.com/guides/migration): Move data from
   AWS S3 or another S3-compatible provider with `aws s3 sync` (download to a
   local folder, then upload) or rclone (`provider = Other`, path-style,
-  `no_check_bucket = true`); prerequisites (create buckets first, no dots in
+  `no_check_bucket = true`, and `upload_cutoff = 0`, required in eu-west-1);
+  prerequisites (create buckets first, no dots in
   names, key with Read/Write/List, versioning and Object Lock fixed at creation,
   trial storage cap); what carries over (user metadata only with rclone `-M`;
   tags, ACLs and version history do not)
