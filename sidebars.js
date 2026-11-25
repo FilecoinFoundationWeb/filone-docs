@@ -88,27 +88,7 @@ const sidebars = {
           label: "Data movement",
           items: [
             "integrations/data-movement/rclone",
-            "integrations/data-movement/cyberduck-mountain-duck",
             "integrations/data-movement/aws-cli-sdk",
-          ],
-        },
-        {
-          type: "category",
-          label: "Backup and disaster recovery",
-          items: [
-            "integrations/backup/acronis-cyber-protect",
-            "integrations/backup/comet-backup",
-            "integrations/backup/msp360",
-            "integrations/backup/nakivo",
-          ],
-        },
-        {
-          type: "category",
-          label: "NAS and file services",
-          items: [
-            "integrations/nas/synology-cloud-sync",
-            "integrations/nas/qnap-hbs",
-            "integrations/nas/truenas-cloud-sync",
           ],
         },
         {
@@ -116,7 +96,6 @@ const sidebars = {
           label: "Kubernetes and DevOps",
           items: [
             "integrations/devops/velero",
-            "integrations/devops/harbor",
             "integrations/devops/terraform",
           ],
         },
@@ -125,7 +104,6 @@ const sidebars = {
           label: "SIEM and logging",
           items: [
             "integrations/logging/elasticsearch-snapshots",
-            "integrations/logging/splunk-smartstore",
           ],
         },
         {
@@ -133,7 +111,6 @@ const sidebars = {
           label: "Data and AI",
           items: [
             "integrations/data-ai/apache-iceberg",
-            "integrations/data-ai/databricks",
             "integrations/data-ai/delta-lake",
             "integrations/data-ai/duckdb",
             "integrations/data-ai/hugging-face-datasets",

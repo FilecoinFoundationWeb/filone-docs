@@ -3828,12 +3828,6 @@ Validation status: Verified with rclone 1.76.0 in eu-west-1 and us-east-1 on 202
 
 rclone connects to Fil One as an S3 remote with provider = Other, SigV4 signing, path-style addressing, and a key scoped to the bucket's region. Set upload_cutoff = 0 in both regions so rclone verifies uploads with its own MD5 checksum; it's required in eu-west-1, where ETags aren't MD5 checksums. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
-# Cyberduck and Mountain Duck
-
-Source: https://docs.filone.com/integrations/data-movement/cyberduck-mountain-duck
-
-Cyberduck and Mountain Duck connect to Fil One through Cyberduck's path-style S3 connection profile, using SigV4 and a key scoped to the bucket's region. Mountain Duck uses the same bookmark and mounts the bucket in Finder or File Explorer. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
 # AWS CLI and SDKs
 
 Source: https://docs.filone.com/integrations/data-movement/aws-cli-sdk
@@ -3842,48 +3836,6 @@ Validation status: Verified with AWS CLI 2.34.50 in eu-west-1 and us-east-1 on 2
 
 The AWS CLI and SDKs are Fil One's reference clients; see the SDK guides for setup. Each client takes the regional endpoint, SigV4 credentials, and path-style addressing. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
-# Acronis Cyber Protect
-
-Source: https://docs.filone.com/integrations/backup/acronis-cyber-protect
-
-Acronis Cyber Protect writes to Fil One as an S3-compatible backup location, using SigV4 (AuthV4), path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# Comet Backup
-
-Source: https://docs.filone.com/integrations/backup/comet-backup
-
-Comet Backup writes to Fil One through an S3-compatible Storage Vault, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# MSP360
-
-Source: https://docs.filone.com/integrations/backup/msp360
-
-MSP360 writes to Fil One as an S3-compatible storage account, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# NAKIVO Backup and Replication
-
-Source: https://docs.filone.com/integrations/backup/nakivo
-
-NAKIVO Backup and Replication writes to Fil One as an S3-compatible repository, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# Synology Cloud Sync
-
-Source: https://docs.filone.com/integrations/nas/synology-cloud-sync
-
-Synology Cloud Sync connects to Fil One as S3 storage with a custom server URL, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# QNAP HBS
-
-Source: https://docs.filone.com/integrations/nas/qnap-hbs
-
-QNAP Hybrid Backup Sync (HBS 3) connects to Fil One as an S3-compatible storage space, using SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# TrueNAS Cloud Sync
-
-Source: https://docs.filone.com/integrations/nas/truenas-cloud-sync
-
-TrueNAS Cloud Sync connects to Fil One with an Amazon S3 credential that uses a custom endpoint, SigV4, path-style addressing, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
 # Velero
 
 Source: https://docs.filone.com/integrations/devops/velero
@@ -3891,12 +3843,6 @@ Source: https://docs.filone.com/integrations/devops/velero
 Validation status: Verified with Velero 1.19.0 with velero-plugin-for-aws 1.15.0 in eu-west-1 and us-east-1 on 2026-11-25.
 
 Velero writes backups to Fil One through its AWS object-store plugin, with a backup storage location that sets s3Url to the regional endpoint, s3ForcePathStyle: "true", and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# Harbor
-
-Source: https://docs.filone.com/integrations/devops/harbor
-
-Harbor stores image layers in Fil One through the registry's s3 storage driver, with regionendpoint set to the regional endpoint, forcepathstyle: true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Terraform S3 backend
 
@@ -3914,12 +3860,6 @@ Validation status: Verified with Elasticsearch 8.17.0 in eu-west-1 and us-east-1
 
 Elasticsearch stores snapshots in Fil One through an s3 repository whose named client sets endpoint, region, and path_style_access: true, with a key scoped to the bucket's region held in the keystore. Elasticsearch 8.x includes repository-s3; on 7.x install the plugin on every node. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
-# Splunk SmartStore
-
-Source: https://docs.filone.com/integrations/logging/splunk-smartstore
-
-Splunk SmartStore uses Fil One as a remote volume in indexes.conf, with remote.s3.endpoint set to the regional endpoint, remote.s3.auth_region set to the bucket's region, path-style URLs, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
 # Apache Iceberg
 
 Source: https://docs.filone.com/integrations/data-ai/apache-iceberg
@@ -3927,12 +3867,6 @@ Source: https://docs.filone.com/integrations/data-ai/apache-iceberg
 Validation status: Verified with Iceberg 1.6.1 on Spark 3.5.3 in eu-west-1 and us-east-1 on 2026-11-25.
 
 Apache Iceberg reads and writes table data in Fil One through S3FileIO, with s3.endpoint set to the regional endpoint, s3.path-style-access=true, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
-
-# Databricks
-
-Source: https://docs.filone.com/integrations/data-ai/databricks
-
-Availability of custom S3-compatible endpoints varies by Databricks compute mode. On compute that permits a custom endpoint, Databricks reads and writes Fil One through the S3 connector with the regional endpoint, path-style access, and a key scoped to the bucket's region. Configuration, tool-specific validation steps, and troubleshooting are on the page.
 
 # Delta Lake
 
