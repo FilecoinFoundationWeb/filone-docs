@@ -14,13 +14,13 @@ Fil One supports four sign-in methods:
 - **GitHub**
 - **Email with password**
 
-A new account must verify its email address before the dashboard opens. Until you do, every page redirects to a verification screen.
+A new account must verify its email address before the console opens. Until you do, every page redirects to a verification screen.
 
 ## Two-factor authentication
 
 Two-factor authentication is opt-in per user and managed from **Settings**, under **Security**. Three factor types are supported:
 
-| Factor | Shown in the dashboard as | What it is |
+| Factor | Shown in the console as | What it is |
 |--------|---------------------------|------------|
 | Authenticator app | **Authenticator app (OTP)** | A time-based one-time code from an app such as 1Password, Authy, or Google Authenticator |
 | Security key | **Security key** | A roaming WebAuthn authenticator, for example a YubiKey |
@@ -34,7 +34,7 @@ Signing in with a passkey counts as a strong factor, so you aren't asked for a s
 
 ## Passkeys
 
-Passkeys are listed separately from two-factor methods in Settings, under **Passkeys**. If you have none enrolled, the dashboard prompts you to add one on your next sign-in.
+Passkeys are listed separately from two-factor methods in Settings, under **Passkeys**. If you have none enrolled, the console prompts you to add one on your next sign-in.
 
 You can hold up to **20 passkeys** on one account, which is enough to cover several devices without having to retire an old one to add a new one.
 
@@ -57,9 +57,9 @@ Four actions require a session that was signed in with two-factor authentication
 - Removing a passkey
 - Regenerating a recovery code
 
-If your current session wasn't, the dashboard sends you back through sign-in to step up before the action proceeds. This means a session signed in with a password alone cannot strip the account's protections.
+If your current session wasn't, the console sends you back through sign-in to step up before the action proceeds. This means a session signed in with a password alone cannot strip the account's protections.
 
-Transferring ownership of an organization has a stricter check: you must have signed in within the last five minutes, and if you have two-factor authentication set up, that sign-in must include it or use a passkey. Otherwise the dashboard sends you back through sign-in first.
+Transferring ownership of an organization has a stricter check: you must have signed in within the last five minutes, and if you have two-factor authentication set up, that sign-in must include it or use a passkey. Otherwise the console sends you back through sign-in first.
 
 ## Changing your password
 

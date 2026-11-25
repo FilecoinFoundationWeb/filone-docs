@@ -1,6 +1,6 @@
 ---
 title: API Keys
-description: Creating, configuring, and managing API keys in Fil One.
+description: Permissions, region scope, bucket scope, expiry, rotation and revocation of Fil One API keys.
 ---
 
 import Tabs from '@theme/Tabs';
@@ -10,7 +10,7 @@ API keys authenticate your requests to the Fil One S3 API. Each key consists of 
 
 ## Creating an API key
 
-1. Go to **API Keys** in the left sidebar of the console.
+1. Go to **API Keys** in the sidebar of the console.
 2. Click **Create new key** (this opens a dedicated page).
 3. Give the key a descriptive name (e.g., `production-backend`, `ci-pipeline`). Names are limited to 64 characters (letters, numbers, spaces, and `_ - .`), and names starting with `filone-console` (in any capitalization) are reserved.
 4. Choose the key's **region** (see [Region scope](#region-scope)). It is pre-set to `eu-west-1`, and it is fixed for the life of the key.
@@ -124,7 +124,7 @@ Expiring keys are useful for:
 
 ## Viewing and managing keys
 
-Go to **API Keys** in the left sidebar to see your keys. The list shows:
+Go to **API Keys** in the sidebar to see your keys. The list shows:
 
 | Column | Description |
 |--------|-------------|

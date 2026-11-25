@@ -26,7 +26,7 @@ Your 30-day free trial starts automatically, with no credit card. Each person ge
 
 ## 2. Create a bucket
 
-On the **Get started** page, click **Create bucket**. (Later, use **New bucket** on the dashboard or **Create bucket** on the **Buckets** page; they open the same form.) Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
+On the **Get started** page, click **Create bucket**. (Later, use **New bucket** on the **Dashboard** or **Create bucket** on the **Buckets** page; they open the same form.) Give the bucket a name (lowercase letters, numbers, and hyphens; unlike AWS S3, Fil One does **not** allow dots) and pick a region:
 
 | Setting | Options | Notes |
 |---------|---------|-------|
@@ -41,7 +41,7 @@ Versioning, Object Lock, and retention sit under **Advanced settings** on the cr
 
 ## 3. Create an API key
 
-You need a key for the CLI and the SDKs, not for uploading in the console. On the **Get started** page, click **Create API key**, or go to **API Keys** in the left menu and click **Create new key**. Create it in the **same region as your bucket**: a key belongs to one region and is rejected by the other. **Read**, **Write** and **List** are selected by default, which is enough for this guide.
+You need a key for the CLI and the SDKs, not for uploading in the console. On the **Get started** page, click **Create API key**, or go to **API Keys** in the sidebar and click **Create new key**. Create it in the **same region as your bucket**: a key belongs to one region and is rejected by the other. **Read**, **Write** and **List** are selected by default, which is enough for this guide.
 
 You'll get two values:
 
@@ -276,7 +276,7 @@ Create a file to upload first, for example with `echo "hello" > my-file.txt`. Th
   </TabItem>
 
   <TabItem value="console" label="Console">
-    1. Open your bucket from the dashboard.
+    1. Open your bucket from **Buckets** in the console.
     2. Click **Upload object**, select one or more files (or drag a whole folder in), then click **Upload** to start the transfer.
     3. Your objects appear in the file list once the upload completes.
     4. To download: click the download icon on the object's row, or open the object's detail page and use the **Download** button in the header.
