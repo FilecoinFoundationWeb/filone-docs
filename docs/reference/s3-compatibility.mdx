@@ -28,7 +28,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 ## Supported operations
 
 :::note About the numeric limits below
-Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](/limits).
+Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. See [Standard S3 limits](/limits#standard-s3-limits).
 :::
 
 :::warning How unsupported operations respond in `eu-west-1`
@@ -132,7 +132,7 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
+| Server-side encryption at rest | ✅ Always on | Applied automatically in your bucket's region. No headers are required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
 | SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
@@ -201,8 +201,12 @@ These are confirmed in `eu-west-1`.
 | An invalid object tag | `InvalidTag` | `BadRequest` |
 | `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
 | A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
+| Deleting a version under retention or a legal hold | `AccessDenied` (403) | `InvalidRequest` (400) |
+| Reading retention or legal hold on a version that has none | `NoSuchObjectLockConfiguration` (404) | `NoSuchObjectLockConfiguration` (400) |
 
-Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Do not rely on the gateway to validate request parameters for you: validate on the client side where correctness matters.
+In `us-east-1`, reading retention or legal hold on a version that has none returns `NoSuchKey` (404), even though the object exists.
+
+Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Validate request parameters on the client side where correctness matters.
 
 ## Known behavioral issues in `eu-west-1`
 
@@ -212,7 +216,7 @@ These are confirmed deviations that can affect a correctly written S3 client. Th
 |------|-------|------------|
 | Pagination | `ListObjects` may return a `NextMarker` with an internal suffix appended to the key (for example `asdf[...]` instead of `asdf`). Feeding that value back as the next `Marker` will not resume where you left off. | Prefer `ListObjectsV2` with `ContinuationToken`, which is unaffected. If you must use `ListObjects`, do not trust `NextMarker`; page using the last returned key instead. |
 | URL encoding | With `EncodingType=url`, a space in a key or prefix is encoded as `+` rather than `%20`. Most SDKs decode `%20` only, so keys with spaces can come back wrong. | Avoid spaces in key names, or decode `+` as a space yourself when you request URL encoding. |
-| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Verify integrity with ETags, or compare a hash you compute yourself after download. |
+| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Compare a checksum you compute yourself before upload with one you compute after download. |
 
 ## Differences from AWS S3
 

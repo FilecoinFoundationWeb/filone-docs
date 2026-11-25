@@ -123,7 +123,7 @@ Access through the S3 API is still per access key. There are no IAM users or buc
 <summary>How does Filecoin protect the integrity of stored data?</summary>
 <div>
 
-To check an individual object, compare the `ETag` returned by `HeadObject` with a checksum you keep. To stop an object changing for a fixed period, use [Object Lock](/storage/object-lock).
+To check an individual object, store a checksum when you upload and compare it with one you compute after download. To stop an object changing for a fixed period, use [Object Lock](/storage/object-lock).
 
 Underneath, Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs, called Proof of Replication (PoRep) and Proof of Spacetime (PoSt), to show they still hold the data they committed to store. Providers that fail to produce valid proofs are penalised. This runs at the network level, not per request.
 

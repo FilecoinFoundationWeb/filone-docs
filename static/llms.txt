@@ -68,10 +68,7 @@ Critical integration notes for developers:
   (Get/PutObjectLegalHold) work in BOTH REGIONS, including blocking delete while
   a hold is active. Both need the matching granular key
   permission, which is never granted automatically, and only an organization
-  OWNER can create a key with PutObjectRetention or PutObjectLegalHold.
-  Evidence differs by region: us-east-1 from the automated compatibility suite,
-  eu-west-1 from engineering testing (the suite could not create a lock-enabled
-  bucket there)
+  OWNER can create a key with PutObjectRetention or PutObjectLegalHold
 - The S3 API has NO IAM users, roles, or bucket policies: each request is allowed
   or refused by the access key's own permissions and bucket scope. The CONSOLE
   has organizations with four member roles (Owner, Admin, Member, Read only); a
@@ -95,8 +92,10 @@ Critical integration notes for developers:
   AccessDenied. Neither makes an object public
 - Error CODES deviate from AWS in eu-west-1 even though the XML format is
   standard: BadDigest->InvalidArgument, InvalidRange->InvalidArgument,
-  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou. Some
-  invalid requests are also ACCEPTED where AWS returns 400
+  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou.
+  Deleting a version under retention or legal hold returns 400 InvalidRequest
+  in eu-west-1 (403 AccessDenied in us-east-1, as in AWS). Some invalid
+  requests are also ACCEPTED where AWS returns 400
 - Open eu-west-1 client-affecting bugs: ListObjects NextMarker can carry an
   internal suffix (use ListObjectsV2 + ContinuationToken instead);
   EncodingType=url encodes a space as "+" not "%20"; additional-checksum

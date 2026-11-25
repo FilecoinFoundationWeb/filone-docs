@@ -94,7 +94,7 @@ If you set `"Mode": "COMPLIANCE"`, nobody, including the organization Owner, can
   </TabItem>
 </Tabs>
 
-In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). Fil One's `us-east-1` gateway has been confirmed to follow this; `eu-west-1` has not yet been independently verified.
+In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). In Fil One, retention can't be shortened in either region, because no access key can be granted the bypass-governance permission. See [S3 Compatibility](/reference/s3-compatibility#object-operations).
 
 ## Checking retention status
 
@@ -122,7 +122,7 @@ Returns:
 
 ## Deleting locked objects
 
-Attempting to delete an object with active retention returns `403 AccessDenied`.
+Deleting a version under active retention or a legal hold is refused. `us-east-1` returns `403 AccessDenied`, like AWS. `eu-west-1` returns `400 InvalidRequest`, so code that detects a lock by checking for a 403 needs to handle both.
 
 On a versioned bucket, a `DELETE` request without a version ID places a delete marker. The object appears deleted to applications, but the underlying version remains protected and intact until retention expires.
 
@@ -169,7 +169,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
+- Retention enforcement is confirmed in both regions. If a specific obligation depends on it, validate the exact behaviour you need.
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.

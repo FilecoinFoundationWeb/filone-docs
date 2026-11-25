@@ -15,7 +15,7 @@ Every S3 client that talks to Fil One needs these settings. The SDK defaults are
 | Region | Must match the endpoint and the key | `region_name="eu-west-1"` | `region: "eu-west-1"` | `Region: "eu-west-1"` |
 | Path-style addressing | Fil One doesn't support virtual-hosted-style URLs | `Config(s3={"addressing_style": "path"})` | `forcePathStyle: true` | `UsePathStyle: true` |
 | Signature version | Presigned URLs must use SigV4 | `Config(signature_version="s3v4")` | Default | Default |
-| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not needed: presigned URLs carry no checksum | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not needed: presigned URLs carry no checksum |
+| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not confirmed. If a presigned upload fails with `BadDigest`, add `request_checksum_calculation="when_required"` to the `Config` | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not confirmed. If a presigned upload fails with `BadDigest`, set `RequestChecksumCalculation: aws.RequestChecksumCalculationWhenRequired` |
 
 ## Credentials
 

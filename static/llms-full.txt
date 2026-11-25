@@ -35,8 +35,9 @@ Critical integration notes for developers:
   AWS_SECRET_ACCESS_KEY names, which every SDK reads automatically
 - All buckets are private by default; all data is encrypted at rest and in
   transit (TLS); encryption cannot be disabled. At-rest encryption is done by the
-  regional storage gateway and keys are held by the regional operator, NOT by Fil
-  One and NOT customer-managed. Do not name a specific cipher or SSE mode.
+  storage infrastructure in the bucket's region, and keys are held by Fil One's
+  storage provider for that region, NOT by Fil One and NOT customer-managed. Do
+  not name a specific cipher or SSE mode.
   SSE-KMS is rejected in BOTH regions (InvalidRequest in us-east-1; AccessDenied
   or InvalidRequest in eu-west-1). SSE-C is rejected in eu-west-1 and not yet
   confirmed in us-east-1 — send no encryption headers at all. No access key can
@@ -69,10 +70,7 @@ Critical integration notes for developers:
   (Get/PutObjectLegalHold) work in BOTH REGIONS, including blocking delete while
   a hold is active. Both need the matching granular key
   permission, which is never granted automatically, and only an organization
-  OWNER can create a key with PutObjectRetention or PutObjectLegalHold.
-  Evidence differs by region: us-east-1 from the automated compatibility suite,
-  eu-west-1 from engineering testing (the suite could not create a lock-enabled
-  bucket there)
+  OWNER can create a key with PutObjectRetention or PutObjectLegalHold
 - The S3 API has NO IAM users, roles, or bucket policies: each request is allowed
   or refused by the access key's own permissions and bucket scope. The CONSOLE
   has organizations with four member roles (Owner, Admin, Member, Read only); a
@@ -96,8 +94,10 @@ Critical integration notes for developers:
   AccessDenied. Neither makes an object public
 - Error CODES deviate from AWS in eu-west-1 even though the XML format is
   standard: BadDigest->InvalidArgument, InvalidRange->InvalidArgument,
-  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou. Some
-  invalid requests are also ACCEPTED where AWS returns 400
+  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou.
+  Deleting a version under retention or legal hold returns 400 InvalidRequest
+  in eu-west-1 (403 AccessDenied in us-east-1, as in AWS). Some invalid
+  requests are also ACCEPTED where AWS returns 400
 - Open eu-west-1 client-affecting bugs: ListObjects NextMarker can carry an
   internal suffix (use ListObjectsV2 + ContinuationToken instead);
   EncodingType=url encodes a space as "+" not "%20"; additional-checksum
@@ -516,7 +516,7 @@ Every S3 client that talks to Fil One needs these settings. The SDK defaults are
 | Region | Must match the endpoint and the key | `region_name="eu-west-1"` | `region: "eu-west-1"` | `Region: "eu-west-1"` |
 | Path-style addressing | Fil One doesn't support virtual-hosted-style URLs | `Config(s3={"addressing_style": "path"})` | `forcePathStyle: true` | `UsePathStyle: true` |
 | Signature version | Presigned URLs must use SigV4 | `Config(signature_version="s3v4")` | Default | Default |
-| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not needed: presigned URLs carry no checksum | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not needed: presigned URLs carry no checksum |
+| Checksums | SDK v3.729 and later sign a checksum into presigned upload URLs, and the upload then fails with `BadDigest` | Not confirmed. If a presigned upload fails with `BadDigest`, add `request_checksum_calculation="when_required"` to the `Config` | `requestChecksumCalculation: "WHEN_REQUIRED"` and `responseChecksumValidation: "WHEN_REQUIRED"` | Not confirmed. If a presigned upload fails with `BadDigest`, set `RequestChecksumCalculation: aws.RequestChecksumCalculationWhenRequired` |
 
 ## Credentials
 
@@ -1300,7 +1300,7 @@ s3.put_object_retention(
 )
 ```
 
-In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). Fil One's `us-east-1` gateway has been confirmed to follow this; `eu-west-1` has not yet been independently verified.
+In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). In Fil One, retention can't be shortened in either region, because no access key can be granted the bypass-governance permission. See [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility#object-operations).
 
 ## Checking retention status
 
@@ -1328,7 +1328,7 @@ Returns:
 
 ## Deleting locked objects
 
-Attempting to delete an object with active retention returns `403 AccessDenied`.
+Deleting a version under active retention or a legal hold is refused. `us-east-1` returns `403 AccessDenied`, like AWS. `eu-west-1` returns `400 InvalidRequest`, so code that detects a lock by checking for a 403 needs to handle both.
 
 On a versioned bucket, a `DELETE` request without a version ID places a delete marker. The object appears deleted to applications, but the underlying version remains protected and intact until retention expires.
 
@@ -1374,7 +1374,7 @@ Object Lock provides WORM-style retention. These are common scenarios where team
 Object Lock provides WORM-style retention, which is a building block many regulatory regimes call for. However:
 
 - Fil One holds **no third-party compliance attestation** (for example, an SEC 17a-4 assessment) for this feature.
-- Retention enforcement is confirmed in both regions, but by different means: `us-east-1` by an automated compatibility suite, `eu-west-1` by engineering testing rather than that suite. If a specific obligation depends on it, validate the exact behaviour you need.
+- Retention enforcement is confirmed in both regions. If a specific obligation depends on it, validate the exact behaviour you need.
 - The product surfaces **no per-object cryptographic proof** (no CID, deal ID, or seal state) that you could present to an auditor to demonstrate integrity.
 
 Treat the regulations named above as illustrative use cases, and evaluate whether Object Lock meets a specific obligation as part of your own compliance process.
@@ -1916,7 +1916,7 @@ Source: https://docs.filone.com/billing/pricing
 
 Fil One is priced at **$5.99 / TB / month**, with a **$5.99 / month minimum**. If you store less than 1 TB, you are billed the $5.99 minimum.
 
-No egress fees and no per-request charges.
+No egress fees, no per-request charges, no hidden costs.
 
 This is the self-service **Pay as you go** plan. For volume pricing on 1, 3, or 5-year terms, the **Business plan** is arranged with the sales team. See [Billing](https://docs.filone.com/app/billing#choosing-a-plan).
 
@@ -2786,7 +2786,7 @@ Fil One supports **AWS Signature Version 4 (SigV4)** authentication. Any S3 clie
 ## Supported operations
 
 Note: About the numeric limits below
-Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see [Limits](https://docs.filone.com/limits).
+Specific size and count limits quoted in these tables (5 TB max object, 5 GB single-PUT, 5 MB / 5 GB part sizes, 10,000 parts, 1,000-object bulk delete) are the **standard AWS S3 values**. See [Standard S3 limits](https://docs.filone.com/limits#standard-s3-limits).
 
 Warning: How unsupported operations respond in `eu-west-1`
 In `eu-west-1`, operations that Fil One does not implement return **`AccessDenied` (HTTP 403)**, not `NotImplemented` (501). This is confirmed in that region.
@@ -2888,7 +2888,7 @@ Encryption is **always enabled** on every Fil One bucket. There is nothing to co
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Server-side encryption at rest | ✅ Always on | Applied automatically by the regional storage gateway — no headers required, and it cannot be disabled. |
+| Server-side encryption at rest | ✅ Always on | Applied automatically in your bucket's region. No headers are required, and it cannot be disabled. |
 | Encryption in transit (TLS) | ✅ Always on | All API connections use HTTPS. HTTP is rejected. |
 | SSE-S3 (`AES256`) header | Not needed | Encryption is applied automatically in both regions, so send no encryption header. |
 | SSE-KMS (`aws:kms`) | ❌ Not supported | Rejected in **both** regions: `InvalidRequest` in `us-east-1`, and `AccessDenied` or `InvalidRequest` in `eu-west-1` depending on the operation. Affects `PutObject`, `CopyObject`, and `CreateMultipartUpload`. Omit encryption headers, server-side encryption is applied automatically. |
@@ -2957,8 +2957,12 @@ These are confirmed in `eu-west-1`.
 | An invalid object tag | `InvalidTag` | `BadRequest` |
 | `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
 | A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
+| Deleting a version under retention or a legal hold | `AccessDenied` (403) | `InvalidRequest` (400) |
+| Reading retention or legal hold on a version that has none | `NoSuchObjectLockConfiguration` (404) | `NoSuchObjectLockConfiguration` (400) |
 
-Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Do not rely on the gateway to validate request parameters for you: validate on the client side where correctness matters.
+In `us-east-1`, reading retention or legal hold on a version that has none returns `NoSuchKey` (404), even though the object exists.
+
+Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Validate request parameters on the client side where correctness matters.
 
 ## Known behavioral issues in `eu-west-1`
 
@@ -2968,7 +2972,7 @@ These are confirmed deviations that can affect a correctly written S3 client. Th
 |------|-------|------------|
 | Pagination | `ListObjects` may return a `NextMarker` with an internal suffix appended to the key (for example `asdf[...]` instead of `asdf`). Feeding that value back as the next `Marker` will not resume where you left off. | Prefer `ListObjectsV2` with `ContinuationToken`, which is unaffected. If you must use `ListObjects`, do not trust `NextMarker`; page using the last returned key instead. |
 | URL encoding | With `EncodingType=url`, a space in a key or prefix is encoded as `+` rather than `%20`. Most SDKs decode `%20` only, so keys with spaces can come back wrong. | Avoid spaces in key names, or decode `+` as a space yourself when you request URL encoding. |
-| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Verify integrity with ETags, or compare a hash you compute yourself after download. |
+| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Compare a checksum you compute yourself before upload with one you compute after download. |
 
 ## Differences from AWS S3
 
@@ -3109,7 +3113,7 @@ The trial lasts 30 days. After it ends, your account enters a 7-day read-only gr
 
 ### Standard S3 limits
 
-The **console** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One's S3 endpoints are expected to follow them, but we haven't confirmed the exact values ourselves. Treat them as guidance, and test against your own workload before hard-coding an exact figure. Other pages that quote these values link here.
+The **console** rejects object keys longer than **1,024 characters** when you upload. The other values in this table (the 1,024-byte key length through the S3 API, maximum object and part sizes, maximum part count, minimum part size, and metadata size) are the **standard AWS S3 limits**. Fil One hasn't checked each exact value, so test against your own workload before you hard-code one.
 
 For objects larger than 5 GB, use [multipart upload](https://docs.filone.com/storage/multipart-uploads).
 
@@ -4197,7 +4201,7 @@ Access through the S3 API is still per access key. There are no IAM users or buc
 
 ## How does Filecoin protect the integrity of stored data?
 
-To check an individual object, compare the `ETag` returned by `HeadObject` with a checksum you keep. To stop an object changing for a fixed period, use [Object Lock](https://docs.filone.com/storage/object-lock).
+To check an individual object, store a checksum when you upload and compare it with one you compute after download. To stop an object changing for a fixed period, use [Object Lock](https://docs.filone.com/storage/object-lock).
 
 Underneath, Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs, called Proof of Replication (PoRep) and Proof of Spacetime (PoSt), to show they still hold the data they committed to store. Providers that fail to produce valid proofs are penalised. This runs at the network level, not per request.
 
