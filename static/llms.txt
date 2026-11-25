@@ -152,7 +152,8 @@ Critical integration notes for developers:
   100 years. NO grantable bypass permission, so retention can be set or extended
   but NOT SHORTENED in either mode; Compliance retention can't be removed and
   stays billed until it expires. Per-object PutObjectRetention and Legal Hold
-  work in both regions; Set retention / Set legal hold are Owner-only to grant.
+  work in both regions, as do Object Lock headers on PutObject; Set retention /
+  Set legal hold are Owner-only to grant.
   NO third-party compliance attestation; regulations such as SEC 17a-4 are
   illustrative use cases, not a certification claim
 
@@ -222,7 +223,10 @@ Critical integration notes for developers:
   SigV4 authentication requirement, path-style addressing, and response format
 - [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility): Full table
   of supported vs. unsupported S3 operations per region (GetObject, PutObject,
-  DeleteObject, ListObjectsV2, multipart, presigned URLs supported; bucket
+  DeleteObject, ListObjectsV2, multipart, presigned URLs supported; conditional
+  writes (If-None-Match, If-Match) and Object Lock headers on PutObject
+  supported in both regions; max-keys must be 1,000 or less in us-east-1;
+  eu-west-1 ETags aren't MD5 checksums of the content; bucket
   configuration calls such as PutBucketVersioning, PutBucketObjectLockConfiguration
   and Get/PutBucketEncryption not available to access keys; bucket policies,
   lifecycle rules and IAM users/roles not supported on the S3 API); how
@@ -368,3 +372,4 @@ Security, Billing) hold the concepts and code samples.
   residency, deletion behavior, migration from AWS S3, backups, durability (no
   published figure; public 99.9% uptime SLA at https://www.filone.com/sla),
   multiple users (organizations and roles), and Filecoin data integrity mechanics
+  (check object integrity with your own checksums)

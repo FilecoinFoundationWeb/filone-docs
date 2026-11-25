@@ -59,6 +59,8 @@ The default retention period set at bucket creation is applied automatically to 
 Setting or extending retention on an *individual* object version via `PutObjectRetention` works in **both regions**, but only with the **Set retention** permission, which is never granted automatically and only an organization Owner can grant. Retention can be extended but not shortened: no Fil One access key can be granted the bypass-governance permission. See [Key concepts](#key-concepts).
 :::
 
+You can also set retention or a legal hold when you upload, with the `x-amz-object-lock-mode`, `x-amz-object-lock-retain-until-date`, and `x-amz-object-lock-legal-hold` headers on `PutObject`. This works in both regions with a key that has the **Set retention** and **Set legal hold** permissions.
+
 Object Lock buckets are always versioned, so a retention call should target a specific version with `--version-id`; without it the call targets whatever the current version is (possibly a delete marker).
 
 The examples use Governance mode. Replace `YYYY-MM-DD` with a date a day or two from now while you're testing: you can extend retention later, but on Fil One you can't shorten it in either mode, because no key can be granted the bypass permission.
