@@ -1,11 +1,11 @@
 ---
 title: Terraform S3 backend
 description: Evaluate a Fil One bucket for Terraform remote state.
-integration_status: Not currently tested
-tested_versions: []
-verified_regions: []
-verification_date: null
-evidence: null
+integration_status: Verified
+tested_versions: [Terraform 1.17.2]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
 ---
 
 # Terraform S3 backend
@@ -18,6 +18,8 @@ Terraform's `s3` backend stores state in Fil One with `endpoints { s3 = ... }` s
 | Region | `eu-west-1` or `us-east-1` (`region`) |
 | Addressing | Path style (`use_path_style = true`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied outside the configuration |
+
+Validation status: Verified. Tested with Terraform 1.17.2 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
 
 ## Configure
 

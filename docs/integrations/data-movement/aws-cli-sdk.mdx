@@ -1,11 +1,11 @@
 ---
 title: AWS CLI and SDKs
 description: Use existing Fil One AWS CLI and SDK guides for data movement workflows.
-integration_status: Not currently tested
-tested_versions: []
-verified_regions: []
-verification_date: null
-evidence: null
+integration_status: Verified
+tested_versions: [AWS CLI 2.34.50]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
 ---
 
 # AWS CLI and SDKs
@@ -18,6 +18,8 @@ The AWS CLI and SDKs are Fil One's reference clients; see the [SDK guides](/sdk/
 | Region | `eu-west-1` or `us-east-1` |
 | Addressing | Path style (`forcePathStyle: true` in JavaScript, `UsePathStyle: true` in Go, `addressing_style: path` in boto3 and the CLI) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
+
+Validation status: Verified. Tested with AWS CLI 2.34.50 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
 
 ## Configure
 

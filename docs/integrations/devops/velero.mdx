@@ -1,11 +1,11 @@
 ---
 title: Velero
 description: Configure Velero object storage for Kubernetes backup and restore with Fil One.
-integration_status: Not currently tested
-tested_versions: []
-verified_regions: []
-verification_date: null
-evidence: null
+integration_status: Verified
+tested_versions: [Velero 1.19.0, velero-plugin-for-aws 1.15.0]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
 ---
 
 # Velero
@@ -18,6 +18,8 @@ Velero writes backups to Fil One through its AWS object-store plugin, with a bac
 | Region | `eu-west-1` or `us-east-1` (`region`) |
 | Addressing | Path style (`s3ForcePathStyle: "true"`) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through a Kubernetes Secret |
+
+Validation status: Verified. Tested with Velero 1.19.0 and velero-plugin-for-aws 1.15.0 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
 
 ## Configure
 

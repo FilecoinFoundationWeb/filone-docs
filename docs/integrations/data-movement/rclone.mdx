@@ -1,11 +1,11 @@
 ---
 title: rclone
 description: Configure rclone for upload, restore, and integrity checks with Fil One.
-integration_status: Not currently tested
-tested_versions: []
-verified_regions: []
-verification_date: null
-evidence: null
+integration_status: Verified
+tested_versions: [rclone 1.76.0]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
 ---
 
 # rclone
@@ -20,6 +20,8 @@ rclone connects to Fil One as an S3 remote with `provider = Other`, SigV4 signin
 | Authentication | SigV4 access key and secret scoped to the bucket's region |
 | Provider | `Other` |
 | Upload cutoff | `0` (`upload_cutoff = 0`) |
+
+Validation status: Verified. Tested with rclone 1.76.0 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
 
 ## Configure
 

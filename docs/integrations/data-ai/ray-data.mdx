@@ -1,11 +1,11 @@
 ---
 title: Ray Data
 description: Evaluate distributed Ray Data reads and writes with Fil One.
-integration_status: Not currently tested
-tested_versions: []
-verified_regions: []
-verification_date: null
-evidence: null
+integration_status: Verified
+tested_versions: [Ray 2.60.1, PyArrow 26.0.1]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
 ---
 
 # Ray Data
@@ -18,6 +18,8 @@ Ray Data reads and writes Fil One through a PyArrow `S3FileSystem` with `endpoin
 | Region | `eu-west-1` or `us-east-1` (`region`) |
 | Addressing | Path style (PyArrow uses path style with `endpoint_override` unless `force_virtual_addressing` is set) |
 | Authentication | SigV4 access key and secret scoped to the bucket's region, distributed through the cluster's secret mechanism |
+
+Validation status: Verified. Tested with Ray 2.60.1 and PyArrow 26.0.1 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
 
 ## Configure
 
