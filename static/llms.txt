@@ -301,10 +301,10 @@ Security, Billing) hold the concepts and code samples.
   under retention or legal hold and cannot be undone. A console delete on a
   versioned bucket PERMANENTLY deletes the chosen version (NO delete marker).
   Name, region, versioning, Object Lock and default retention are PERMANENT at
-  creation. Upload is single-PUT (5 GB ceiling); the browser pages each folder 100
-  entries at a time (Previous/Next); bulk select is per page and objects only,
-  no folder selection; no version restore/promote. Download works on trial; SHARING IS
-  A PAID-PLAN FEATURE (links of 1 hour to 7 days)
+  creation. Upload is single-PUT (5 GB ceiling); the browser pages each folder
+  100 entries at a time (Previous/Next); bulk select is per page and objects
+  only, no folder selection; no version restore/promote. Download works on
+  trial; SHARING IS A PAID-PLAN FEATURE (links of 1 hour to 7 days)
 - [App - API Keys](https://docs.filone.com/app/api-keys): Key list (Status Active,
   or Expired from the day after the expiry date in UTC; Permissions as Read/Write/List/Delete badges plus +n; search and
   region/status filters from 5 keys; a row opens a details panel with expiry,
