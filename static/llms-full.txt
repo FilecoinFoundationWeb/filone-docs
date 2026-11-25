@@ -1783,9 +1783,20 @@ Each point is a daily reading. Days without a reading are plotted as zero, so a 
 
 ## Recent Activity
 
-**Recent Activity** lists your five most recent events, each with a relative timestamp such as `5m ago` or `2d ago`.
+**Recent Activity** lists your organization's five most recent bucket and key changes, each with a relative timestamp such as `5m ago` or `2d ago`. It shows to Owners and Admins, and **View all** opens the [audit log](https://docs.filone.com/app/organization#audit-log), which the feed is drawn from. Members and Read-only members don't see the card.
 
-The feed currently covers bucket and key creation. Each row shows the resource name with a **bucket** or **key** badge and the label **Created**. Object-level events are not included yet, so open a bucket to confirm an upload rather than looking for it here. With no activity yet the card reads **No activity yet** and offers a **Create bucket** button.
+Each row shows the resource name with a **bucket** or **key** badge and what happened:
+
+| Label | Meaning |
+|-------|---------|
+| **Created** | A bucket or key was created |
+| **Deleted** | A bucket or key was deleted |
+| **Rotated** | A key was given a new Access Key ID and secret |
+| **Created outside the console** | A bucket was created without the console, for example with the S3 API |
+
+A bucket deleted with the S3 API has no row: once it's gone, the console has no record of it. Object-level events are not included, so open a bucket to confirm an upload.
+
+The feed covers the last 90 days, the audit log's retention. An organization with buckets or keys but no changes in that window sees **No recent activity**. One with no buckets or keys yet sees **No activity yet** and a **Create bucket** button.
 
 ## Account state banners
 
@@ -2266,6 +2277,7 @@ Events recorded:
 - Member invited, invitation revoked, and invitation accepted
 - Role changed, member removed, and ownership transferred
 - Key created, key deleted, and key rotated
+- Bucket created and bucket deleted, when done in the console
 - Audit log exported
 
 **Download CSV** exports the events that match your current filters. An export can hold up to 20,000 rows. A larger one is refused rather than cut short, so narrow the date range or filter by event type or member.
