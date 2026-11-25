@@ -26,7 +26,6 @@ Being accurate doesn't mean telling readers everything we know. Include only wha
 - **Say a real caveat once.** If something is unconfirmed and a reader could be affected, state it on the page that owns the fact (for example, Limits → Standard S3 limits) and link there from other pages. Don't repeat it everywhere.
 - **Don't describe how we know something.** No "compatibility test run", "verified in code", "engineering testing", "not independently confirmed", or "expected to follow".
 - **Don't name internal parts.** No "storage gateway" or "regional operator". Describe what the customer sees, such as "in your bucket's region" or "Fil One's storage provider for the region".
-- **Skip vague reassurance.** Phrases like "no hidden fees" can't be checked, so state the concrete fact instead ("no per-request charges").
 
 For example, don't write "Fil One's storage gateway is expected to follow them, but they have not been independently confirmed — see Limits." Write "These are the standard AWS S3 values. See [Standard S3 limits](/limits#standard-s3-limits)."
 
