@@ -1,0 +1,40 @@
+---
+title: Apache Iceberg
+description: Evaluate Apache Iceberg object storage workflows with Fil One.
+integration_status: Verified
+tested_versions: [Iceberg 1.6.1, Spark 3.5.3]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
+---
+
+# Apache Iceberg
+
+Apache Iceberg reads and writes table data in Fil One through `S3FileIO`, with `s3.endpoint` set to the regional endpoint, `s3.path-style-access=true`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`s3.endpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`client.region`) |
+| Addressing | Path style (`s3.path-style-access=true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through the engine's secret mechanism |
+
+Validation status: Verified. Tested with Iceberg 1.6.1 on Spark 3.5.3 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
+
+## Configure
+
+Use Iceberg's `S3FileIO` when your engine supports it. Configure the warehouse on an existing bucket, the regional endpoint and region, path-style access, and credentials through the engine's secret mechanism. Catalog configuration is separate: REST, JDBC, Hive, Glue-compatible, and filesystem catalogs have different correctness and concurrency properties.
+
+## Examples
+
+1. Create a disposable table, append and update data, and read it from a fresh session.
+2. Validate partition pruning and inspect metadata and manifest objects under the dedicated warehouse prefix.
+3. Run concurrent commits and confirm one writer does not silently overwrite another.
+4. Preserve the metadata tree, recover the table from its catalog, and compare row counts and content hashes.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Some components reach an AWS hostname | An engine may use more than one S3 client; apply endpoint and path-style settings to every execution component. |
+| Reads work but commits fail | Check the catalog configuration and the engine and catalog versions. |

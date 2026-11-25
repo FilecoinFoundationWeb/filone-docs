@@ -76,6 +76,50 @@ const sidebars = {
         "sdk/ai-agents",
       ],
     },
+    {
+      type: "category",
+      label: "Integrations",
+      items: [
+        "integrations/index",
+        "integrations/connection-settings",
+        "integrations/validate-an-integration",
+        {
+          type: "category",
+          label: "Data movement",
+          items: [
+            "integrations/data-movement/rclone",
+            "integrations/data-movement/aws-cli-sdk",
+          ],
+        },
+        {
+          type: "category",
+          label: "Kubernetes and DevOps",
+          items: [
+            "integrations/devops/velero",
+            "integrations/devops/harbor",
+            "integrations/devops/terraform",
+          ],
+        },
+        {
+          type: "category",
+          label: "SIEM and logging",
+          items: [
+            "integrations/logging/elasticsearch-snapshots",
+          ],
+        },
+        {
+          type: "category",
+          label: "Data and AI",
+          items: [
+            "integrations/data-ai/apache-iceberg",
+            "integrations/data-ai/delta-lake",
+            "integrations/data-ai/duckdb",
+            "integrations/data-ai/hugging-face-datasets",
+            "integrations/data-ai/ray-data",
+          ],
+        },
+      ],
+    },
     "faq",
     "limits",
   ],

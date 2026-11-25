@@ -277,6 +277,23 @@ Critical integration notes for developers:
   Keys > Connection details > "Use with an AI agent"), filled in for a chosen
   region; its profile doesn't store the endpoint, so its instructions give it
 
+## Integrations
+
+- [Integrations](https://docs.filone.com/integrations): Setup guides for common transfer, DevOps, logging, analytics, and AI tools
+- [Integration connection settings](https://docs.filone.com/integrations/connection-settings): Endpoints (https://s3.eu-west-1.filonecontent.com, https://s3.us-east-1.filonecontent.com), region, SigV4, path-style, and credential settings
+- [Check a setup](https://docs.filone.com/integrations/validate-an-integration): Optional steps to copy a small fixture, restore it, and compare checksums
+- [rclone](https://docs.filone.com/integrations/data-movement/rclone): provider Other, force_path_style, upload_cutoff = 0, config example, rclone check validation; verified with rclone 1.76.0 in eu-west-1 and us-east-1 (2026-11-25)
+- [AWS CLI and SDKs](https://docs.filone.com/integrations/data-movement/aws-cli-sdk): the reference clients, with setup in the SDK guides; verified with AWS CLI 2.34.50 in eu-west-1 and us-east-1 (2026-11-25)
+- [Velero](https://docs.filone.com/integrations/devops/velero): Kubernetes backup, restore, and volume-scope validation; verified with Velero 1.19.0 with velero-plugin-for-aws 1.15.0 in eu-west-1 and us-east-1 (2026-11-25)
+- [Harbor](https://docs.filone.com/integrations/devops/harbor): registry s3 storage driver settings (regionendpoint, forcepathstyle), harbor.yml example, push, pull, and garbage collection; verified with Harbor 2.15.5 in eu-west-1 and us-east-1 (2026-11-25)
+- [Terraform S3 backend](https://docs.filone.com/integrations/devops/terraform): endpoints and use_path_style backend settings, skip_credentials_validation and skip_requesting_account_id, use_lockfile state locking, state migration, recovery; verified with Terraform 1.17.2 in eu-west-1 and us-east-1 (2026-11-25)
+- [Elasticsearch searchable snapshots](https://docs.filone.com/integrations/logging/elasticsearch-snapshots): s3 repository client settings, repository verification, restore, and searchable-snapshot validation; verified with Elasticsearch 8.17.0 in eu-west-1 and us-east-1 (2026-11-25)
+- [Apache Iceberg](https://docs.filone.com/integrations/data-ai/apache-iceberg): S3FileIO, catalog, commits, and recovery validation; verified with Iceberg 1.6.1 on Spark 3.5.3 in eu-west-1 and us-east-1 (2026-11-25)
+- [Delta Lake](https://docs.filone.com/integrations/data-ai/delta-lake): s3a settings, fs.s3a.paging.maximum=1000, one writer per table with the default log store, checkpoints, recovery; verified with Delta Lake 3.2.1 on Spark 3.5.3 in eu-west-1 and us-east-1 (2026-11-25)
+- [DuckDB](https://docs.filone.com/integrations/data-ai/duckdb): httpfs read, write, and cache-independent validation; verified with DuckDB 2.0.1 in eu-west-1 and us-east-1 (2026-11-25)
+- [Hugging Face Datasets](https://docs.filone.com/integrations/data-ai/hugging-face-datasets): load, streaming, cache clearing, and package-version guidance; verified with datasets 5.2.0 with s3fs 2026.9.0 in eu-west-1 and us-east-1 (2026-11-25)
+- [Ray Data](https://docs.filone.com/integrations/data-ai/ray-data): distributed reads, writes, worker configuration, and retry validation; verified with Ray 2.60.1 with PyArrow 26.0.1 in eu-west-1 and us-east-1 (2026-11-25)
+
 ## Console
 
 The browser console at app.filone.com, one page per console screen. No code

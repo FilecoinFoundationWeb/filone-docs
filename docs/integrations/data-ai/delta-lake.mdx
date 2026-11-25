@@ -1,0 +1,53 @@
+---
+title: Delta Lake
+description: Evaluate Delta Lake transaction-log workflows on Fil One.
+integration_status: Verified
+tested_versions: [delta-spark 3.2.1, Spark 3.5.3, hadoop-aws 3.3.4]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
+---
+
+# Delta Lake
+
+Delta Lake on Spark reads and writes Fil One through the `s3a` connector, with `fs.s3a.endpoint` set to the regional endpoint, `fs.s3a.path.style.access=true`, and a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`fs.s3a.endpoint`) |
+| Region | `eu-west-1` or `us-east-1` (`fs.s3a.endpoint.region`) |
+| Addressing | Path style (`fs.s3a.path.style.access=true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, supplied through the platform's secret mechanism |
+| Listing page size | `fs.s3a.paging.maximum=1000` |
+
+Validation status: Verified. Tested with Delta Lake 3.2.1 on Spark 3.5.3 with hadoop-aws 3.3.4 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
+
+## Configure
+
+Configure Spark's S3 connector with the existing bucket, regional endpoint and region, path-style access, and credentials supplied through the platform's secret mechanism. Keep a dedicated table prefix. Ensure the driver and every executor receive the same settings.
+
+Set `fs.s3a.paging.maximum=1000` to match the S3 maximum of 1,000 keys per listing page. The `s3a` connector requests 5,000 by default, which `us-east-1` doesn't accept. The same setting works in both regions.
+
+```ini
+spark.hadoop.fs.s3a.endpoint=https://s3.us-east-1.filonecontent.com
+spark.hadoop.fs.s3a.endpoint.region=us-east-1
+spark.hadoop.fs.s3a.path.style.access=true
+spark.hadoop.fs.s3a.paging.maximum=1000
+```
+
+:::warning One writer per table
+Delta's default S3 log store supports a single writer per table, on any S3 storage. Write to each table from one Spark application at a time, or configure a log store that supports multiple writers for your Delta release.
+:::
+
+## Examples
+
+1. Create a disposable Delta table, append and update rows, produce a checkpoint, and read the table from a fresh session.
+2. Restore a prior table version after confirming the required log and data objects exist, then compare row counts and deterministic hashes.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| `400 Invalid max-keys` (`AWSBadRequestException`) | Set `fs.s3a.paging.maximum=1000`. |
+| Parquet reads work but Delta commits fail | Connector retry, rename, conditional-write, and consistency assumptions vary by release; check the Delta, Spark, and connector version set. |
+| Executors reach an AWS hostname | Apply the endpoint and path-style settings to executors as well as the driver. |

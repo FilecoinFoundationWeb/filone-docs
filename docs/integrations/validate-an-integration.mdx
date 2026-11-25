@@ -1,0 +1,16 @@
+---
+title: Check a setup
+description: Optional steps to copy a small fixture, restore it, and compare checksums.
+---
+
+# Check a setup
+
+If you want to confirm a tool can write to a bucket and read the same bytes back, use disposable data and a prefix you can delete.
+
+1. Create a local folder with a small text file, a nested file, and a file large enough to trigger multipart upload in the tool (above the tool's part or chunk size; see [Limits & Quotas](/limits)).
+2. Copy it to a unique prefix in the bucket, for example `check-YYYYMMDD-HHMM/`.
+3. List the prefix and confirm every file is present.
+4. Remove the local copy.
+5. Restore the prefix to a new local directory.
+6. Compare size and SHA-256 for every restored file against the values recorded before upload.
+7. Delete only that prefix, then list it again to confirm it is empty.

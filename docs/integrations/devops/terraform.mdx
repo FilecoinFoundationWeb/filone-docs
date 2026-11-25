@@ -1,0 +1,60 @@
+---
+title: Terraform S3 backend
+description: Evaluate a Fil One bucket for Terraform remote state.
+integration_status: Verified
+tested_versions: [Terraform 1.17.2]
+verified_regions: [eu-west-1, us-east-1]
+verification_date: 2026-11-25
+evidence: https://github.com/FilecoinFoundationWeb/filone-docs/pull/34#issuecomment-7163647500
+---
+
+# Terraform S3 backend
+
+Terraform's `s3` backend stores state in Fil One with `endpoints { s3 = ... }` set to the regional endpoint and `use_path_style = true` (Terraform 1.6 and later backend syntax), signed with SigV4 by a key scoped to the bucket's region.
+
+| Setting | Value |
+| --- | --- |
+| Endpoint | `https://s3.eu-west-1.filonecontent.com` or `https://s3.us-east-1.filonecontent.com`, matching the bucket's region (`endpoints { s3 = ... }`) |
+| Region | `eu-west-1` or `us-east-1` (`region`) |
+| Addressing | Path style (`use_path_style = true`) |
+| Authentication | SigV4 access key and secret scoped to the bucket's region, supplied outside the configuration |
+
+Validation status: Verified. Tested with Terraform 1.17.2 in `eu-west-1` and `us-east-1` on 2026-11-25, using the settings on this page.
+
+## Configure
+
+Use the `s3` backend with an existing bucket, a dedicated state key, the regional endpoint, matching region, and path-style addressing. Keep credentials outside the Terraform configuration.
+
+Set both `skip_credentials_validation` and `skip_requesting_account_id`. Otherwise, Terraform tries to validate the key with AWS STS, which doesn't apply to Fil One keys.
+
+For state locking, set `use_lockfile = true` (Terraform 1.10 and later). Terraform stores the lock next to the state file, so two runs can't change the same state at once.
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "BUCKET_NAME"
+    key            = "terraform/ENVIRONMENT.tfstate"
+    region         = "REGION"
+    endpoints      = { s3 = "ENDPOINT_URL" }
+    use_path_style = true
+    use_lockfile   = true
+
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+  }
+}
+```
+
+## Examples
+
+1. Initialize against a disposable configuration, apply it, and confirm a subsequent `terraform plan` is empty.
+2. Copy state to an offline recovery location, remove the local working directory, reinitialize, and confirm state can be read.
+3. Start a long `terraform apply`, then run a second one against the same state. The second should stop with `Error acquiring the state lock`.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| `terraform init` fails with a 403 from STS (`GetCallerIdentity`) or can't find an account ID | Set both `skip_credentials_validation = true` and `skip_requesting_account_id = true`. |
+| Initialization contacts an AWS hostname | Check the custom endpoint and path-style options supported by your Terraform release. |
+| Backend migration | Preserve an offline state backup before migrating. |
