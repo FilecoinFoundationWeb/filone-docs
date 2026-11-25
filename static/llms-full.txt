@@ -1040,6 +1040,8 @@ The default retention period set at bucket creation is applied automatically to 
 Info: `PutObjectRetention` needs a granted permission
 Setting or extending retention on an *individual* object version via `PutObjectRetention` works in **both regions**, but only with the **Set retention** permission, which is never granted automatically and only an organization Owner can grant. Retention can be extended but not shortened: no Fil One access key can be granted the bypass-governance permission. See [Key concepts](#key-concepts).
 
+You can also set retention or a legal hold when you upload, with the `x-amz-object-lock-mode`, `x-amz-object-lock-retain-until-date`, and `x-amz-object-lock-legal-hold` headers on `PutObject`. This works in both regions with a key that has the **Set retention** and **Set legal hold** permissions.
+
 Object Lock buckets are always versioned, so a retention call should target a specific version with `--version-id`; without it the call targets whatever the current version is (possibly a delete marker).
 
 The examples use Governance mode. Replace `YYYY-MM-DD` with a date a day or two from now while you're testing: you can extend retention later, but on Fil One you can't shorten it in either mode, because no key can be granted the bypass permission.
@@ -2552,6 +2554,7 @@ A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`,
 | `DeleteBucket` | ⚠️ Region-dependent | Supported in `us-east-1` (the bucket must be empty). Not available in `eu-west-1`. |
 | `ListBuckets` | ✅ Supported | |
 | `HeadBucket` | ✅ Supported | |
+| `GetBucketLocation` | ⚠️ Region-dependent | Returns an empty location in `eu-west-1` and `AccessDenied` in `us-east-1`. Set the region in your client explicitly rather than looking it up. |
 | `GetBucketVersioning` | ✅ Supported | Returns `Enabled` for versioned buckets, `Suspended` is never returned. |
 | `PutBucketVersioning` | ❌ Not available to access keys | No access key can be granted this action, in either region. Versioning is set when you create the bucket in the console and cannot be changed afterwards. |
 | `GetBucketObjectLockConfiguration` | ✅ Supported | Returns the bucket-level default retention policy, if set. |
@@ -2579,11 +2582,12 @@ A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`,
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | `PutObject` | ✅ Supported | Max object size: 5 TB (use multipart for objects > 5 GB). |
+| `PutObject` with `If-None-Match: *` or `If-Match` | ✅ Supported | Conditional writes work in both regions. If the condition fails, the request returns `412 PreconditionFailed` and the object isn't changed. Tools such as Terraform's `use_lockfile` rely on this. |
 | `GetObject` | ✅ Supported | Supports range requests (`Range` header). Supports `VersionId` to retrieve a specific version. |
 | `DeleteObject` | ✅ Supported | Creates a delete marker on versioned buckets. Pass `VersionId` to permanently delete a specific version. |
 | `DeleteObjects` | ✅ Supported | Bulk delete up to 1,000 objects per request. |
 | `HeadObject` | ✅ Supported | |
-| `ListObjectsV2` | ✅ Supported | |
+| `ListObjectsV2` | ✅ Supported | Use `max-keys` of 1,000 or less, the S3 maximum page size. `us-east-1` returns `400 InvalidArgument` for larger values. For Hadoop and Spark (`s3a`), set `fs.s3a.paging.maximum=1000`. |
 | `ListObjectVersions` | ✅ Supported | Returns all versions and delete markers. Supports `Prefix` and `KeyMarker` filters. |
 | `CopyObject` | ⚠️ Region-dependent | Confirmed working in `us-east-1`, including copying a specific `VersionId` onto the current key. In `eu-west-1`, most copy operations pass a compatibility run, so plain server-side copy works there, but **copying a specific `VersionId` is not yet confirmed** in that region. Verify a version-promote copy against your own bucket before relying on it. |
 | `GetObjectRetention` | ✅ Supported | Returns the Object Lock retention for a specific version. |
@@ -2594,7 +2598,7 @@ A 403 from `PutBucketPolicy`, `PutBucketAcl`, `PutBucketLifecycleConfiguration`,
 | `GetObjectAcl` | ❌ Not supported | ACL model is not implemented. Returns `AccessDenied` in `eu-west-1`, including on objects uploaded with a canned-ACL header. |
 | `PutObjectAcl` | ❌ Not supported | ACL model is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
 | `GetObjectTagging` | ❌ Not supported | Object tagging is not implemented. Returns `AccessDenied` in `eu-west-1`. |
-| `PutObjectTagging` | ❌ Not supported | Object tagging is not implemented. Rejected with `AccessDenied` in `eu-west-1`. |
+| `PutObjectTagging` | ❌ Not supported | Object tagging is not implemented. Rejected with `AccessDenied` in `eu-west-1`. Tags sent with an upload in the `x-amz-tagging` header don't make the upload fail, but they can't be read back. |
 | `RestoreObject` | ❌ Not applicable | Fil One has a single storage class. There are no archival tiers to restore from. |
 | `SelectObjectContent` | ❌ Not planned | S3 Select is not planned. |
 
@@ -2643,6 +2647,7 @@ Object Lock, retention, and Legal Hold are verified in **both** regions: by an a
 | `PutObjectRetention` | ✅ Supported | Set or extend a retention period. It can't be shortened: no key can be granted the bypass-governance permission. Requires the **Set retention** permission (Owner-only to grant). |
 | `GetObjectLegalHold` | ✅ Supported | Requires the matching access-key permission. |
 | `PutObjectLegalHold` | ✅ Supported | Blocks delete while a hold is active. Requires the **Set legal hold** permission (Owner-only to grant). |
+| Object Lock headers on `PutObject` | ✅ Supported | Set retention or a legal hold at upload with `x-amz-object-lock-mode`, `x-amz-object-lock-retain-until-date`, and `x-amz-object-lock-legal-hold`. Works in both regions with a key that has the **Set retention** and **Set legal hold** permissions. Without these headers, the bucket's default retention applies. |
 
 **Object Lock modes:**
 
@@ -2747,7 +2752,7 @@ These are confirmed deviations that can affect a correctly written S3 client. Th
 |------|-------|------------|
 | Pagination | `ListObjects` may return a `NextMarker` with an internal suffix appended to the key (for example `asdf[...]` instead of `asdf`). Feeding that value back as the next `Marker` will not resume where you left off. | Prefer `ListObjectsV2` with `ContinuationToken`, which is unaffected. If you must use `ListObjects`, do not trust `NextMarker`; page using the last returned key instead. |
 | URL encoding | With `EncodingType=url`, a space in a key or prefix is encoded as `+` rather than `%20`. Most SDKs decode `%20` only, so keys with spaces can come back wrong. | Avoid spaces in key names, or decode `+` as a space yourself when you request URL encoding. |
-| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Verify integrity with ETags, or compare a hash you compute yourself after download. |
+| Checksums | Additional-checksum operations are unreliable. `CompleteMultipartUpload` may omit `ChecksumType` from its response, and checksum mismatches surface as `InvalidArgument` rather than `BadDigest`. | Compare a checksum you compute yourself before upload and after download. ETags in `eu-west-1` aren't MD5 checksums of the content (see [Differences from AWS S3](#differences-from-aws-s3)). |
 
 ## Differences from AWS S3
 
@@ -2757,6 +2762,7 @@ Fil One is S3-compatible, not an S3 clone. A few behaviors differ:
 |----------|--------|---------|
 | Versioning | Configurable — can be enabled, suspended, or left off per bucket. | Opt-in at bucket creation. Once enabled, cannot be suspended or disabled. No restore/roll-back from the dashboard; achievable via the API in `us-east-1` using `CopyObject`. |
 | Server-side copy | `CopyObject` supported. | Confirmed working in `us-east-1`. In `eu-west-1` plain copy works, but the version-id form (promoting an old version) is unverified. |
+| ETags | For single-part uploads, the ETag is the MD5 checksum of the content. | Same in `us-east-1`. In `eu-west-1`, ETags aren't MD5 checksums of the content, so tools that compare them with a local MD5 need a different check. For rclone, set `upload_cutoff = 0`. |
 | Encryption | Optional and configurable. Off by default for older buckets. | Always on. Cannot be disabled. Keys are held by the regional storage operator; no customer-managed keys. |
 | Bucket management | `CreateBucket` and `DeleteBucket` supported via API. Requires an empty bucket to delete. | Region-dependent. Supported via API in `us-east-1`; in `eu-west-1` buckets are managed through the dashboard only. |
 | IAM and policies | Full IAM with users, roles, and bucket policies. | No IAM users, roles, or bucket policies on the S3 API. Access is controlled by each access key's permissions and bucket scope. The console has organizations with member roles: see [Organization](https://docs.filone.com/app/organization#roles-and-permissions). |
@@ -3787,7 +3793,7 @@ Access through the S3 API is still per access key. There are no IAM users or buc
 
 Fil One is built on Filecoin, a distributed storage network where storage providers must continuously submit cryptographic proofs — called Proof of Replication (PoRep) and Proof of Spacetime (PoSt) — to prove they are still holding the data they committed to store. Providers that fail to produce valid proofs are penalised. This proof cycle runs at the network level and is not something you trigger or check yourself.
 
-Fil One does not currently expose per-object proof data — content identifiers, deal IDs, and sealing state are not surfaced through the API or the dashboard, so you cannot independently audit an individual object today. For object-level integrity checks in your own application, compare the `ETag` returned by `HeadObject` against a checksum you keep, or apply [Object Lock](https://docs.filone.com/storage/object-lock) to make objects immutable for a fixed retention period.
+Fil One does not currently expose per-object proof data — content identifiers, deal IDs, and sealing state are not surfaced through the API or the dashboard, so you cannot independently audit an individual object today. For object-level integrity checks in your own application, store a checksum when you upload and compare it with one you compute after download, or apply [Object Lock](https://docs.filone.com/storage/object-lock) to make objects immutable for a fixed retention period.
 
 
 ---
