@@ -94,7 +94,7 @@ If you set `"Mode": "COMPLIANCE"`, nobody, including the organization Owner, can
   </TabItem>
 </Tabs>
 
-In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). Fil One's `us-east-1` gateway has been confirmed to follow this; `eu-west-1` has not yet been independently verified.
+In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). In Fil One, retention can't be shortened in either region, because no access key can be granted the bypass-governance permission. See [S3 Compatibility](/reference/s3-compatibility#object-operations).
 
 ## Checking retention status
 

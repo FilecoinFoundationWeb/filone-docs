@@ -1123,7 +1123,7 @@ s3.put_object_retention(
 )
 ```
 
-In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). Fil One's `us-east-1` gateway has been confirmed to follow this; `eu-west-1` has not yet been independently verified.
+In standard S3, retention can be extended but never shortened: you can move `RetainUntilDate` further into the future but not closer, and shortening a Compliance retention period is rejected (with `403 AccessDenied`). In Fil One, retention can't be shortened in either region, because no access key can be granted the bypass-governance permission. See [S3 Compatibility](https://docs.filone.com/reference/s3-compatibility#object-operations).
 
 ## Checking retention status
 
@@ -2766,7 +2766,7 @@ These are confirmed in `eu-west-1`.
 | `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
 | A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
 
-Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Do not rely on the gateway to validate request parameters for you: validate on the client side where correctness matters.
+Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Validate request parameters on the client side where correctness matters.
 
 ## Known behavioral issues in `eu-west-1`
 

@@ -207,7 +207,7 @@ These are confirmed in `eu-west-1`.
 | `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
 | A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
 
-Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Do not rely on the gateway to validate request parameters for you: validate on the client side where correctness matters.
+Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Validate request parameters on the client side where correctness matters.
 
 ## Known behavioral issues in `eu-west-1`
 
