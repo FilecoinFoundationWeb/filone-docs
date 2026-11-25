@@ -52,4 +52,4 @@ node scripts/check-mirrors.mjs     # every page has an entry in both llms mirror
 node scripts/check-snippets.mjs    # snippets parse, no untagged blocks, no real-looking keys
 ```
 
-A PR that changes `docs/**` but neither mirror fails unless its description ticks **No mirror change needed** with a reason. None of these checks can tell whether a fact is *true*; that is what the rules above and [CONTRIBUTING.md](CONTRIBUTING.md) are for.
+A PR that changes `docs/**` without updating both mirrors fails `.github/workflows/mirror-impact.yaml` unless its description ticks **No mirror change needed** with a reason. None of these checks can tell whether a fact is *true*; that is what the rules above and [CONTRIBUTING.md](CONTRIBUTING.md) are for.

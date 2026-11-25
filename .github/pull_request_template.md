@@ -10,7 +10,7 @@
 
 ## Mirrors
 
-<!-- CI fails if docs/** changes and neither llms file does, unless the second box is ticked with a reason. -->
+<!-- CI fails if docs/** changes without both llms files changing, unless the second box is ticked with a reason. -->
 
 - [ ] `static/llms.txt` and `static/llms-full.txt` updated
 - [ ] No mirror change needed: <!-- why, e.g. "typo fix, no fact changed" -->

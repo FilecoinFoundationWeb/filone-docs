@@ -52,12 +52,13 @@ function extractBlocks(file) {
   return blocks;
 }
 
-function have(cmd) {
-  return spawnSync(cmd, ["--version"], { stdio: "ignore" }).status === 0 ||
-    spawnSync(cmd, ["version"], { stdio: "ignore" }).status === 0;
+// True if `cmd args` runs and exits 0. Probes the exact binary each checker
+// calls (gofmt has no --version flag, so it formats empty stdin instead).
+function have(cmd, args) {
+  return spawnSync(cmd, args, { input: "", stdio: ["pipe", "ignore", "ignore"] }).status === 0;
 }
 
-const tools = { python3: have("python3"), bash: have("bash"), gofmt: have("go") };
+const tools = { python3: have("python3", ["--version"]), bash: have("bash", ["--version"]), gofmt: have("gofmt", ["-l"]) };
 const tmp = mkdtempSync(join(tmpdir(), "snippets-"));
 let n = 0;
 

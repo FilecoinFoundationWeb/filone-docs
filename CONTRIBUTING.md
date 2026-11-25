@@ -13,7 +13,7 @@ A product change needs a docs change when a customer could see it or rely on it:
 
 Refactors, tests, internal tooling and changes behind a feature flag that is off in production don't need one. Feature-flagged work gets its docs at launch: a public docs PR announces the feature.
 
-**Definition of done for a user-facing product PR:** the product PR links a filone-docs PR, or says why no docs change is needed. That requirement lives in the product repo's PR template (see [Product-side check](#product-side-check)).
+**Definition of done for a user-facing product PR:** the product PR links a filone-docs PR, or says why no docs change is needed. That requirement is planned for the product repo's PR template (see [Product-side check](#product-side-check)).
 
 ## Where a product change usually lands in the docs
 
@@ -36,14 +36,14 @@ Every fact you change also goes into `static/llms.txt` and `static/llms-full.txt
 
 ## What CI checks, and what it can't
 
-`.github/workflows/build.yaml` runs on every PR. It has no secrets.
+`.github/workflows/build.yaml` and `.github/workflows/mirror-impact.yaml` run on every PR. Neither has secrets.
 
 | Check | Catches | Doesn't catch |
 |---|---|---|
 | `npm run build` | MDX syntax errors, bad frontmatter, broken internal links (`onBrokenLinks: "throw"`) | Raw `<a href>` links in HTML card grids. Docusaurus doesn't check those. |
 | `scripts/check-mirrors.mjs` | A page added, renamed or removed without its `llms.txt` link and `llms-full.txt` section; mirror links to pages that no longer exist | A fact that differs between a page and its mirror |
 | `scripts/check-snippets.mjs` | Python, JS, Go, Bash and JSON snippets that don't parse; untagged code blocks; values that look like real access keys | Whether a snippet works against Fil One |
-| mirror-impact gate | A PR that changes `docs/**` but neither mirror and gives no reason | Whether the reason is right |
+| `mirror-impact.yaml` | A PR that changes `docs/**` without updating both mirrors and gives no reason | Whether the reason is right |
 
 To opt a deliberate fragment out of the snippet check, add `nocheck` to its fence (`` ```python nocheck ``) and explain the fragment in the surrounding text.
 
@@ -62,4 +62,4 @@ Checks catch structure; they can't catch a console label that changed in a produ
 
 ## Product-side check
 
-The product repo gets the other half: a PR template with a **Docs** section, a "Documentation" section in its `AGENTS.md`, and a small `docs-impact` workflow. When a PR touches user-facing paths, the workflow requires its description to link a filone-docs PR, give a reason no docs change is needed, or carry the `docs:gated` label. It holds no secrets and calls no model, so it only makes the decision visible. It can't tell whether the decision is right. That's what the audit is for.
+**Planned, not yet in place.** The product repo is to get the other half: a PR template with a **Docs** section, a "Documentation" section in its `AGENTS.md`, and a small `docs-impact` workflow. When a PR touches user-facing paths, the workflow would require its description to link a filone-docs PR, give a reason no docs change is needed, or carry the `docs:gated` label. It would hold no secrets and call no model, so it only makes the decision visible. It can't tell whether the decision is right. That's what the audit is for.
