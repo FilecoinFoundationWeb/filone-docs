@@ -94,8 +94,10 @@ Critical integration notes for developers:
   AccessDenied. Neither makes an object public
 - Error CODES deviate from AWS in eu-west-1 even though the XML format is
   standard: BadDigest->InvalidArgument, InvalidRange->InvalidArgument,
-  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou. Some
-  invalid requests are also ACCEPTED where AWS returns 400
+  InvalidTag->BadRequest, BucketAlreadyExists->BucketAlreadyOwnedByYou.
+  Deleting a version under retention or legal hold returns 400 InvalidRequest
+  in eu-west-1 (403 AccessDenied in us-east-1, as in AWS). Some invalid
+  requests are also ACCEPTED where AWS returns 400
 - Open eu-west-1 client-affecting bugs: ListObjects NextMarker can carry an
   internal suffix (use ListObjectsV2 + ContinuationToken instead);
   EncodingType=url encodes a space as "+" not "%20"; additional-checksum
@@ -1151,7 +1153,7 @@ Returns:
 
 ## Deleting locked objects
 
-Attempting to delete an object with active retention returns `403 AccessDenied`.
+Deleting a version under active retention or a legal hold is refused. `us-east-1` returns `403 AccessDenied`, like AWS. `eu-west-1` returns `400 InvalidRequest`, so code that detects a lock by checking for a 403 needs to handle both.
 
 On a versioned bucket, a `DELETE` request without a version ID places a delete marker. The object appears deleted to applications, but the underlying version remains protected and intact until retention expires.
 
@@ -2765,6 +2767,10 @@ These are confirmed in `eu-west-1`.
 | An invalid object tag | `InvalidTag` | `BadRequest` |
 | `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
 | A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
+| Deleting a version under retention or a legal hold | `AccessDenied` (403) | `InvalidRequest` (400) |
+| Reading retention or legal hold on a version that has none | `NoSuchObjectLockConfiguration` (404) | `NoSuchObjectLockConfiguration` (400) |
+
+In `us-east-1`, reading retention or legal hold on a version that has none returns `NoSuchKey` (404), even though the object exists.
 
 Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Validate request parameters on the client side where correctness matters.
 

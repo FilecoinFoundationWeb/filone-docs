@@ -206,6 +206,10 @@ These are confirmed in `eu-west-1`.
 | An invalid object tag | `InvalidTag` | `BadRequest` |
 | `CreateBucket` on a bucket you already own | `BucketAlreadyExists` in most regions | `BucketAlreadyOwnedByYou` |
 | A malformed `PutPublicAccessBlock` or `PutBucketLogging` body | `MalformedXML` for genuinely bad XML only | `MalformedXML` even for a well-formed body, since neither operation is implemented |
+| Deleting a version under retention or a legal hold | `AccessDenied` (403) | `InvalidRequest` (400) |
+| Reading retention or legal hold on a version that has none | `NoSuchObjectLockConfiguration` (404) | `NoSuchObjectLockConfiguration` (400) |
+
+In `us-east-1`, reading retention or legal hold on a version that has none returns `NoSuchKey` (404), even though the object exists.
 
 Some invalid requests are also **accepted** where AWS rejects them (HTTP 200 or 204 instead of 400). Validate request parameters on the client side where correctness matters.
 

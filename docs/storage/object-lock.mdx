@@ -122,7 +122,7 @@ Returns:
 
 ## Deleting locked objects
 
-Attempting to delete an object with active retention returns `403 AccessDenied`.
+Deleting a version under active retention or a legal hold is refused. `us-east-1` returns `403 AccessDenied`, like AWS. `eu-west-1` returns `400 InvalidRequest`, so code that detects a lock by checking for a 403 needs to handle both.
 
 On a versioned bucket, a `DELETE` request without a version ID places a delete marker. The object appears deleted to applications, but the underlying version remains protected and intact until retention expires.
 
