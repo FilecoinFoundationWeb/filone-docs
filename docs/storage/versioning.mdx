@@ -14,12 +14,12 @@ To enable versioning, expand **Advanced settings** when you create a bucket in t
 
 ## How versions work
 
-When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object without a version ID, over the S3 API or with **Delete** on its latest version in the console's object detail page, Fil One places a **delete marker** at the current version: the object appears deleted, but all previous versions are still retrievable.
+When you upload `reports/q1.pdf` for the first time, Fil One creates version `v1`. If you upload a new `reports/q1.pdf` tomorrow, Fil One creates version `v2` and `v1` remains intact. If you delete the object without a version ID, over the S3 API or with **Delete** on its latest version in the console's object panel or object detail page, Fil One places a **delete marker** at the current version: the object appears deleted, but all previous versions are still retrievable.
 
 This behavior applies to all objects in versioned buckets.
 
 :::warning Deleting from a row in the dashboard removes a version permanently
-A row's delete, one at a time or in bulk, permanently deletes the specific version on that row and writes no delete marker. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Delete** on the object detail page places a delete marker when you are viewing the latest version, and removes only that version when you are viewing an older one. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](/app/buckets#deleting-objects).
+A row's delete, one at a time or in bulk, permanently deletes the specific version on that row and writes no delete marker. Deleting the current version's row removes that version, and the earlier versions are left as they are. **Delete** in the object panel or on the object detail page places a delete marker when you are viewing the latest version, and removes only that version when you are viewing an older one. **Empty bucket** removes every version and delete marker in the bucket. See [Deleting objects](/app/buckets#deleting-objects).
 :::
 
 ## Access key permissions for versions

@@ -88,9 +88,19 @@ Selecting files does not upload them. Click **Upload** *n* **file(s)** to start,
 The console uploads each file in a single request, which the S3 single-PUT ceiling caps at 5 GB. For objects above that, use the AWS CLI or an SDK with multipart support. See [Multipart Uploads](/storage/multipart-uploads).
 :::
 
+## The object panel
+
+Clicking an object in the list opens it in a panel over the list, so you can look at a file without leaving the folder. On a narrow screen the panel fills the screen. It shows the object's [preview](#preview) and the same facts as the [Details](#details) card. **Size**, **Last modified**, **ETag**, and **S3 URI** show straight away, and **Type** and **Retention** fill in once the object's details load.
+
+A bar along the bottom holds **Delete** and **Copy console link** on the left, and **Share** and **Download** on the right.
+
+- **Previous object** and **Next object** move to the neighbouring object in the list's order, skipping folders, with a count such as **4 / 12**.
+- **Open full page** opens the object detail page for the object, or for the version you opened.
+- **Close**, **Esc**, or a click outside the panel closes it. So does the browser's back button. The open object is part of the page address, so a reload keeps the panel open.
+
 ## The object detail page
 
-Clicking an object opens its page. The file name is the title, with the folders it sits in shown in the breadcrumb above. **Download** and **Share** sit beside the title, and the **⋯** menu holds **Copy S3 URI**, **Copy console link**, and **Delete**.
+**Open full page** in the object panel opens the object's page. The file name is the title, with the folders it sits in shown in the breadcrumb above. **Download** and **Share** sit beside the title, and the **⋯** menu holds **Copy console link** and **Delete**.
 
 ### Preview
 
@@ -103,9 +113,15 @@ Any other file shows a placeholder that says why there is no preview, with a **D
 
 ### Details
 
-The **Details** card shows **Size**, **Type**, **Last modified**, and, where they apply, **Version ID**, **ETag**, **Retention**, **Description**, and **Tags**. Hover over **Size**, **Type**, or **Last modified** for the exact value. **Retention** appears on buckets with [Object Lock](/storage/object-lock). **Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. Any other user metadata is listed under **Custom metadata**, by key.
+The **Details** card groups the object's facts:
 
-When retention is in Compliance mode a **Compliance retention lock** notice gives the date before which the object cannot be deleted.
+- What the file is: **Size**, **Type**, **Last modified**, and, where they are set, **Description** and **Tags**. Hover over **Size**, **Type**, or **Last modified** for the exact value.
+- The values that address it, each with a copy button: **S3 URI**, **Version ID** on a versioned bucket, and **ETag**.
+- **Retention**, on buckets with [Object Lock](/storage/object-lock). It gives the mode and the date it holds until, such as **Compliance until May 2, 2026**. Once that date has passed it reads **Compliance, ended May 2, 2026**, since S3 still returns the setting but it no longer protects the object.
+
+**Description** and **Tags** are read from the object's `description` and `tags` user metadata, not from S3 object tagging, and the console upload flow does not set them. Any other user metadata is listed under **Custom metadata**, by key.
+
+While a Compliance-mode retention is in force, a **Compliance retention lock** notice above the cards gives the date before which the object cannot be deleted. The notice no longer shows once that date has passed.
 
 ### Versions
 
@@ -123,15 +139,15 @@ Beside the cards, or below them on a narrow screen, **API access** gives an AWS 
 
 ## Downloading and sharing
 
-**Download** is available on each row in the object list and beside the title on the object detail page. It works on any plan, including the trial.
+**Download** is available on each row in the object list, in the object panel, and beside the title on the object detail page. It works on any plan, including the trial.
 
-**Share**, on a row or on the object detail page, generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
+**Share**, on a row, in the object panel, or on the object detail page, generates a link anyone can open without an API key. Choose an expiry of **1 hour**, **24 hours** (the default), **3 days**, or **7 days**, then **Generate link**.
 
 Sharing is a paid-plan feature. During the trial the Share button is disabled, with a tooltip pointing to an upgrade.
 
 ## Deleting objects
 
-Click the trash icon on a row, or **Delete** in the **⋯** menu on the object detail page, and confirm.
+Click the trash icon on a row or in the object panel, or **Delete** in the **⋯** menu on the object detail page, and confirm.
 
 To delete several at once, tick their checkboxes. A bar shows *n* **selected** with **Clear** and **Delete**. Ticking a folder row selects everything under it, and the header checkbox selects everything at the current level.
 
@@ -139,7 +155,7 @@ To delete several at once, tick their checkboxes. A bar shows *n* **selected** w
 A row's delete removes the specific version on that row. It does not write a delete marker. On a versioned bucket, deleting the row for the current version permanently removes that version, and the earlier versions are left as they are.
 :::
 
-On the object detail page, **Delete** acts on the version you are viewing:
+In the object panel and on the object detail page, **Delete** acts on the version you are viewing:
 
 - On an older version it reads **Delete version**, and permanently removes that version alone.
 - On the latest version of an object in a versioned bucket, it places a delete marker. The object shows as **Deleted** in the object list, and its earlier versions stay in its history. See [Versioning](/storage/versioning#delete-markers).
