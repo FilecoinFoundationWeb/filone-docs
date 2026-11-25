@@ -142,10 +142,10 @@ A row's delete removes the specific version on that row. It does not write a del
 On the object detail page, **Delete** acts on the version you are viewing:
 
 - On an older version it reads **Delete version**, and permanently removes that version alone.
-- On the latest version of an object in a versioned bucket, it places a delete marker. The object is hidden, and its earlier versions stay in its history. See [Versioning](/storage/versioning#delete-markers).
+- On the latest version of an object in a versioned bucket, it places a delete marker. The object shows as **Deleted** in the object list, and its earlier versions stay in its history. See [Versioning](/storage/versioning#delete-markers).
 - In a bucket without versioning, it permanently deletes the object.
 
-To get back an object you hid behind a delete marker, open its console link again, for example from your browser history or a link you saved with **Copy console link**. The page says the object was deleted and keeps its version history, so you can open an earlier version and download it. To make that version current again, upload it again.
+To bring the object back, click **Remove delete marker**, the trash button on its row in the object list. No data is deleted, and the version before the marker becomes current again.
 
 An object under an active retention period or legal hold is protected, and attempting to delete it returns that protection as an error. See [Object Lock](/storage/object-lock).
 
