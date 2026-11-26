@@ -1,9 +1,11 @@
 ---
 title: Quickstart - AWS CLI
-description: Upload your first object using the AWS CLI.
+description: Set up the AWS CLI for Fil One with a profile per region, create a bucket, and upload and download your first object.
 ---
 
-Use the AWS CLI to upload, list and download objects in a Fil One bucket. You need a Fil One account and an API key. To create a key, open **API Keys** in the [console](https://app.filone.com), click **Create new key**, and pick the same region as your bucket. The secret is shown once.
+The [Quickstart](/quickstart?tool=cli) covers signup, the bucket and the API key, and uploads a first file with the AWS CLI. This page adds what the Quickstart skips: the profile as a config file, a profile per region, and creating a bucket from the CLI. For every other command, see [AWS CLI](/sdk/cli).
+
+You need an API key in the same region as your bucket. To create one, open **API Keys** in the [console](https://app.filone.com) and click **Create new key**. The secret is shown once.
 
 ## 1. Install the AWS CLI
 
@@ -15,9 +17,9 @@ brew install awscli
 # https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 ```
 
-## 2. Configure credentials
+## 2. Configure a profile
 
-Set up a named profile, so you don't overwrite your default AWS credentials and don't have to pass `--endpoint-url` on every command:
+The `aws configure` commands in the Quickstart write these two files, and you can also edit them directly. A named profile keeps your default AWS credentials untouched, and you don't have to pass `--endpoint-url` on every command:
 
 ```ini
 # ~/.aws/config
@@ -28,14 +30,6 @@ s3 =
     addressing_style = path
 ```
 
-The `addressing_style = path` line is required — Fil One only supports path-style URLs, and the CLI otherwise defaults to virtual-hosted style, which fails.
-
-:::note The endpoint depends on your bucket's region
-The example above uses `eu-west-1`, the default region. If your bucket is in `us-east-1`, use `https://s3.us-east-1.filonecontent.com` and `region = us-east-1` instead. The endpoint and the region must both match the bucket you are working with, and your access key has to belong to that region too.
-
-If you use both regions, set up a profile per region (`[profile filone-eu]`, `[profile filone-us]`) and pick with `--profile`.
-:::
-
 ```ini
 # ~/.aws/credentials
 [filone]
@@ -43,11 +37,36 @@ aws_access_key_id = YOUR_ACCESS_KEY
 aws_secret_access_key = YOUR_SECRET_KEY
 ```
 
+The `addressing_style = path` line is required. Fil One only supports path-style URLs, and the CLI otherwise defaults to virtual-hosted style, which fails.
+
+:::note The endpoint depends on your bucket's region
+The example above uses `eu-west-1`, the default region. The endpoint, the region and your access key must all match the region of the bucket you work with. If you use both regions, add a second profile:
+
+```ini
+# ~/.aws/config
+[profile filone-us]
+endpoint_url = https://s3.us-east-1.filonecontent.com
+region = us-east-1
+s3 =
+    addressing_style = path
+```
+
+Then add a `[filone-us]` section with your `us-east-1` key to `~/.aws/credentials`, and choose the region with `--profile filone-us`.
+:::
+
+Check the profile before you use it:
+
+```bash
+aws s3 ls --profile filone
+```
+
+It lists the buckets in the key's region. If you get an error, see [Troubleshooting](/reference/errors#troubleshooting).
+
 ## 3. Create a bucket
 
-Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket**, enter `my-bucket` (or your own name), and click **Create bucket**.
+Whether `CreateBucket` works through the S3 API depends on the region. It is **not** available in `eu-west-1`, the default region. There, create the bucket in the [Fil One console](https://app.filone.com): click **New bucket** on the dashboard, enter `my-bucket` (or your own name), and click **Create bucket**.
 
-In `us-east-1` you can create a bucket from the CLI, using a key that has the `CreateBucket` permission. This requires a `us-east-1` profile — define one the same way as the `filone` profile above but with the `us-east-1` endpoint and region (shown here as `filone-us`):
+In `us-east-1` you can create a bucket from the CLI, with the `filone-us` profile and a key that has the `CreateBucket` permission. That permission isn't selected by default when you create a key:
 
 ```bash
 aws s3 mb s3://my-bucket --profile filone-us
@@ -55,23 +74,15 @@ aws s3 mb s3://my-bucket --profile filone-us
 
 Versioning and Object Lock can only be turned on when you create the bucket in the console. See [Buckets](/storage/buckets).
 
-The steps below use the `filone` profile (`eu-west-1`). If your bucket is in `us-east-1`, use `--profile filone-us` instead: the profile, the key and the bucket must all be in the same region.
+## 4. Upload, list and download
 
-## 4. Upload a file
+The commands below use the `filone` profile (`eu-west-1`). For a bucket in `us-east-1`, use `--profile filone-us`.
 
 ```bash
 echo "hello" > my-file.txt
 aws s3 cp my-file.txt s3://my-bucket/ --profile filone
-```
-
-## 5. List objects
-
-```bash
 aws s3 ls s3://my-bucket/ --profile filone
-```
-
-## 6. Download the file
-
-```bash
 aws s3 cp s3://my-bucket/my-file.txt ./downloaded.txt --profile filone
 ```
+
+For syncing folders, deleting objects, presigned URLs and multipart uploads, see [AWS CLI](/sdk/cli).
